@@ -1,0 +1,976 @@
+#!/usr/bin/env python3
+"""
+Export of notebook: Defense_Energy_Quarterly_Analysis_Q1-Q3.ipynb
+Converted to a single Python script containing the code cells in order.
+
+Note: This file is a straight export of the notebook code cells. It expects
+the same data files and environment as the notebook (pandas, numpy, requests, yfinance, etc.).
+"""
+
+import requests
+import time
+import re
+import pandas as pd
+import numpy as np
+from pathlib import Path
+
+# =============================================================================
+# CONFIGURATION
+# =============================================================================
+HEADERS = {"User-Agent": "Simon Slansky simon.slansky@outlook.com"}
+REQUEST_SLEEP = 0.15
+
+# Data extraction
+NUM_QUARTERS_TO_EXTRACT = 45  # or your desired number
+
+# Filing validation
+MAX_FILING_LAG_DAYS = 180
+
+MIN_VALID_QUARTERS = 4
+
+# Target companies (Defense & Energy)
+TARGET_TICKERS = [
+    # Tier 1: Prime defense contractors (čistá expozice)
+    "LMT",   # Lockheed Martin
+    "RTX",   # RTX (Raytheon – missiles, defense systems)
+    "NOC",   # Northrop Grumman
+    "GD",    # General Dynamics
+    "LHX",   # L3Harris Technologies
+
+    # Tier 2: Defense services & intelligence
+    "BAH",   # Booz Allen Hamilton
+    "LDOS",  # Leidos
+    "CACI",  # CACI International
+    "PSN",   # Parsons
+    "HII",   # Huntington Ingalls (naval defense)
+
+    # Tier 3: Aerospace / military platforms (high exposure)
+    "TDG",   # TransDigm (aerospace & defense components)
+
+    # Tier 4: Emerging / specialized defense tech
+    "KTOS",  # Kratos Defense (unmanned aerial systems, drones)
+    "AVAV",  # AeroVironment (tactical drones, loitering munitions)
+    "MRCY",  # Mercury Systems (electronic warfare, secure computing)
+    "TXT",   # Textron (military helicopters, armored vehicles)
+    "CW"     # Curtiss-Wright (defense electronics, propulsion systems)
+]
+
+# Paths
+BASE_DIR = Path.cwd().parent
+DATA_DIR = BASE_DIR / "data"
+DATA_DIR.mkdir(exist_ok=True)
+
+print(f"✓ Configuration loaded")
+print(f"  Target companies: {len(TARGET_TICKERS)}")
+print(f"  Data directory: {DATA_DIR}")
+
+# =============================================================================
+# STEP 2: LOAD SEC TICKER UNIVERSE
+# =============================================================================
+
+# Load SEC company tickers
+sec_json = requests.get(
+    "https://www.sec.gov/files/company_tickers.json",
+    headers=HEADERS,
+).json()
+
+# Convert to DataFrame
+sec_df = pd.DataFrame.from_dict(sec_json, orient="index")
+sec_df["ticker"] = sec_df["ticker"].str.upper()
+sec_df["cik"] = sec_df["cik_str"].astype(str).str.zfill(10)
+
+print(f"✓ SEC ticker universe loaded: {len(sec_df)} companies")
+
+# Filter to target tickers
+sec_df = sec_df[sec_df["ticker"].isin(TARGET_TICKERS)].copy()
+
+print(f"✓ Filtered to target companies: {len(sec_df)} tickers")
+print(f"\nFound tickers:")
+for ticker in sorted(sec_df["ticker"].tolist()):
+    print(f"  {ticker}")
+
+# =============================================================================
+# STEP 3: LOAD SEC SUBMISSIONS METADATA
+# =============================================================================
+
+def load_submissions(cik: str) -> dict | None:
+    """Load SEC submissions metadata for a company."""
+    try:
+        r = requests.get(
+            f"https://data.sec.gov/submissions/CIK{cik}.json",
+            headers=HEADERS,
+            timeout=10,
+        )
+        if r.status_code == 200:
+            return r.json()
+    except Exception as e:
+        print(f"  Error loading CIK {cik}: {e}")
+    return None
+
+# Load metadata for all target companies
+companies = []
+failed_ciks = []
+
+print("Loading SEC submissions metadata...")
+for _, row in sec_df.iterrows():
+    ticker = row["ticker"]
+    cik = row["cik"]
+
+    sub = load_submissions(cik)
+    if sub is None:
+        failed_ciks.append((ticker, cik))
+        print(f"  ⚠️ Failed to load: {ticker} (CIK {cik})")
+        time.sleep(REQUEST_SLEEP)
+        continue
+
+    # Extract fiscal year-end (required)
+    fye_raw = sub.get("fiscalYearEnd")
+    if not isinstance(fye_raw, str) or len(fye_raw) < 2:
+        print(f"  ⚠️ Missing fiscal year-end: {ticker}")
+        failed_ciks.append((ticker, cik))
+        time.sleep(REQUEST_SLEEP)
+        continue
+
+    try:
+        fiscal_year_end = int(fye_raw[:2])  # Extract month from MMDD format (first 2 digits)
+    except:
+        print(f"  ⚠️ Invalid fiscal year-end format: {ticker} ({fye_raw})")
+        failed_ciks.append((ticker, cik))
+        time.sleep(REQUEST_SLEEP)
+        continue
+
+    # Get exchange info (optional - for informational purposes)
+    exchanges = sub.get("exchanges", [])
+    entity_type = sub.get("entityType", "unknown")
+
+    companies.append({
+        "ticker": ticker,
+        "cik": cik,
+        "company_name": sub.get("name", ticker),
+        "exchanges": exchanges,
+        "entity_type": entity_type,
+        "fiscal_year_end": fiscal_year_end
+    })
+
+    print(f"  ✓ {ticker}: {sub.get('name', 'N/A')} | FYE: {fye_raw} | Exchange: {', '.join(exchanges) if exchanges else 'N/A'}")
+    time.sleep(REQUEST_SLEEP)
+
+target_companies = {c["ticker"]: c for c in companies}
+
+print(f"\n{'='*80}")
+print(f"✓ Successfully loaded: {len(target_companies)}/{len(TARGET_TICKERS)} companies")
+if failed_ciks:
+    print(f"⚠️ Failed to load {len(failed_ciks)} companies:")
+    for ticker, cik in failed_ciks:
+        print(f"    {ticker} (CIK {cik})")
+print(f"{'='*80}")
+
+# =============================================================================
+# STEP 4: DEFINE FINANCIAL METRICS
+# =============================================================================
+
+# Financial metrics with priority (lower number = higher priority)
+METRICS_WITH_PRIORITY = [
+    # Total Assets
+    ('Assets', 'total_assets', 1),
+    ('AssetsFairValueDisclosure', 'total_assets', 2),
+
+    # Asset Components
+    ('AssetsCurrent', 'assets_current', 1),
+    ('AssetsNoncurrent', 'assets_noncurrent', 1),
+    ('CashAndCashEquivalentsAtCarryingValue', 'cash', 1),
+    ('Cash', 'cash', 2),
+    ('AccountsReceivableNetCurrent', 'accounts_receivable_net', 1),
+    ('AccountsAndNotesReceivableNet', 'accounts_receivable_net', 2),
+    ('InventoryNet', 'inventory_net', 1),
+    ('MarketableSecurities', 'marketable_securities', 1),
+    ('PrepaidExpenseAndOtherAssetsCurrent', 'prepaid_expense_current', 1),
+    ('PropertyPlantAndEquipmentNet', 'ppe_net', 1),
+    ('IntangibleAssetsNetExcludingGoodwill', 'intangibles_net', 1),
+    ('Goodwill', 'goodwill', 1),
+    ('OtherAssetsNoncurrent', 'other_assets_noncurrent', 1),
+
+    # Total Liabilities
+    ('Liabilities', 'total_liabilities', 1),
+    ('LiabilitiesCurrent', 'liabilities_current', 1),
+    ('LiabilitiesNoncurrent', 'liabilities_noncurrent', 1),
+
+    # Stockholders' Equity
+    ('StockholdersEquity', 'stockholders_equity', 1),
+    ('StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest', 'stockholders_equity', 2),
+
+    # Net Income (Flow metric)
+    ('NetIncomeLoss', 'net_income', 1),
+    ('ProfitLoss', 'net_income', 2),
+    ('NetIncomeLossAvailableToCommonStockholdersBasic', 'net_income', 3),
+    ('IncomeLossFromContinuingOperations', 'net_income', 4),
+]
+
+# Classify metrics as flow (need start/end) or instant (point-in-time)
+FLOW_METRICS = {"net_income"}
+INSTANT_METRICS = {m for _, m, _ in METRICS_WITH_PRIORITY if m not in FLOW_METRICS}
+
+print(f"✓ Defined {len(METRICS_WITH_PRIORITY)} XBRL tag mappings")
+print(f"  Flow metrics (need date range): {FLOW_METRICS}")
+print(f"  Instant metrics (point-in-time): {len(INSTANT_METRICS)} metrics")
+
+# =============================================================================
+# STEP 5: FISCAL CALENDAR HELPER FUNCTIONS
+# =============================================================================
+
+def fiscal_quarter_and_year(end_date, fye_month):
+    """Correctly determine fiscal quarter and year based on month distance from FYE."""
+    end_month = end_date.month
+
+    # Calculate month distance from fiscal year end
+    diff = (end_month - fye_month) % 12
+
+    # Map distance to fiscal quarter
+    if diff == 3:
+        fiscal_quarter = "Q1"
+    elif diff == 6:
+        fiscal_quarter = "Q2"
+    elif diff == 9:
+        fiscal_quarter = "Q3"
+    elif diff == 0:
+        fiscal_quarter = "Q4"
+    else:
+        # Not a fiscal quarter end
+        fiscal_quarter = None
+
+    # Determine fiscal year
+    # If we're in months after FYE (diff > 0), we're in the new fiscal year
+    if end_month > fye_month:
+        fiscal_year = end_date.year + 1
+    else:
+        fiscal_year = end_date.year
+
+    return fiscal_year, fiscal_quarter
+
+print("✓ Fiscal calendar functions defined")
+
+# =============================================================================
+# STEP 6: XBRL FACT VALIDATION FUNCTIONS
+# =============================================================================
+
+def is_valid_flow(row, fye_month):
+    """Validate flow metrics with corrected duration window and Q4 exclusion."""
+    # Must be from 10-Q filing (including amendments)
+    if row.get("form") not in {"10-Q", "10-Q/A"}:
+        return False
+
+    # Must have valid end date
+    end = pd.to_datetime(row.get("end"), errors="coerce")
+    if pd.isna(end):
+        return False
+
+    # Must have start date
+    start = row.get("start")
+    if not start:
+        return False
+
+    # Duration should be ~90 days (quarterly) - FIXED: widened window from 70-110 to 65-120
+    start = pd.to_datetime(start, errors="coerce")
+    if pd.isna(start):
+        return False
+
+    days = (end - start).days
+    if not (65 <= days <= 120):
+        return False
+
+    # FIXED: Exclude Q4 using proper fiscal quarter logic
+    _, fiscal_quarter = fiscal_quarter_and_year(end, fye_month)
+    if fiscal_quarter == "Q4":
+        return False
+
+    return True
+
+
+def is_valid_instant(row, fye_month):
+    """
+    FIXED: Validate instant metrics with corrected Q4 exclusion.
+
+    Instant metrics (like total assets) are point-in-time, no start date.
+    """
+    # Must be from 10-Q filing
+    if row.get("form") not in {"10-Q", "10-Q/A"}:
+        return False
+
+    # Must have valid end date
+    end = pd.to_datetime(row.get("end"), errors="coerce")
+    if pd.isna(end):
+        return False
+
+    # Must NOT have start date (instant value)
+    if row.get("start") is not None:
+        return False
+
+    # FIXED: Exclude Q4 using proper fiscal quarter logic
+    _, fiscal_quarter = fiscal_quarter_and_year(end, fye_month)
+    if fiscal_quarter == "Q4":
+        return False
+
+    return True
+
+print("✓ XBRL validation functions defined")
+
+# =============================================================================
+# STEP 7: EXTRACT QUARTERLY FINANCIAL DATA
+# =============================================================================
+
+def extract_quarters(meta: dict) -> pd.DataFrame:
+    """
+    FIXED: Extract quarterly financial data with corrected fiscal quarter logic and statistics.
+    """
+    try:
+        r = requests.get(
+            f"https://data.sec.gov/api/xbrl/companyfacts/CIK{meta['cik']}.json",
+            headers=HEADERS,
+            timeout=15,
+        )
+        if r.status_code != 200:
+            return pd.DataFrame()
+
+        data = r.json()
+        us_gaap = data.get("facts", {}).get("us-gaap", {})
+        if not us_gaap:
+            return pd.DataFrame()
+
+    except Exception as e:
+        print(f"    Error fetching XBRL for {meta['ticker']}: {e}")
+        return pd.DataFrame()
+
+    # FIXED: Tracking counters with conditional drop rates
+    stats = {
+        'total_facts': 0,
+        'after_metric_type_validation': 0,
+        'after_fiscal_quarter_filter': 0,
+        'after_filing_date_check': 0,
+        'after_filing_lag_validation': 0,
+        'unique_quarters': 0,
+        'after_quarter_limit': 0
+    }
+
+    # Dictionary to store records by quarter_end date
+    records = {}
+
+    # Process each metric with priority handling
+    for tag, metric, priority in METRICS_WITH_PRIORITY:
+        units = us_gaap.get(tag, {}).get("units", {}).get("USD", [])
+
+        for fact in units:
+            stats['total_facts'] += 1
+
+            # Validate based on metric type
+            if metric in FLOW_METRICS:
+                if not is_valid_flow(fact, meta["fiscal_year_end"]):
+                    continue
+            elif metric in INSTANT_METRICS:
+                if not is_valid_instant(fact, meta["fiscal_year_end"]):
+                    continue
+            else:
+                continue
+
+            stats['after_metric_type_validation'] += 1
+
+            # Get quarter end date and fiscal quarter
+            end = pd.to_datetime(fact["end"])
+            fy, fq = fiscal_quarter_and_year(end, meta["fiscal_year_end"])
+
+            # Skip if not a valid fiscal quarter (Q1-Q3 only, Q4 already excluded in validation)
+            if fq is None or fq == "Q4":
+                continue
+
+            stats['after_fiscal_quarter_filter'] += 1
+
+            # Check filing date
+            filing_date = pd.to_datetime(fact.get("filed"), errors="coerce")
+            if pd.isna(filing_date):
+                continue
+
+            stats['after_filing_date_check'] += 1
+
+            # FIXED: Validate filing lag (180 days to capture historical and amended filings)
+            if (filing_date - end).days > MAX_FILING_LAG_DAYS:
+                continue
+
+            stats['after_filing_lag_validation'] += 1
+
+            # Create or update record for this quarter
+            if end not in records:
+                records[end] = {
+                    "ticker": meta["ticker"],
+                    "company_name": meta["company_name"],
+                    "quarter_end": end,
+                    "filing_date": filing_date,
+                    "fiscal_year": fy,
+                    "fiscal_quarter": fq
+                }
+            else:
+                # DO NOT allow later filings to overwrite earlier ones
+                if filing_date > records[end]['filing_date']:
+                    continue
+
+            # Only set metric if not already set OR if this has higher priority
+            rec = records[end]
+            if metric not in rec or priority < rec.get(f"{metric}__priority", 999):
+                rec[metric] = fact["val"]
+                rec[f"{metric}__priority"] = priority
+
+    stats['unique_quarters'] = len(records)
+
+    df = pd.DataFrame(list(records.values()))
+
+    # Remove priority tracking columns (used internally only)
+    priority_cols = [col for col in df.columns if col.endswith("__priority")]
+    if priority_cols:
+        df = df.drop(columns=priority_cols)
+
+    # Limit to most recent N quarters
+    if not df.empty and len(df) > NUM_QUARTERS_TO_EXTRACT:
+        df = df.sort_values('quarter_end', ascending=False).head(NUM_QUARTERS_TO_EXTRACT)
+        df = df.sort_values('quarter_end')  # Restore chronological order
+
+    stats['after_quarter_limit'] = len(df)
+
+    # FIXED: Print conditional drop rates instead of cumulative percentages
+    print(f"    Data cleaning pipeline:")
+    print(f"      1. Total XBRL facts: {stats['total_facts']:,}")
+
+    # Stage 2: Metric type validation
+    if stats['total_facts'] > 0:
+        drop_rate = (stats['total_facts'] - stats['after_metric_type_validation']) / stats['total_facts'] * 100
+        print(f"      2. After metric type validation (flow/instant): {stats['after_metric_type_validation']:,} (dropped {drop_rate:.1f}%)")
+
+    # Stage 3: Fiscal quarter filter
+    if stats['after_metric_type_validation'] > 0:
+        drop_rate = (stats['after_metric_type_validation'] - stats['after_fiscal_quarter_filter']) / stats['after_metric_type_validation'] * 100
+        print(f"      3. After fiscal quarter filter (Q1-Q3 only): {stats['after_fiscal_quarter_filter']:,} (dropped {drop_rate:.1f}%)")
+
+    # Stage 4: Filing date check
+    if stats['after_fiscal_quarter_filter'] > 0:
+        drop_rate = (stats['after_fiscal_quarter_filter'] - stats['after_filing_date_check']) / stats['after_fiscal_quarter_filter'] * 100
+        print(f"      4. After filing date check (valid date): {stats['after_filing_date_check']:,} (dropped {drop_rate:.1f}%)")
+
+    # Stage 5: Filing lag validation
+    if stats['after_filing_date_check'] > 0:
+        drop_rate = (stats['after_filing_date_check'] - stats['after_filing_lag_validation']) / stats['after_filing_date_check'] * 100
+        print(f"      5. After filing lag validation (≤{MAX_FILING_LAG_DAYS} days): {stats['after_filing_lag_validation']:,} (dropped {drop_rate:.1f}%)")
+
+    print(f"      6. Unique quarters created: {stats['unique_quarters']}")
+    print(f"      7. After limiting to {NUM_QUARTERS_TO_EXTRACT} most recent: {stats['after_quarter_limit']}")
+
+    return df
+
+# =============================================================================
+# STEP 8: Process All Companies
+# =============================================================================
+
+all_quarters = []
+extraction_stats = []
+
+print("Extracting quarterly financial data...")
+print("="*80)
+
+for ticker, meta in sorted(target_companies.items()):
+    print(f"\nProcessing {ticker} ({meta['company_name']})...")
+
+    df = extract_quarters(meta)
+
+    if df.empty:
+        print(f"  ⚠️ No quarterly data found")
+        extraction_stats.append({
+            'ticker': ticker,
+            'quarters_found': 0,
+            'status': 'NO_DATA'
+        })
+    elif len(df) < MIN_VALID_QUARTERS:
+        print(f"  ⚠️ Insufficient data: {len(df)} quarters (min {MIN_VALID_QUARTERS} required)")
+        extraction_stats.append({
+            'ticker': ticker,
+            'quarters_found': len(df),
+            'status': 'INSUFFICIENT'
+        })
+    else:
+        all_quarters.append(df)
+        print(f"  ✓ Extracted {len(df)} quarters")
+        extraction_stats.append({
+            'ticker': ticker,
+            'quarters_found': len(df),
+            'status': 'SUCCESS'
+        })
+
+    time.sleep(REQUEST_SLEEP)
+
+print("\n" + "="*80)
+
+# Combine all data
+if len(all_quarters) == 0:
+    df_all = pd.DataFrame()
+    print("⚠️ WARNING: No companies passed extraction!")
+else:
+    df_all = pd.concat(all_quarters, ignore_index=True)
+    print(f"✓ EXTRACTION COMPLETE")
+    print(f"  Total firm-quarters: {len(df_all)}")
+    print(f"  Companies with data: {df_all['ticker'].nunique()}/{len(target_companies)}")
+    print(f"  Date range: {df_all['quarter_end'].min()} to {df_all['quarter_end'].max()}")
+
+# Show extraction summary
+df_stats = pd.DataFrame(extraction_stats)
+print(f"\nExtraction summary:")
+print(df_stats['status'].value_counts())
+
+if len(df_stats[df_stats['status'] != 'SUCCESS']) > 0:
+    print(f"\nCompanies with issues:")
+    for _, row in df_stats[df_stats['status'] != 'SUCCESS'].iterrows():
+        print(f"  {row['ticker']}: {row['status']} ({row['quarters_found']} quarters)")
+
+print("="*80)
+
+# =============================================================================
+# STEP 9: Check Data Quality
+# =============================================================================
+
+if not df_all.empty:
+    print("DATA QUALITY CHECK")
+    print("="*80)
+
+    # Core metrics completeness
+    core_metrics = ['total_assets', 'total_liabilities', 'net_income']
+
+    print("\nMissing values by metric:")
+    for metric in core_metrics:
+        if metric in df_all.columns:
+            missing = df_all[metric].isna().sum()
+            pct = missing / len(df_all) * 100
+            print(f"  {metric}: {missing}/{len(df_all)} ({pct:.1f}% missing)")
+        else:
+            print(f"  {metric}: Column not found!")
+
+    # Missing by company
+    print("\nMissing values by company (core metrics):")
+    for ticker in sorted(df_all['ticker'].unique()):
+        ticker_data = df_all[df_all['ticker'] == ticker]
+        missing_counts = []
+        for metric in core_metrics:
+            if metric in df_all.columns:
+                missing_counts.append(ticker_data[metric].isna().sum())
+        print(f"  {ticker}: {sum(missing_counts)} total missing values across {len(ticker_data)} quarters")
+
+    # Show sample of data
+    print("\nSample data (first 5 rows):")
+    display_cols = ['ticker', 'quarter_end', 'fiscal_quarter', 'filing_date',
+                    'total_assets', 'total_liabilities', 'net_income']
+    display_cols = [c for c in display_cols if c in df_all.columns]
+    print(df_all[display_cols].head())
+
+    print("="*80)
+else:
+    print("⚠️ No data to analyze - extraction failed for all companies")
+
+# =============================================================================
+# STEP 10: Save Raw Extraction
+# =============================================================================
+
+if not df_all.empty:
+    output_path = DATA_DIR / 'quarterly_financials.csv'
+    df_all.to_csv(output_path, index=False)
+    print(f"✓ Raw data saved to: {output_path}")
+else:
+    print("⚠️ No data to save")
+
+# =============================================================================
+# STEP 11: Compute Missing Metrics from Components
+# =============================================================================
+
+if not df_all.empty:
+    # Track missing values before computation
+    missing_before_assets = df_all['total_assets'].isna().sum()
+    missing_before_liab = df_all['total_liabilities'].isna().sum()
+
+    # Initialize tag columns
+    if 'total_assets__tag' not in df_all.columns:
+        df_all['total_assets__tag'] = None
+    if 'total_liabilities__tag' not in df_all.columns:
+        df_all['total_liabilities__tag'] = None
+
+    # =================================================================
+    # COMPUTE MISSING TOTAL ASSETS
+    # =================================================================
+
+    # Strategy 1: AssetsCurrent + AssetsNoncurrent
+    if all(col in df_all.columns for col in ['assets_current', 'assets_noncurrent']):
+        mask = (
+            df_all['total_assets'].isna() &
+            df_all['assets_current'].notna() &
+            df_all['assets_noncurrent'].notna()
+        )
+        df_all.loc[mask, 'total_assets'] = (
+            df_all.loc[mask, 'assets_current'] +
+            df_all.loc[mask, 'assets_noncurrent']
+        )
+        df_all.loc[mask, 'total_assets__tag'] = 'COMPUTED: AssetsCurrent + AssetsNoncurrent'
+
+    # =================================================================
+    # COMPUTE MISSING TOTAL LIABILITIES
+    # =================================================================
+
+    # Strategy 1: LiabilitiesCurrent + LiabilitiesNoncurrent
+    if all(col in df_all.columns for col in ['liabilities_current', 'liabilities_noncurrent']):
+        mask = (
+            df_all['total_liabilities'].isna() &
+            df_all['liabilities_current'].notna() &
+            df_all['liabilities_noncurrent'].notna()
+        )
+        df_all.loc[mask, 'total_liabilities'] = (
+            df_all.loc[mask, 'liabilities_current'] +
+            df_all.loc[mask, 'liabilities_noncurrent']
+        )
+        df_all.loc[mask, 'total_liabilities__tag'] = 'COMPUTED: LiabilitiesCurrent + LiabilitiesNoncurrent'
+
+    # Strategy 2: Assets - Equity
+    if all(col in df_all.columns for col in ['total_assets', 'stockholders_equity']):
+        mask = (
+            df_all['total_liabilities'].isna() &
+            df_all['total_assets'].notna() &
+            df_all['stockholders_equity'].notna()
+        )
+        df_all.loc[mask, 'total_liabilities'] = (
+            df_all.loc[mask, 'total_assets'] -
+            df_all.loc[mask, 'stockholders_equity']
+        )
+        df_all.loc[mask, 'total_liabilities__tag'] = 'COMPUTED: Assets - Equity'
+
+    # =================================================================
+    # SUMMARY
+    # =================================================================
+
+    missing_after_assets = df_all['total_assets'].isna().sum()
+    missing_after_liab = df_all['total_liabilities'].isna().sum()
+
+    computed_assets = missing_before_assets - missing_after_assets
+    computed_liab = missing_before_liab - missing_after_liab
+
+    print("METRIC COMPUTATION SUMMARY")
+    print("="*80)
+    print(f"total_assets:")
+    print(f"  Before: {missing_before_assets} missing")
+    print(f"  Computed: {computed_assets}")
+    print(f"  After: {missing_after_assets} missing")
+    print(f"\ntotal_liabilities:")
+    print(f"  Before: {missing_before_liab} missing")
+    print(f"  Computed: {computed_liab}")
+    print(f"  After: {missing_after_liab} missing")
+    print(f"\nnet_income:")
+    print(f"  No computation (keep as-is to avoid measurement error)")
+    print(f"  Missing: {df_all['net_income'].isna().sum()}/{len(df_all)}")
+    print("="*80)
+else:
+    print("⚠️ No data to process")
+
+# =============================================================================
+# STEP 12: Time-Series Imputation
+# =============================================================================
+
+# Sort by company and date for proper time-series operations
+if not df_all.empty:
+    df_all = df_all.sort_values(['ticker', 'quarter_end']).reset_index(drop=True)
+
+    # Balance sheet metrics to impute
+    balance_sheet_metrics = ['total_assets', 'total_liabilities']
+
+    # Apply forward-fill then backward-fill (limit=1 means at most 1 quarter)
+    for metric in balance_sheet_metrics:
+        if metric in df_all.columns:
+            before = df_all[metric].isna().sum()
+            df_all[metric] = df_all.groupby('ticker')[metric].ffill(limit=1)
+            df_all[metric] = df_all.groupby('ticker')[metric].bfill(limit=1)
+            after = df_all[metric].isna().sum()
+            filled = before - after
+            print(f"✓ {metric}: filled {filled} values (±1 quarter)")
+else:
+    print("⚠️ No data to impute")
+
+# =============================================================================
+# STEP 12.5: Time-window filtering (no external UCDP coverage filter applied)
+# =============================================================================
+
+if not df_all.empty:
+    # Previously this step filtered to match external UCDP coverage limits.
+    # UCDP integration has been removed as part of cleanup; keep all available quarters.
+    print(f"✓ No external coverage filter applied; keeping all quarters ({len(df_all)} rows)")
+
+# =============================================================================
+# STEP 13: Calculate Stock Returns
+# =============================================================================
+
+import yfinance as yf
+
+if not df_all.empty:
+    # Configuration
+    RETURN_WINDOW_DAYS = 63  # FIXED: ~63 trading days ≈ 1 calendar quarter (not 3 quarters)
+    POST_FILING_LAG = 2
+    MIN_TRADING_DAYS = 40
+    MIN_FIRM_COVERAGE = 0.6
+
+    results = []
+    firm_stats = []
+
+    min_date = pd.to_datetime(df_all['quarter_end'].min())
+    max_date = pd.to_datetime(df_all['quarter_end'].max())
+
+    print("Calculating stock returns...")
+    print("="*80)
+
+    for ticker in sorted(df_all['ticker'].unique()):
+        print(f"Processing {ticker}...", end=" ")
+
+        # Download stock data
+        stock = yf.download(
+            ticker,
+            start=min_date,
+            end=max_date + pd.Timedelta(days=180),
+            progress=False,
+            auto_adjust=True
+        )
+
+        if stock.empty or 'Close' not in stock.columns:
+            print("No price data")
+            continue
+
+        stock = stock[['Close']].dropna()
+        firm_quarters = df_all[df_all['ticker'] == ticker]
+        usable = 0
+
+        for _, row in firm_quarters.iterrows():
+            filing_date = pd.to_datetime(row['filing_date'], errors='coerce')
+            if pd.isna(filing_date):
+                continue
+
+            start_date = filing_date + pd.Timedelta(days=POST_FILING_LAG)
+            end_date = start_date + pd.Timedelta(days=RETURN_WINDOW_DAYS)
+
+            window = stock.loc[start_date:end_date]
+            if len(window) < MIN_TRADING_DAYS:
+                continue
+
+            log_return = float(np.log(window.iloc[-1]['Close'] / window.iloc[0]['Close']))
+            usable += 1
+
+            results.append({
+                'ticker': ticker,
+                'quarter_end': row['quarter_end'],
+                'return_next_q': log_return
+            })
+
+        firm_stats.append({
+            'ticker': ticker,
+            'quarters_total': len(firm_quarters),
+            'quarters_with_returns': usable,
+            'coverage_ratio': usable / len(firm_quarters) if len(firm_quarters) > 0 else 0,
+        })
+
+        print(f"{usable}/{len(firm_quarters)} quarters")
+
+    df_stock = pd.DataFrame(results)
+    df_coverage = pd.DataFrame(firm_stats)
+
+    if df_stock.empty:
+        print("\n⚠️ No stock returns computed")
+        df_stock = pd.DataFrame(columns=["ticker", "quarter_end", "return_next_q"])
+    else:
+        # Keep only firms with sufficient coverage
+        usable_firms = df_coverage[df_coverage['coverage_ratio'] >= MIN_FIRM_COVERAGE]['ticker']
+        df_stock = df_stock[df_stock['ticker'].isin(usable_firms)]
+
+        print("\n" + "="*80)
+        print(f"✓ Returns calculated")
+        print(f"  Firms with returns: {df_stock['ticker'].nunique()}")
+        print(f"  Total observations: {len(df_stock)}")
+        print(f"  Coverage threshold: {MIN_FIRM_COVERAGE*100:.0f}%")
+        print("="*80)
+else:
+    print("⚠️ No financial data - skipping returns")
+    df_stock = pd.DataFrame(columns=["ticker", "quarter_end", "return_next_q"])
+
+# =============================================================================
+# STEP 14: Merge Stock Returns with Financial Data
+# =============================================================================
+
+if not df_all.empty and not df_stock.empty:
+    df_panel = df_all.merge(
+        df_stock[['ticker', 'quarter_end', 'return_next_q']],
+        on=['ticker', 'quarter_end'],
+        how='left'
+    )
+    print(f"✓ Merged stock returns")
+    print(f"  Panel: {len(df_panel)} rows")
+    print(f"  Rows with returns: {df_panel['return_next_q'].notna().sum()}")
+elif not df_all.empty:
+    df_panel = df_all.copy()
+    df_panel['return_next_q'] = np.nan
+    print("⚠️ No stock returns to merge")
+else:
+    df_panel = pd.DataFrame()
+    print("⚠️ No data to merge")
+
+# =============================================================================
+# STEP 15: Conflict data columns (UCDP integration removed)
+# =============================================================================
+
+if not df_panel.empty:
+    # UCDP integration removed. Add NaN placeholder columns so downstream code can run.
+    df_panel['num_events'] = np.nan
+    df_panel['num_active_conflicts'] = np.nan
+    df_panel['num_fatalities'] = np.nan
+    print("✓ UCDP integration removed; conflict columns added as NaN placeholders")
+else:
+    print("⚠️ No panel data to populate conflict columns")
+
+# =============================================================================
+# STEP 16.5: Calculate Financial Metrics
+# =============================================================================
+
+if not df_panel.empty:
+    df_panel = df_panel.sort_values(['ticker', 'quarter_end']).reset_index(drop=True)
+
+    # =================================================================
+    # 1) FIRM SIZE: Log of Total Assets
+    # =================================================================
+    df_panel['log_total_assets'] = np.where(
+    df_panel['total_assets'] > 0,
+    np.log(df_panel['total_assets']),
+    np.nan
+    )
+
+    # =================================================================
+    # 2) CAPITAL STRUCTURE / RISK: Leverage Ratio
+    # =================================================================
+    # Avoid division by zero
+    df_panel['leverage'] = np.where(
+        df_panel['total_assets'] > 0,
+        df_panel['total_liabilities'] / df_panel['total_assets'],
+        np.nan
+    )
+
+    # =================================================================
+    # 3) PROFITABILITY: Return on Assets (ROA)
+    # =================================================================
+    # Avoid division by zero
+    df_panel['roa'] = np.where(
+        df_panel['total_assets'] > 0,
+        df_panel['net_income'] / df_panel['total_assets'],
+        np.nan
+    )
+
+    # =================================================================
+    # 4) INVESTMENT DYNAMICS: Asset Growth Rate (lagged)
+    # =================================================================
+    # Calculate lagged total assets (within each firm)
+    df_panel['total_assets_lag'] = df_panel.groupby('ticker')['total_assets'].shift(1)
+
+    # Calculate asset growth: (Assets_t - Assets_t-1) / Assets_t-1
+    df_panel['asset_growth'] = np.where(
+        df_panel['total_assets_lag'] > 0,
+        (df_panel['total_assets'] - df_panel['total_assets_lag']) / df_panel['total_assets_lag'],
+        np.nan,
+    )
+
+    # Drop temporary lagged column (not needed in final dataset)
+    df_panel = df_panel.drop(columns=['total_assets_lag'])
+
+    # =================================================================
+    # SUMMARY OF NEW METRICS
+    # =================================================================
+    print("="*80)
+    print("CALCULATED FINANCIAL METRICS")
+    print("="*80)
+
+    metrics_summary = {
+        'log_total_assets': (
+            f"{df_panel['log_total_assets'].notna().sum()}/{len(df_panel)} "
+            f"({df_panel['log_total_assets'].notna().mean()*100:.1f}%)"
+        ),
+        'leverage': (
+            f"{df_panel['leverage'].notna().sum()}/{len(df_panel)} "
+            f"({df_panel['leverage'].notna().mean()*100:.1f}%)"
+        ),
+        'roa': (
+            f"{df_panel['roa'].notna().sum()}/{len(df_panel)} "
+            f"({df_panel['roa'].notna().mean()*100:.1f}%)"
+        ),
+        'asset_growth': (
+            f"{df_panel['asset_growth'].notna().sum()}/{len(df_panel)} "
+            f"({df_panel['asset_growth'].notna().mean()*100:.1f}%)"
+        )
+    }
+
+    for metric, coverage in metrics_summary.items():
+        print(f"  {metric}: {coverage}")
+
+    print("\nDescriptive Statistics:")
+    print(df_panel[['log_total_assets', 'leverage', 'roa', 'asset_growth']].describe())
+    print("="*80)
+else:
+    print("⚠️ No panel data to process metrics")
+
+# =============================================================================
+# FINAL: Save Final Panel Data
+# =============================================================================
+
+if not df_panel.empty:
+    # Select essential columns for final dataset
+    essential_cols = [
+        'ticker', 'company_name', 'quarter_end', 'filing_date',
+        'fiscal_year', 'fiscal_quarter',
+        'net_income', 'total_assets', 'total_liabilities',
+        'return_next_q',
+        'num_events', 'num_active_conflicts', 'num_fatalities',
+        'log_total_assets', 'leverage', 'roa', 'asset_growth'
+    ]
+
+    # Keep only columns that exist
+    final_cols = [col for col in essential_cols if col in df_panel.columns]
+    df_final = df_panel[final_cols].copy()
+
+    # Save to CSV
+    output_path = DATA_DIR / 'panel_data_with_returns.csv'
+    df_final.to_csv(output_path, index=False)
+
+    print("="*80)
+    print("FINAL PANEL DATASET")
+    print("="*80)
+    print(f"✓ Saved to: {output_path}")
+    print(f"\nDimensions:")
+    print(f"  Companies: {df_final['ticker'].nunique()}")
+    print(f"  Quarters: {len(df_final)}")
+    print(f"  Date range: {df_final['quarter_end'].min()} to {df_final['quarter_end'].max()}")
+
+    print(f"\nKey variables:")
+    print(f"  Dependent: return_next_q (90-day forward return from filing date)")
+    print(f"  Financial: net_income, total_assets, total_liabilities")
+    print(f"  Computed: log_total_assets, leverage, roa, asset_growth")
+    if 'num_events' in df_final.columns:
+        print(f"  Conflict: num_events, num_active_conflicts, num_fatalities")
+
+    print(f"\nData completeness:")
+    print(f"  filing_date: {df_final['filing_date'].notna().sum()}/{len(df_final)} ({df_final['filing_date'].notna().mean()*100:.1f}%)")
+    print(f"  net_income: {df_final['net_income'].notna().sum()}/{len(df_final)} ({df_final['net_income'].notna().mean()*100:.1f}%)")
+    print(f"  total_assets: {df_final['total_assets'].notna().sum()}/{len(df_final)} ({df_final['total_assets'].notna().mean()*100:.1f}%)")
+    print(f"  total_liabilities: {df_final['total_liabilities'].notna().sum()}/{len(df_final)} ({df_final['total_liabilities'].notna().mean()*100:.1f}%)")
+    if 'return_next_q' in df_final.columns:
+        print(f"  return_next_q: {df_final['return_next_q'].notna().sum()}/{len(df_final)} ({df_final['return_next_q'].notna().mean()*100:.1f}%)")
+    print(f"  log_total_assets: {df_final['log_total_assets'].notna().sum()}/{len(df_final)} ({df_final['log_total_assets'].notna().mean()*100:.1f}%)")
+    print(f"  leverage: {df_final['leverage'].notna().sum()}/{len(df_final)} ({df_final['leverage'].notna().mean()*100:.1f}%)")
+    print(f"  roa: {df_final['roa'].notna().sum()}/{len(df_final)} ({df_final['roa'].notna().mean()*100:.1f}%)")
+    print(f"  asset_growth: {df_final['asset_growth'].notna().sum()}/{len(df_final)} ({df_final['asset_growth'].notna().mean()*100:.1f}%)")
+
+    print("="*80)
+
+    # Display sample
+    print("\nSample data (first 10 rows):")
+    display_cols = ['ticker', 'quarter_end', 'fiscal_quarter', 'log_total_assets', 'leverage', 'roa', 'return_next_q']
+    display_cols = [c for c in display_cols if c in df_final.columns]
+    print(df_final[display_cols].head(10))
+else:
+    print("⚠️ No panel data to save")

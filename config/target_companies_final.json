@@ -1,0 +1,203 @@
+{
+  "companies": [
+    {
+      "ticker": "LMT",
+      "cik": "0000936468",
+      "name": "LOCKHEED MARTIN CORP",
+      "sector": null,
+      "subsector": null,
+      "exchanges": [
+        "NYSE"
+      ],
+      "fiscal_year_end": 12
+    },
+    {
+      "ticker": "RTX",
+      "cik": "0000101829",
+      "name": "RTX Corp",
+      "sector": null,
+      "subsector": null,
+      "exchanges": [
+        "NYSE"
+      ],
+      "fiscal_year_end": 12
+    },
+    {
+      "ticker": "NOC",
+      "cik": "0001133421",
+      "name": "NORTHROP GRUMMAN CORP /DE/",
+      "sector": null,
+      "subsector": null,
+      "exchanges": [
+        "NYSE"
+      ],
+      "fiscal_year_end": 12
+    },
+    {
+      "ticker": "GD",
+      "cik": "0000040533",
+      "name": "GENERAL DYNAMICS CORP",
+      "sector": null,
+      "subsector": null,
+      "exchanges": [
+        "NYSE"
+      ],
+      "fiscal_year_end": 12
+    },
+    {
+      "ticker": "LHX",
+      "cik": "0000202058",
+      "name": "L3HARRIS TECHNOLOGIES, INC. /DE/",
+      "sector": null,
+      "subsector": null,
+      "exchanges": [
+        "NYSE"
+      ],
+      "fiscal_year_end": 1
+    },
+    {
+      "ticker": "BAH",
+      "cik": "0001443646",
+      "name": "Booz Allen Hamilton Holding Corp",
+      "sector": null,
+      "subsector": null,
+      "exchanges": [
+        "NYSE"
+      ],
+      "fiscal_year_end": 3
+    },
+    {
+      "ticker": "HII",
+      "cik": "0001501585",
+      "name": "HUNTINGTON INGALLS INDUSTRIES, INC.",
+      "sector": null,
+      "subsector": null,
+      "exchanges": [
+        "NYSE"
+      ],
+      "fiscal_year_end": 12
+    },
+    {
+      "ticker": "LDOS",
+      "cik": "0001336920",
+      "name": "Leidos Holdings, Inc.",
+      "sector": null,
+      "subsector": null,
+      "exchanges": [
+        "NYSE"
+      ],
+      "fiscal_year_end": 1
+    },
+    {
+      "ticker": "CACI",
+      "cik": "0000016058",
+      "name": "CACI INTERNATIONAL INC /DE/",
+      "sector": null,
+      "subsector": null,
+      "exchanges": [
+        "NYSE"
+      ],
+      "fiscal_year_end": 6
+    },
+    {
+      "ticker": "PSN",
+      "cik": "0000275880",
+      "name": "PARSONS CORP",
+      "sector": null,
+      "subsector": null,
+      "exchanges": [
+        "NYSE"
+      ],
+      "fiscal_year_end": 12
+    },
+    {
+      "ticker": "XOM",
+      "cik": "0000034088",
+      "name": "EXXON MOBIL CORP",
+      "sector": null,
+      "subsector": null,
+      "exchanges": [
+        "NYSE"
+      ],
+      "fiscal_year_end": 12
+    },
+    {
+      "ticker": "CVX",
+      "cik": "0000093410",
+      "name": "CHEVRON CORP",
+      "sector": null,
+      "subsector": null,
+      "exchanges": [
+        "NYSE"
+      ],
+      "fiscal_year_end": 12
+    },
+    {
+      "ticker": "HAL",
+      "cik": "0000045012",
+      "name": "HALLIBURTON CO",
+      "sector": null,
+      "subsector": null,
+      "exchanges": [
+        "NYSE"
+      ],
+      "fiscal_year_end": 12
+    },
+    {
+      "ticker": "OXY",
+      "cik": "0000797468",
+      "name": "OCCIDENTAL PETROLEUM CORP /DE/",
+      "sector": null,
+      "subsector": null,
+      "exchanges": [
+        "NYSE",
+        "NYSE"
+      ],
+      "fiscal_year_end": 12
+    },
+    {
+      "ticker": "PANW",
+      "cik": "0001327567",
+      "name": "Palo Alto Networks Inc",
+      "sector": null,
+      "subsector": null,
+      "exchanges": [
+        "Nasdaq"
+      ],
+      "fiscal_year_end": 7
+    },
+    {
+      "ticker": "HON",
+      "cik": "0000773840",
+      "name": "HONEYWELL INTERNATIONAL INC",
+      "sector": null,
+      "subsector": null,
+      "exchanges": [
+        "Nasdaq"
+      ],
+      "fiscal_year_end": 12
+    },
+    {
+      "ticker": "TDG",
+      "cik": "0001260221",
+      "name": "TransDigm Group INC",
+      "sector": null,
+      "subsector": null,
+      "exchanges": [
+        "NYSE"
+      ],
+      "fiscal_year_end": 9
+    },
+    {
+      "ticker": "AAPI",
+      "cik": "0001134982",
+      "name": "Apple iSports Group, Inc.",
+      "sector": null,
+      "subsector": null,
+      "exchanges": [
+        "OTC"
+      ],
+      "fiscal_year_end": 12
+    }
+  ]
+}
