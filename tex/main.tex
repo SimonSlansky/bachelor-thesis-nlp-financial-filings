@@ -1,0 +1,97 @@
+% =============================================================================
+% Bachelor Thesis — Main Document
+% Topic: Incremental Information Content of Textual Disclosures
+%        in Corporate Filings: Evidence from U.S. Defense & Energy Firms
+% =============================================================================
+\documentclass[12pt, a4paper, oneside]{report}
+
+% --- Encoding & Language ---
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+
+% --- Typography ---
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{setspace}
+\onehalfspacing
+
+% --- Page Layout ---
+\usepackage[
+  left=3.5cm,
+  right=2.5cm,
+  top=2.5cm,
+  bottom=2.5cm
+]{geometry}
+
+% --- Math ---
+\usepackage{amsmath, amssymb, amsthm}
+
+% --- Tables & Figures ---
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{longtable}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{subcaption}
+\graphicspath{{../output/figures/}}
+
+% --- References & Citations ---
+\usepackage[
+  backend=biber,
+  style=authoryear,
+  sorting=nyt,
+  natbib=true,
+  maxcitenames=2,
+  maxbibnames=99,
+  uniquelist=false
+]{biblatex}
+\addbibresource{bibliography.bib}
+
+% --- Hyperlinks ---
+\usepackage[hidelinks]{hyperref}
+\usepackage[nameinlink, capitalise]{cleveref}
+
+% --- Code Listings (optional) ---
+\usepackage{listings}
+\lstset{
+  basicstyle=\ttfamily\small,
+  breaklines=true,
+  frame=single,
+  language=Python
+}
+
+% --- Custom Commands ---
+\newcommand{\ie}{i.e.,\ }
+\newcommand{\eg}{e.g.,\ }
+\newcommand{\cf}{cf.\ }
+
+% =============================================================================
+\begin{document}
+
+% --- Front Matter ---
+\input{frontmatter/titlepage}
+\input{frontmatter/declaration}
+\input{frontmatter/abstract}
+\input{frontmatter/acknowledgments}
+
+\tableofcontents
+\listoftables
+\listoffigures
+
+% --- Main Chapters ---
+\input{chapters/01_introduction}
+\input{chapters/02_literature_review}
+\input{chapters/03_data}
+\input{chapters/04_methodology}
+\input{chapters/05_results}
+\input{chapters/06_robustness}
+\input{chapters/07_conclusion}
+
+% --- Back Matter ---
+\printbibliography[heading=bibintoc]
+
+\appendix
+\input{backmatter/appendix}
+
+\end{document}

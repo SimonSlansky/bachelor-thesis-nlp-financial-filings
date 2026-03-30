@@ -1,0 +1,40 @@
+% =============================================================================
+\chapter{Data}
+\label{ch:data}
+% =============================================================================
+
+% TODO: Structure
+%
+% \section{Sample Selection}
+% - Universe: U.S.-listed defense & energy firms
+% - Criteria: SEC EDGAR XBRL availability, trading history
+% - Final sample: 17--18 tickers (Table~\ref{tab:sample})
+%
+% \section{Data Sources}
+% \subsection{SEC EDGAR}
+% - XBRL API for financial statements (10-K, 10-Q)
+% - Full-text filings for textual analysis (MD\&A, Risk Factors)
+%
+% \subsection{Stock Market Data}
+% - Source: yfinance
+% - Return windows: 365-day (annual), 63-day (quarterly)
+% - Log returns, trading-day filters
+%
+% \section{Financial Variables}
+% - Total assets, liabilities, net income (raw)
+% - Derived: log\_total\_assets, leverage, ROA, asset\_growth
+% - Winsorization at 1\%/99\%
+%
+% \section{Textual Variables}
+% - Sentiment (Loughran--McDonald dictionary)
+% - Risk-related language frequency
+% - Textual change over time ($\Delta$text, cosine similarity)
+%
+% \section{Panel Data Construction}
+% - Annual panel: $\sim$250 firm-years
+% - Quarterly panel: $\sim$1\,200 firm-quarters (Q1--Q3)
+% - Unbalanced panel, fiscal year-end alignment
+%
+% \section{Descriptive Statistics}
+% - Summary statistics (Table~\ref{tab:desc_stats})
+% - Correlation matrix (Table~\ref{tab:correlations})
