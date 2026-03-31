@@ -7,25 +7,38 @@
 %
 % \section{Textual Analysis in Finance}
 % - Rise of NLP in accounting/finance research
-% - Bag-of-words vs. contextual approaches
+% - Bag-of-words vs. contextual embeddings
+% - Why corporate filings are a natural laboratory (standardised, mandatory)
 %
 % \section{Sentiment and Tone in Corporate Filings}
 % - Loughran & McDonald (2011): domain-specific dictionaries vs. Harvard GI
-% - Tone as predictor of returns, earnings, volatility
+% - Tone as predictor of returns, earnings, *volatility*
+% - Limitations: tone alone ignores the financial context
 %
-% \section{Forward-Looking Statements}
+% \section{Forward-Looking Statements and Narrative Changes}
 % - Li (2010): information content of FLS, Naive Bayes classification
-% - Market reaction to managerial outlook
+% - Year-over-year textual change as incremental signal
+% - Cosine similarity approaches to measuring disclosure evolution
 %
-% \section{Risk Factor Disclosures}
-% - Lyle, Riedl & Siano (2023): changes in Item 1A and variance risk premium
-% - Individual risk factors vs. aggregate word counts
+% \section{Risk Factor Disclosures and Volatility}
+% - Lyle, Riedl & Siano (2023): changes in Item 1A → variance risk premium
+% - Campbell et al. (2014): risk-factor informativeness for firm risk
+% - Link between risk disclosure and realised/implied volatility
 %
-% \section{Financial Determinants of Stock Returns}
-% - Classic cross-sectional predictors: size, leverage, profitability, growth
-% - Panel data approaches in corporate finance
+% \section{Information Processing Costs and Limited Attention}
+% - Hirshleifer & Teoh (2003): limited investor attention
+% - Blankespoor, deHaan & Marinovic (2020): disclosure processing costs
+% - When narratives are complex/contradictory → investor disagreement → vol
+%
+% \section{Financial Determinants of Volatility}
+% - Firm size, leverage, profitability as volatility predictors
+% - Volatility persistence (GARCH-type logic) → lagged vol as control
+% - Accruals quality and information risk (Francis et al. 2005)
 %
 % \section{Hypotheses}
-% - H1: Textual features (sentiment, risk language, text changes) predict returns
-%        after controlling for financial fundamentals.
-% - H2: Extended model (finance + text) outperforms baseline (finance only).
+% - H1: Textual change (ΔSentiment, ΔRisk) predicts future volatility
+%        after controlling for lagged volatility and financial variables.
+% - H2: Textual-financial divergence predicts future volatility beyond
+%        both text and financials alone.
+% - H3: The divergence-volatility effect is stronger for firms with
+%        high accruals (low earnings quality).

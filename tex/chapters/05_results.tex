@@ -5,19 +5,29 @@
 
 % TODO: Structure
 %
-% \section{Baseline Regression Results}
-% - Table with coefficients for financial-only model
-% - Interpretation of size, leverage, ROA, asset growth effects
+% \section{Baseline Results (Financial Controls + Lagged Volatility)}
+% - Table with coefficients: lagged vol, size, leverage, ROA, asset growth
+% - Interpretation: vol persistence, size-vol relation, leverage-vol relation
+% - Benchmark $R^2$
 %
-% \section{Extended Regression Results}
-% - Table with coefficients for finance + text model
-% - Significance and sign of textual variables
+% \section{Text Model Results (H1)}
+% - Coefficients for $\Delta$Sentiment, $\Delta$Risk, TextSim
+% - Incremental $R^2$ over baseline
+% - Expected: $\Delta$Risk positive, $\Delta$Sentiment negative, TextSim negative?
 %
-% \section{Incremental Information Content}
-% - Comparison of adjusted $R^2$: baseline vs. extended
-% - F-test for joint significance of textual regressors
-% - Economic magnitude of textual effects
+% \section{Divergence Model Results (H2)}
+% - Coefficient for Divergence (the key result)
+% - Expected: positive — narrative-financial mismatch → higher future vol
+% - Incremental $R^2$ over the text model
+% - F-test for divergence significance
 %
-% \section{Annual vs. Quarterly Analysis}
-% - Comparison of results across frequencies
-% - Differences in information content by filing type (10-K vs. 10-Q)
+% \section{Accruals Interaction (H3)}
+% - Divergence × HighAccrual interaction term
+% - Expected: positive — divergence effect concentrates in low-quality firms
+%
+% \section{Economic Magnitude}
+% - Portfolio sorts by divergence quartile → spread in future volatility
+% - What does a 1-SD increase in divergence imply for annual vol?
+%
+% \section{Annual vs.\ Quarterly Results}
+% - Compare effect sizes across 10-K and 10-Q panels

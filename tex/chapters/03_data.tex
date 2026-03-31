@@ -6,33 +6,47 @@
 % TODO: Structure
 %
 % \section{Sample Selection}
-% - Universe: U.S.-listed defense & energy firms
-% - Criteria: SEC EDGAR XBRL availability, trading history
-% - Final sample: 17--18 tickers (Table~\ref{tab:sample})
+% - Universe: top ~1,000 U.S. companies by market cap from SEC EDGAR
+% - Filters: operating entities only, exclude SIC 6000--6999 (financials)
+% - Final sample: ~600 non-financial firms, 2010--2025
+% - Table~\ref{tab:sample}: industry distribution, FYE month distribution
 %
 % \section{Data Sources}
 % \subsection{SEC EDGAR}
-% - XBRL API for financial statements (10-K, 10-Q)
-% - Full-text filings for textual analysis (MD\&A, Risk Factors)
+% - XBRL Company Facts API for financial statements (10-K, 10-Q)
+% - Full-text filings for textual analysis (Item 7 MD\&A, Item 1A Risk Factors)
 %
 % \subsection{Stock Market Data}
-% - Source: yfinance
+% - Source: yfinance (adjusted close prices)
+% - Volatility: annualised std of daily log returns over post-filing window
 % - Return windows: 365-day (annual), 63-day (quarterly)
-% - Log returns, trading-day filters
 %
 % \section{Financial Variables}
-% - Total assets, liabilities, net income (raw)
-% - Derived: log\_total\_assets, leverage, ROA, asset\_growth
-% - Winsorization at 1\%/99\%
+% - Raw XBRL metrics: total\_assets, net\_income, operating\_income,
+%   operating\_cash\_flow, eps\_diluted, etc.
+% - Derived ratios: log\_total\_assets, leverage, ROA, asset\_growth,
+%   current\_ratio, accruals, ocf\_to\_assets, operating\_roa
+% - Winsorisation at 1\%/99\%
 %
 % \section{Textual Variables}
-% - Sentiment (Loughran--McDonald dictionary)
-% - Risk-related language frequency
-% - Textual change over time ($\Delta$text, cosine similarity)
+% - $\Delta$Sentiment: YoY change in Loughran--McDonald net tone (Item 7)
+% - $\Delta$Risk: YoY change in risk-word frequency (Item 1A)
+% - TextSim: cosine similarity of consecutive filings
+%
+% \section{Divergence Measure Construction}
+% - Financial trajectory: $\Delta$ROA = ROA$_t$ $-$ ROA$_{t-1}$
+% - Narrative trajectory: $\Delta$Sentiment = Sent$_t$ $-$ Sent$_{t-1}$
+% - Continuous: Divergence = $\Delta$Sentiment $-$ $\lambda \cdot \Delta$ROA
+% - Binary: DivDummy = 1 if sign($\Delta$Sentiment) $\neq$ sign($\Delta$ROA)
+%
+% \section{Dependent Variable}
+% - Primary: annualised volatility (std of daily log returns $\times \sqrt{252}$)
+%   over 365-day (annual) and 63-day (quarterly) post-filing windows
+% - Robustness: post-filing log stock return
 %
 % \section{Panel Data Construction}
-% - Annual panel: $\sim$250 firm-years
-% - Quarterly panel: $\sim$1\,200 firm-quarters (Q1--Q3)
+% - Annual panel: ~9,000 firm-years
+% - Quarterly panel: ~27,000 firm-quarters (Q1--Q3)
 % - Unbalanced panel, fiscal year-end alignment
 %
 % \section{Descriptive Statistics}

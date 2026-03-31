@@ -6,19 +6,26 @@
 % TODO: Structure
 %
 % \section{Summary of Findings}
-% - Recap of baseline vs. extended model results
-% - Incremental value of textual information
+% - Baseline: lagged vol + financials explain bulk of future vol
+% - Text model: textual changes provide incremental information (H1)
+% - Divergence model: narrative-financial gap is a distinct volatility
+%   predictor beyond either signal alone (H2)
+% - Accruals interaction: effect concentrates in low-quality firms (H3)
 %
 % \section{Economic Interpretation}
-% - What textual signals capture: managerial outlook, risk awareness
-% - Relation to Bayesian updating / gradual information incorporation
+% - Divergence creates information uncertainty: investors cannot tell
+%   whether to trust the narrative or the numbers
+% - Investor disagreement → higher trading activity → higher realised vol
+% - No market-efficiency assumption required (unlike return prediction)
 %
 % \section{Limitations}
-% - Small cross-section (17--18 firms)
-% - Sector-specific results may not generalize
-% - Simple NLP methods (dictionary-based)
+% - Dictionary-based NLP (does not capture irony, context, negation)
+% - Divergence measure assumes linear relation between tone and ROA change
+% - No causal identification — could reflect omitted firm characteristics
+% - U.S. large-cap bias: results may not extend to small caps or non-U.S.
 %
 % \section{Suggestions for Future Research}
-% - Larger cross-section, other sectors
-% - Contextual embeddings (BERT, FinBERT)
-% - Event-driven analysis (geopolitical shocks)
+% - Contextual embeddings (FinBERT) for more nuanced sentiment
+% - Implied volatility (option-based) as alternative DV
+% - Real-time 8-K filings for event-study style analysis
+% - Cross-country comparison using IFRS filings

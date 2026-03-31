@@ -4,9 +4,25 @@
 % =============================================================================
 
 % TODO: Structure
-% 1. Motivation — why textual disclosures matter alongside financial variables
-% 2. Research gap — limited evidence on incremental info in defense/energy sector
-% 3. Research question — Do MD&A and Risk Factor disclosures contain information
-%    beyond traditional accounting and market variables?
-% 4. Contribution — sector-specific NLP analysis, SEC EDGAR pipeline, panel study
+%
+% 1. Motivation — corporate filings contain both numbers and narratives;
+%    investors face information processing costs when filings are long/complex
+%    (Blankespoor et al. 2020); most research tests text and financials
+%    additively, but the *gap* between them may be the real signal
+%
+% 2. Research gap — no study systematically tests whether the divergence
+%    between narrative trajectory and financial trajectory predicts
+%    future volatility; existing work focuses on returns (crowded, low R²),
+%    while volatility is economically cleaner (no market-efficiency assumption)
+%
+% 3. Research question — Does textual-financial divergence in 10-K filings
+%    predict future stock return volatility beyond past volatility,
+%    financial variables, and textual features alone?
+%
+% 4. Contribution:
+%    (a) Novel divergence measure (narrative change vs. financial change)
+%    (b) Volatility as primary DV — avoids "beat the market" framing
+%    (c) Broad cross-section (~600 large U.S. non-financial firms, 2010-2025)
+%    (d) Three nested models: baseline → text → divergence
+%
 % 5. Thesis outline — brief chapter overview

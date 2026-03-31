@@ -7,32 +7,51 @@
 %
 % \section{Empirical Framework}
 % - Panel regression setting
-% - Dependent variable: post-filing log stock return
-% - Independent variables: financial + textual features
+% - Primary DV: annualised post-filing volatility
+% - Three nested models: baseline → text → divergence
 %
-% \section{Baseline Model (Financial Variables Only)}
+% \section{Baseline Model (Financial + Lagged Volatility)}
 % \begin{equation}
-%   r_{i,t+1} = \alpha + \beta_1 \ln(\text{Assets}_{i,t})
+%   \sigma_{i,t+1} = \alpha + \phi\,\sigma_{i,t}
+%              + \beta_1 \ln(\text{Assets}_{i,t})
 %              + \beta_2 \text{Leverage}_{i,t}
 %              + \beta_3 \text{ROA}_{i,t}
 %              + \beta_4 \text{AssetGrowth}_{i,t}
 %              + \varepsilon_{i,t}
 % \end{equation}
+% Note: lagged vol (\sigma_{i,t}) absorbs volatility persistence.
 %
-% \section{Extended Model (Financial + Textual Features)}
+% \section{Text Model (Financial + Textual Features)}
 % \begin{equation}
-%   r_{i,t+1} = \alpha + \boldsymbol{\beta}' \mathbf{X}^{\text{fin}}_{i,t}
-%              + \boldsymbol{\gamma}' \mathbf{X}^{\text{text}}_{i,t}
+%   \sigma_{i,t+1} = \alpha + \phi\,\sigma_{i,t}
+%              + \boldsymbol{\beta}' \mathbf{X}^{\text{fin}}_{i,t}
+%              + \gamma_1 \Delta\text{Sent}_{i,t}
+%              + \gamma_2 \Delta\text{Risk}_{i,t}
+%              + \gamma_3 \text{TextSim}_{i,t}
 %              + \varepsilon_{i,t}
 % \end{equation}
-% where $\mathbf{X}^{\text{text}}$ includes sentiment, risk language,
-% textual change measures.
+% Tests H1: textual change predicts vol beyond financials and past vol.
+%
+% \section{Divergence Model}
+% \begin{equation}
+%   \sigma_{i,t+1} = \alpha + \phi\,\sigma_{i,t}
+%              + \boldsymbol{\beta}' \mathbf{X}^{\text{fin}}_{i,t}
+%              + \boldsymbol{\gamma}' \mathbf{X}^{\text{text}}_{i,t}
+%              + \delta \cdot \text{Div}_{i,t}
+%              + \varepsilon_{i,t}
+% \end{equation}
+% Tests H2: divergence predicts vol beyond both text and financials.
+%
+% \section{Accruals Interaction}
+% - Split sample by median accruals or add interaction term:
+%   $\delta_1 \text{Div}_{i,t} + \delta_2 \text{Div}_{i,t} \times \text{HighAccrual}_{i,t}$
+% - Tests H3: divergence effect stronger for low earnings-quality firms.
 %
 % \section{Estimation}
-% - OLS with firm and/or time fixed effects
-% - Clustered standard errors (firm level)
+% - OLS with industry (SIC-2) and year fixed effects
+% - Standard errors clustered by firm
 %
 % \section{Model Comparison}
-% - Incremental $R^2$
-% - F-test for joint significance of textual variables
-% - Information criteria (AIC/BIC)
+% - Incremental $R^2$ across the three nested models
+% - F-test for joint significance of textual / divergence terms
+% - Vuong (1989) test for non-nested model comparison

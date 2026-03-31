@@ -5,19 +5,28 @@
 
 % TODO: Structure
 %
-% \section{Alternative Variable Definitions}
-% - Different return windows (e.g., 90-day, 180-day)
-% - Alternative sentiment measures
-% - Different winsorization thresholds
+% \section{Alternative Volatility Windows}
+% - 63-day and 180-day post-filing windows
+% - Check whether divergence effect is short-lived or persistent
 %
-% \section{Alternative Targets}
-% - Volatility as dependent variable
-% - Earnings surprise/forecast error
+% \section{Stock Returns as Alternative Dependent Variable}
+% - Re-estimate all three models with post-filing log returns as DV
+% - Weaker signal expected (low cross-sectional R²); included for completeness
+%
+% \section{Alternative Divergence Constructions}
+% - Swap ROA for operating\_roa or ocf\_to\_assets in ΔROA
+% - Use binary DivDummy instead of continuous divergence
+% - Residual-based divergence (regress ΔSent on ΔROA, take residual)
+%
+% \section{Alternative Textual Measures}
+% - Different dictionaries (Henry 2008 vs.\ Loughran--McDonald)
+% - Tf-idf weighting instead of raw word counts
 %
 % \section{Subsample Analysis}
-% - Defense-only vs. energy-only firms
-% - Pre/post-2020 (COVID, geopolitical shifts)
+% - Pre/post-2020 (COVID, supply-chain disruptions, inflation)
+% - High-tech vs.\ traditional industries
 %
 % \section{Sensitivity to Sample Construction}
-% - Excluding firms with short time series
+% - Excluding firms with fewer than 8 years of data
 % - Effect of fiscal year-end alignment
+% - Winsorisation at 2.5\%/97.5\%
