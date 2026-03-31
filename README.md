@@ -1,6 +1,6 @@
-# Incremental Information Content of Textual Disclosures in Corporate Filings
+# Textual-Financial Divergence and Stock Return Volatility
 
-Bachelor thesis examining whether textual information from SEC filings (MD&A, Risk Factors) provides incremental predictive power for stock returns beyond traditional financial variables, with evidence from U.S. defense and energy firms.
+Bachelor thesis investigating whether the divergence between narrative change and financial change in SEC filings predicts future stock return volatility, using a panel of ~600 large U.S. non-financial firms over 2010–2025.
 
 ## Repository Structure
 
