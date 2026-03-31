@@ -25,7 +25,7 @@ from returns import compute_returns_and_volatility
 from panel import (
     compute_missing_components, impute_balance_sheet, add_financial_ratios,
     filter_transitions_and_duplicates, drop_earliest_year,
-    save_panel, ANNUAL_COLS,
+    add_lagged_volatility, save_panel, ANNUAL_COLS,
 )
 
 
@@ -59,6 +59,10 @@ def main() -> None:
     df_all = pd.concat(frames, ignore_index=True)
     print(f"\n  Total: {df_all['ticker'].nunique()} firms, {len(df_all)} firm-years\n")
 
+    # Merge SIC and fiscal_year_end from metadata
+    meta_df = pd.DataFrame(companies.values())[["ticker", "sic", "fiscal_year_end"]]
+    df_all = df_all.merge(meta_df, on="ticker", how="left")
+
     # 4. Save raw
     raw_path = DATA_DIR / "annual_financials.csv"
     df_all.to_csv(raw_path, index=False)
@@ -88,6 +92,7 @@ def main() -> None:
     # 8. Financial ratios & winsorize
     print("\nDeriving financial ratios …")
     df_all = add_financial_ratios(df_all, "year_end")
+    df_all = add_lagged_volatility(df_all, "vol_next_year", "year_end")
     df_all = drop_earliest_year(df_all)
 
     # 9. Save

@@ -8,6 +8,7 @@ from config import (
     SEC_HEADERS, REQUEST_SLEEP, MAX_FILING_LAG_DAYS,
     METRICS_WITH_PRIORITY, FLOW_METRICS, INSTANT_METRICS,
     EXCLUDED_SIC_RANGE,
+    ANNUAL_FLOW_RANGE, QUARTERLY_FLOW_RANGE,
 )
 
 # ── public helpers ─────────────────────────────────────────────────────────
@@ -124,19 +125,26 @@ def extract_annual_facts(meta: dict, n_years: int) -> pd.DataFrame:
                 continue
 
             is_amendment = fact.get("form", "").endswith("/A")
+            accession = fact.get("accn")
             rec = records.setdefault(end, {
                 "ticker": meta["ticker"],
                 "company_name": meta["company_name"],
                 "year_end": end,
                 "filing_date": filing_date,
                 "fiscal_year": _fiscal_year(end, fye),
+                "accession_number": accession,
                 "_amend": is_amendment,
             })
 
             # amendment beats original; among same type keep earlier filing
             if is_amendment and not rec["_amend"]:
+                # Upgrading to amendment: clear all stale metric values
                 rec["filing_date"] = filing_date
+                rec["accession_number"] = accession
                 rec["_amend"] = True
+                for m2 in {m for _, m, _ in METRICS_WITH_PRIORITY}:
+                    rec.pop(m2, None)
+                    rec.pop(f"_p_{m2}", None)
             elif not is_amendment and rec["_amend"]:
                 continue
             elif filing_date > rec["filing_date"]:
@@ -189,6 +197,7 @@ def extract_quarterly_facts(meta: dict, n_quarters: int) -> pd.DataFrame:
             if not accession:
                 continue
 
+            is_amendment = fact.get("form", "").endswith("/A")
             key = (fy, fq)
             rec = records.setdefault(key, {
                 "ticker": meta["ticker"],
@@ -198,12 +207,23 @@ def extract_quarterly_facts(meta: dict, n_quarters: int) -> pd.DataFrame:
                 "fiscal_year": fy,
                 "fiscal_quarter": fq,
                 "accession_number": accession,
+                "_amend": is_amendment,
             })
 
-            # keep earliest filing per quarter; don't mix filings
-            if filing_date > rec["filing_date"]:
+            # amendment beats original; among same type keep earlier filing
+            if is_amendment and not rec["_amend"]:
+                rec["quarter_end"] = end
+                rec["filing_date"] = filing_date
+                rec["accession_number"] = accession
+                rec["_amend"] = True
+                for m2 in {m for _, m, _ in METRICS_WITH_PRIORITY}:
+                    rec.pop(m2, None)
+                    rec.pop(f"_p_{m2}", None)
+            elif not is_amendment and rec["_amend"]:
                 continue
-            if filing_date < rec["filing_date"]:
+            elif filing_date > rec["filing_date"]:
+                continue
+            if filing_date < rec["filing_date"] and is_amendment == rec["_amend"]:
                 rec["quarter_end"] = end
                 rec["filing_date"] = filing_date
                 rec["accession_number"] = accession
@@ -280,7 +300,6 @@ def _valid_annual_flow(fact: dict) -> bool:
     end = pd.to_datetime(fact.get("end"), errors="coerce")
     if pd.isna(start) or pd.isna(end):
         return False
-    from config import ANNUAL_FLOW_RANGE
     lo, hi = ANNUAL_FLOW_RANGE
     return lo <= (end - start).days <= hi
 
@@ -308,7 +327,6 @@ def _valid_quarterly_flow(fact: dict, fye_month: int) -> bool:
     end = pd.to_datetime(fact.get("end"), errors="coerce")
     if pd.isna(start) or pd.isna(end):
         return False
-    from config import QUARTERLY_FLOW_RANGE
     lo, hi = QUARTERLY_FLOW_RANGE
     days = (end - start).days
     if not (lo <= days <= hi):
@@ -318,7 +336,7 @@ def _valid_quarterly_flow(fact: dict, fye_month: int) -> bool:
 
 
 def _valid_quarterly_instant(fact: dict, fye_month: int) -> bool:
-    if fact.get("form") != "10-Q":
+    if fact.get("form") not in ("10-Q", "10-Q/A"):
         return False
     end = pd.to_datetime(fact.get("end"), errors="coerce")
     if pd.isna(end):

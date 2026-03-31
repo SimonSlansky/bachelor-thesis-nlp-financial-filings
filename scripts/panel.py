@@ -80,7 +80,7 @@ def add_financial_ratios(df: pd.DataFrame, date_col: str) -> pd.DataFrame:
         )
 
     # winsorize
-    for col in ("roa", "asset_growth", "current_ratio",
+    for col in ("leverage", "roa", "asset_growth", "current_ratio",
                 "accruals", "ocf_to_assets", "operating_roa"):
         if col not in df.columns:
             continue
@@ -105,11 +105,7 @@ def filter_transitions_and_duplicates(df: pd.DataFrame) -> pd.DataFrame:
     df["_has_ni"] = df["net_income"].notna().astype(int)
 
     # resolve duplicate filing dates: keep row with net_income + closest to 365-day spacing
-    fd_str = df["filing_date"].astype(str)
-    dup = fd_str.duplicated(keep=False) & df.duplicated(subset=["ticker"], keep=False)
-    df["_dup"] = df.duplicated(subset=["ticker", fd_str.rename("_fd")], keep=False)
-    # recompute properly
-    df["_fd_str"] = fd_str
+    df["_fd_str"] = df["filing_date"].astype(str)
     df["_dup"] = df.duplicated(subset=["ticker", "_fd_str"], keep=False)
 
     if df["_dup"].any():
@@ -139,23 +135,34 @@ def drop_earliest_year(df: pd.DataFrame) -> pd.DataFrame:
     return df.loc[mask].reset_index(drop=True)
 
 
+# ── lagged volatility ─────────────────────────────────────────────────────
+
+def add_lagged_volatility(df: pd.DataFrame, vol_col: str, date_col: str) -> pd.DataFrame:
+    """Create ``lagged_vol`` as previous-period realised volatility per firm."""
+    df = df.sort_values(["ticker", date_col]).reset_index(drop=True)
+    df["lagged_vol"] = df.groupby("ticker")[vol_col].shift(1)
+    return df
+
+
 # ── output helpers ────────────────────────────────────────────────────────
 
 ANNUAL_COLS = [
-    "ticker", "company_name", "year_end", "filing_date", "fiscal_year",
+    "ticker", "company_name", "sic", "fiscal_year_end",
+    "year_end", "filing_date", "fiscal_year", "accession_number",
     "net_income", "total_assets", "total_liabilities",
     "operating_income", "operating_cash_flow", "eps_diluted",
-    "return_next_year", "vol_next_year",
+    "return_next_year", "vol_next_year", "lagged_vol",
     "log_total_assets", "leverage", "roa", "asset_growth",
     "current_ratio", "accruals", "ocf_to_assets", "operating_roa",
 ]
 
 QUARTERLY_COLS = [
-    "ticker", "company_name", "quarter_end", "filing_date",
+    "ticker", "company_name", "sic", "fiscal_year_end",
+    "quarter_end", "filing_date",
     "fiscal_year", "fiscal_quarter", "accession_number",
     "net_income", "total_assets", "total_liabilities",
     "operating_income", "operating_cash_flow", "eps_diluted",
-    "return_next_q", "vol_next_q",
+    "return_next_q", "vol_next_q", "lagged_vol",
     "log_total_assets", "leverage", "roa", "asset_growth",
     "current_ratio", "accruals", "ocf_to_assets", "operating_roa",
 ]
