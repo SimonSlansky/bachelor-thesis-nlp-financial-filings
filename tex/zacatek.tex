@@ -1,0 +1,88 @@
+%%% Title page and mandatory information pages
+
+%%% Title page
+
+\pagestyle{empty}
+\hypersetup{pageanchor=false}
+
+\begin{center}
+\Huge\sffamily
+\VSE\\
+\FIS
+
+\vspace{\stretch{1}}
+
+\includegraphics[width=.5\textwidth]{img/FIS_2_logo_2_rgb_EN}
+
+\vspace{\stretch{2}}
+
+\bfseries\NazevPrace
+
+\vspace{8mm}
+\mdseries\TypPraceText
+
+\vspace{8mm}
+\large
+\begin{tabular}{rl}
+\StudijniProgramText: & \StudijniProgram \\
+\ifthenelse{\equal{\Specializace}{}}{%
+	% empty value
+	}{
+	\rule{0pt}{6mm}%
+	\SpecializaceText: & \Specializace \\
+}
+\end{tabular}
+
+\vspace{\stretch{8}}
+
+\begin{tabular}{rl}
+\AutorText: & \AutorPrace \\
+\noalign{\vspace{2mm}}
+\VedouciText: & \Vedouci \\
+\ifthenelse{\equal{\Konzultant}{}}{%
+	% empty value
+	}{
+	\rule{0pt}{6mm}%
+	\KonzultantText: & \Konzultant \\
+}
+\end{tabular}
+
+\vspace{8mm}
+Prague, \DatumOdevzdani
+\end{center}
+
+
+%%% Declaration on the use of AI
+\input{prohlaseniAI}
+
+
+%%% Acknowledgments
+\hypersetup{pageanchor=true}
+\cleardoublepage
+\pagestyle{plain}
+\openright
+\vspace*{\fill}
+\section*{\PodekovaniText}
+\noindent
+\Podekovani
+\vspace{1cm}
+
+
+%%% Mandatory abstract page (bilingual)
+\openright
+\section*{Abstrakt}
+\noindent
+\Abstrakt
+\subsection*{Klíčová slova}
+\noindent
+\KlicovaSlova
+
+\bigskip\bigskip\bigskip\bigskip\bigskip
+\section*{Abstract}
+\noindent
+\AbstraktEN
+\subsection*{Keywords}
+\noindent
+\KlicovaSlovaEN
+
+\openright

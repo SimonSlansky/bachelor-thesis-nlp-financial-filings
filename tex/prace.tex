@@ -1,0 +1,124 @@
+%%% Single-sided print version:
+\documentclass[11pt,a4paper]{report}
+\usepackage[top=25mm,bottom=25mm,right=25mm,left=30mm,head=12.5mm,foot=12.5mm]{geometry}
+\let\openright=\clearpage
+
+%%% Double-sided print version (uncomment if needed):
+%\documentclass[11pt,a4paper,twoside,openright]{report}
+%\usepackage[top=25mm,bottom=25mm,right=25mm,left=30mm,head=12.5mm,foot=12.5mm]{geometry}
+%\let\openright=\cleardoublepage
+
+%%% VARIABLE DEFINITIONS
+\def\TypPrace{BP}                % bachelor thesis
+\def\Jazyk{eng}                  % english
+
+%%% Package definitions and macros (see inside file)
+\input{makra}
+
+%%% Thesis title (exact according to assignment)
+\def\NazevPrace{Textual-Financial Divergence and Stock Return Volatility: Evidence from U.S. Corporate Filings}
+
+%%% Author's name
+\def\AutorPrace{Šimon Slanský}
+
+%%% Year and month of submission
+\def\DatumOdevzdani{January 2026}
+
+%%% Supervisor
+\def\Vedouci{TODO}
+
+%%% Consultant (leave empty if none)
+\def\Konzultant{}
+
+%%% Study programme
+\def\StudijniProgram{TODO}
+
+%%% Specialization (leave empty if none)
+\def\Specializace{}
+
+%%% Acknowledgments
+\def\Podekovani{%
+% TODO: Acknowledge supervisor, family, etc.
+}
+
+%%% Abstract in Czech (required even for English theses)
+\def\Abstrakt{%
+% TODO: Czech translation of the abstract
+}
+
+%%% Abstract in English
+\def\AbstraktEN{%
+Financial statements summarize firms' past performance, yet corporate filings
+contain extensive narrative disclosures written by management. Due to the
+complexity and length of these filings, investors may face substantial
+information processing costs when evaluating the information embedded in
+narrative disclosures. This study investigates whether changes in the language
+of corporate filings reveal information about future stock return volatility
+that is not captured by traditional financial variables. Using a panel of
+approximately 600 large U.S.\ non-financial firms over 2010--2025, I construct
+a textual-financial divergence measure that captures the gap between the
+direction of narrative change in 10-K filings and the direction of concurrent
+financial change. I find that when managerial language diverges from the
+underlying fundamentals, future stock return volatility increases, consistent
+with the hypothesis that such divergence creates information uncertainty among
+investors. The divergence measure predicts volatility beyond both financial
+variables and textual features alone, suggesting that the interaction between
+words and numbers---not either in isolation---is a distinct source of
+information about firm-level risk.
+}
+
+%%% Keywords in Czech
+\def\KlicovaSlova{textová analýza, 10-K výkazy, SEC EDGAR, volatilita,
+informační nejistota, narativní divergence, sentiment, panelová data,
+firemní zprávy}
+
+%%% Keywords in English
+\def\KlicovaSlovaEN{textual analysis, 10-K filings, SEC EDGAR, volatility,
+information uncertainty, narrative divergence, sentiment, panel data,
+corporate disclosures}
+
+%%% Title page and mandatory information pages
+\begin{document}
+\include{zacatek}
+
+%%% Table of contents
+\setcounter{tocdepth}{2}
+\tableofcontents
+
+%%% List of figures (optional — use if >20 figures)
+%\openright
+%\listoffigures
+
+%%% List of tables (optional — use if >20 tables)
+%\clearpage
+%\listoftables
+
+%%% List of abbreviations
+\include{zkratky}
+
+\pagestyle{fancyx}
+%%% Individual chapters
+{%
+\pagestyle{plain}
+\include{uvod}
+}
+\include{chapters/02_literature_review}
+\include{chapters/03_data}
+\include{chapters/04_methodology}
+\include{chapters/05_results}
+\include{chapters/06_robustness}
+{%
+\pagestyle{plain}
+\include{zaver}
+}
+
+%%% Bibliography
+\include{literatura}
+
+%%% Appendices
+\part*{\Prilohy\thispagestyle{empty}}
+\appendix
+\include{app01}
+\include{app02}
+
+\end{document}
