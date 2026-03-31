@@ -11,11 +11,17 @@ Bachelor thesis investigating whether the divergence between narrative change an
 │   ├── figures/
 │   └── tables/
 ├── scripts/             # Data collection & panel construction pipelines
-├── tex/                 # LaTeX thesis source
-│   ├── main.tex
-│   ├── chapters/        # 01_introduction … 07_conclusion
-│   ├── frontmatter/     # Title page, abstract, declaration, acknowledgments
-│   ├── backmatter/      # Appendix
+├── tex/                 # LaTeX thesis source (VŠE template)
+│   ├── prace.tex        # Main document
+│   ├── makra.tex        # Packages & formatting
+│   ├── zacatek.tex      # Title page, abstract, AI declaration
+│   ├── uvod.tex         # Introduction
+│   ├── chapters/        # 02_literature_review … 06_robustness
+│   ├── zaver.tex        # Conclusion
+│   ├── literatura.tex   # Bibliography
+│   ├── zkratky.tex      # Abbreviations
+│   ├── app01.tex        # Appendix A
+│   ├── app02.tex        # Appendix B (AI usage)
 │   └── bibliography.bib
 ├── requirements.txt
 └── .gitignore
@@ -32,7 +38,7 @@ Bachelor thesis investigating whether the divergence between narrative change an
 
 ```bash
 cd tex
-latexmk -pdf main.tex
+latexmk -pdf prace.tex
 ```
 
 ## Requirements
