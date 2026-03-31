@@ -33,12 +33,12 @@ EXCLUDED_SIC_RANGE = range(6000, 7000)
 MAX_FILING_LAG_DAYS = 180
 
 # Annual
-NUM_YEARS = 16          # extra year consumed by asset-growth lag
+NUM_YEARS = 17          # XBRL era FY2009-2025; one year consumed by asset-growth lag
 MIN_VALID_YEARS = 5
 ANNUAL_FLOW_RANGE = (350, 380)   # days
 
 # Quarterly (Q1-Q3 only; Q4 is implicit in 10-K)
-NUM_QUARTERS = 45
+NUM_QUARTERS = 51          # 17 years × 3 quarters, consistent with NUM_YEARS
 MIN_VALID_QUARTERS = 4
 QUARTERLY_FLOW_RANGE = (65, 120)  # days
 
