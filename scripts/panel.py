@@ -145,7 +145,7 @@ ANNUAL_COLS = [
     "ticker", "company_name", "year_end", "filing_date", "fiscal_year",
     "net_income", "total_assets", "total_liabilities",
     "operating_income", "operating_cash_flow", "eps_diluted",
-    "return_next_year",
+    "return_next_year", "vol_next_year",
     "log_total_assets", "leverage", "roa", "asset_growth",
     "current_ratio", "accruals", "ocf_to_assets", "operating_roa",
 ]
@@ -155,7 +155,7 @@ QUARTERLY_COLS = [
     "fiscal_year", "fiscal_quarter", "accession_number",
     "net_income", "total_assets", "total_liabilities",
     "operating_income", "operating_cash_flow", "eps_diluted",
-    "return_next_q",
+    "return_next_q", "vol_next_q",
     "log_total_assets", "leverage", "roa", "asset_growth",
     "current_ratio", "accruals", "ocf_to_assets", "operating_roa",
 ]
