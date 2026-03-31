@@ -7,7 +7,7 @@ Pipeline:
   3. Extract XBRL facts from 10-Q filings (Q1–Q3 only)
   4. Save raw extraction → quarterly_financials.csv
   5. Impute: component computation, time-series fill
-  6. Compute post-filing stock returns (63-day window)
+  6. Compute post-filing stock returns and volatility (63-day window)
   7. Derive financial ratios, winsorize
   8. Save final panel → quarterly_panel.csv
 """
@@ -20,7 +20,7 @@ from config import (
     QUARTERLY_RETURN_WINDOW, MIN_TRADING_DAYS_QUARTERLY, REQUEST_SLEEP,
 )
 from sec_edgar import fetch_universe, load_company_metadata, extract_quarterly_facts
-from returns import compute_returns
+from returns import compute_returns_and_volatility
 from panel import (
     compute_missing_components, impute_balance_sheet, add_financial_ratios,
     save_panel, QUARTERLY_COLS,
@@ -68,12 +68,13 @@ def main() -> None:
     print("Imputing balance-sheet gaps …")
     df_all = impute_balance_sheet(df_all, "quarter_end")
 
-    # 6. Stock returns
-    print("\nComputing stock returns (63-day window) …")
-    df_all = compute_returns(
+    # 6. Stock returns & volatility
+    print("\nComputing stock returns & volatility (63-day window) …")
+    df_all = compute_returns_and_volatility(
         df_all,
         date_col="quarter_end",
         return_col="return_next_q",
+        vol_col="vol_next_q",
         window_days=QUARTERLY_RETURN_WINDOW,
         min_trading_days=MIN_TRADING_DAYS_QUARTERLY,
     )

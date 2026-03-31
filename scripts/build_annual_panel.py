@@ -8,7 +8,7 @@ Pipeline:
   4. Save raw extraction → annual_financials.csv
   5. Clean: filter transitions, resolve duplicates
   6. Impute: component computation, time-series fill
-  7. Compute post-filing stock returns (365-day window)
+  7. Compute post-filing stock returns and volatility (365-day window)
   8. Derive financial ratios, winsorize, drop lag year
   9. Save final panel → annual_panel.csv
 """
@@ -21,7 +21,7 @@ from config import (
     ANNUAL_RETURN_WINDOW, MIN_TRADING_DAYS_ANNUAL, REQUEST_SLEEP,
 )
 from sec_edgar import fetch_universe, load_company_metadata, extract_annual_facts
-from returns import compute_returns
+from returns import compute_returns_and_volatility
 from panel import (
     compute_missing_components, impute_balance_sheet, add_financial_ratios,
     filter_transitions_and_duplicates, drop_earliest_year,
@@ -74,12 +74,13 @@ def main() -> None:
     print("Imputing balance-sheet gaps …")
     df_all = impute_balance_sheet(df_all, "year_end")
 
-    # 7. Stock returns
-    print("\nComputing stock returns (365-day window) …")
-    df_all = compute_returns(
+    # 7. Stock returns & volatility
+    print("\nComputing stock returns & volatility (365-day window) …")
+    df_all = compute_returns_and_volatility(
         df_all,
         date_col="year_end",
         return_col="return_next_year",
+        vol_col="vol_next_year",
         window_days=ANNUAL_RETURN_WINDOW,
         min_trading_days=MIN_TRADING_DAYS_ANNUAL,
     )
