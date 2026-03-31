@@ -24,7 +24,6 @@ def fetch_universe(n: int | None = None) -> pd.DataFrame:
         headers=SEC_HEADERS,
         timeout=15,
     ).json()
-    rows = sorted(data.values(), key=lambda x: int(x.get("cik_str", 0)))
     # Preserve SEC ordering (market-cap ranked indices)
     rows = [data[str(i)] for i in range(len(data))]
     df = pd.DataFrame(rows)

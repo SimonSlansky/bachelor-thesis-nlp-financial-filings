@@ -51,7 +51,10 @@ def add_financial_ratios(df: pd.DataFrame, date_col: str) -> pd.DataFrame:
 
     df["roa"] = np.where(df["total_assets"] > 0, df["net_income"] / df["total_assets"], np.nan)
 
-    lag = df.groupby("ticker")["total_assets"].shift(1)
+    # Asset growth: YoY for both annual (shift 1) and quarterly (shift 4)
+    is_quarterly = "quarter_end" in df.columns
+    lag_periods = 4 if is_quarterly else 1
+    lag = df.groupby("ticker")["total_assets"].shift(lag_periods)
     df["asset_growth"] = np.where(lag > 0, (df["total_assets"] - lag) / lag, np.nan)
 
     df["current_ratio"] = np.where(
@@ -99,8 +102,7 @@ def filter_transitions_and_duplicates(df: pd.DataFrame) -> pd.DataFrame:
     df = df.sort_values(["ticker", "year_end"]).reset_index(drop=True)
     n_before = len(df)
 
-    dt = pd.to_datetime(df["year_end"])
-    df["_days"] = dt.groupby(df["ticker"]).diff().dt.days
+    df["_days"] = pd.to_datetime(df["year_end"]).groupby(df["ticker"]).diff().dt.days
     df["_dev"] = (df["_days"] - 365).abs()
     df["_has_ni"] = df["net_income"].notna().astype(int)
 
@@ -115,6 +117,7 @@ def filter_transitions_and_duplicates(df: pd.DataFrame) -> pd.DataFrame:
         df = df.loc[~drop_mask]
 
     # remove non-annual spacing (< 300 or > 400 days between consecutive year-ends)
+    # recompute after dedup since rows may have been dropped
     df["_days"] = pd.to_datetime(df["year_end"]).groupby(df["ticker"]).diff().dt.days
     is_transition = ((df["_days"] < 300) | (df["_days"] > 400)).fillna(False)
     df = df.loc[~is_transition]
