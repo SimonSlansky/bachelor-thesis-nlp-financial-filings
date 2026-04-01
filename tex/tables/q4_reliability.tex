@@ -1,0 +1,23 @@
+\begin{table}[htbp]
+\centering
+\caption{Q4 Reliability: Availability and Consistency of Fourth-Quarter XBRL Facts}
+\label{tab:q4_reliability}
+\begin{tabular}{lrrrrr}
+\toprule
+Metric & Firm-Years & Q1--Q3 (\%) & Explicit Q4 (\%) & Compared & Match (\%) \\
+\midrule
+Net Income & 451 & 80.9 & 43.0 & 172 & 89.5 \\
+Operating Income & 391 & 79.0 & 22.0 & 72 & 86.1 \\
+Operating Cash Flow & 462 & 7.4 & 3.2 & 0 & 0.0 \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}
+\small
+\item \textit{Note:} ``Q1--Q3'' indicates the share of fiscal years where all three
+quarterly facts (Q1, Q2, Q3) exist in XBRL. ``Explicit Q4'' indicates the share with
+a standalone fourth-quarter fact (period $\approx$90~days ending at fiscal year-end).
+``Match'' reports the share of observations where the explicit Q4 value matches the
+implied Q4 ($= \text{Annual} - \text{Q1} - \text{Q2} - \text{Q3}$) within 1\% of the
+annual figure. Sample: 30 non-financial firms, all available fiscal years.
+\end{tablenotes}
+\end{table}

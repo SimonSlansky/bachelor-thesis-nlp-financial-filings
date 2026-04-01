@@ -8,7 +8,7 @@ from config import (
     SEC_HEADERS, REQUEST_SLEEP, MAX_FILING_LAG_DAYS,
     METRICS_WITH_PRIORITY, FLOW_METRICS, INSTANT_METRICS,
     EXCLUDED_SIC_RANGE,
-    ANNUAL_FLOW_RANGE, QUARTERLY_FLOW_RANGE,
+    ANNUAL_FLOW_RANGE,
 )
 
 # ── public helpers ─────────────────────────────────────────────────────────
@@ -161,87 +161,6 @@ def extract_annual_facts(meta: dict, n_years: int) -> pd.DataFrame:
     return df
 
 
-def extract_quarterly_facts(meta: dict, n_quarters: int) -> pd.DataFrame:
-    """Extract quarterly (10-Q, Q1–Q3) financial facts for one company.
-
-    Returns one row per (fiscal_year, fiscal_quarter) with columns for each
-    metric, plus *accession_number*.
-    """
-    us_gaap = _fetch_company_facts(meta)
-    if us_gaap is None:
-        return pd.DataFrame()
-
-    fye = meta["fiscal_year_end"]
-    records: dict[tuple, dict] = {}
-
-    for tag, metric, priority in METRICS_WITH_PRIORITY:
-        for fact in _usd_facts(us_gaap, tag):
-            if metric in FLOW_METRICS:
-                if not _valid_quarterly_flow(fact, fye):
-                    continue
-            else:
-                if not _valid_quarterly_instant(fact, fye):
-                    continue
-
-            end = pd.to_datetime(fact["end"])
-            filing_date = pd.to_datetime(fact.get("filed"), errors="coerce")
-            if pd.isna(filing_date) or (filing_date - end).days > MAX_FILING_LAG_DAYS:
-                continue
-
-            fy, fq = _fiscal_quarter_and_year(end, fye)
-            if fq is None or fq == "Q4":
-                continue
-
-            accession = fact.get("accn")
-            if not accession:
-                continue
-
-            is_amendment = fact.get("form", "").endswith("/A")
-            key = (fy, fq)
-            rec = records.setdefault(key, {
-                "ticker": meta["ticker"],
-                "company_name": meta["company_name"],
-                "quarter_end": end,
-                "filing_date": filing_date,
-                "fiscal_year": fy,
-                "fiscal_quarter": fq,
-                "accession_number": accession,
-                "_amend": is_amendment,
-            })
-
-            # amendment beats original; among same type keep earlier filing
-            if is_amendment and not rec["_amend"]:
-                rec["quarter_end"] = end
-                rec["filing_date"] = filing_date
-                rec["accession_number"] = accession
-                rec["_amend"] = True
-                for m2 in {m for _, m, _ in METRICS_WITH_PRIORITY}:
-                    rec.pop(m2, None)
-                    rec.pop(f"_p_{m2}", None)
-            elif not is_amendment and rec["_amend"]:
-                continue
-            elif filing_date > rec["filing_date"]:
-                continue
-            if filing_date < rec["filing_date"] and is_amendment == rec["_amend"]:
-                rec["quarter_end"] = end
-                rec["filing_date"] = filing_date
-                rec["accession_number"] = accession
-                for m2 in {m for _, m, _ in METRICS_WITH_PRIORITY}:
-                    rec.pop(m2, None)
-                    rec.pop(f"_p_{m2}", None)
-
-            if priority < rec.get(f"_p_{metric}", 999):
-                rec[metric] = fact["val"]
-                rec[f"_p_{metric}"] = priority
-
-    df = pd.DataFrame(records.values())
-    if df.empty:
-        return df
-    df = df[[c for c in df.columns if not c.startswith("_")]]
-    df = df.sort_values("quarter_end").tail(n_quarters).reset_index(drop=True)
-    return df
-
-
 # ── private helpers ────────────────────────────────────────────────────────
 
 def _fetch_submissions(cik: str) -> dict | None:
@@ -315,32 +234,3 @@ def _valid_annual_instant(fact: dict) -> bool:
     if pd.isna(s):
         return True
     return (pd.to_datetime(fact["end"]) - s).days <= 5
-
-
-# ── XBRL fact validators (quarterly) ──────────────────────────────────────
-
-def _valid_quarterly_flow(fact: dict, fye_month: int) -> bool:
-    if fact.get("form") not in ("10-Q", "10-Q/A"):
-        return False
-    start = pd.to_datetime(fact.get("start"), errors="coerce")
-    end = pd.to_datetime(fact.get("end"), errors="coerce")
-    if pd.isna(start) or pd.isna(end):
-        return False
-    lo, hi = QUARTERLY_FLOW_RANGE
-    days = (end - start).days
-    if not (lo <= days <= hi):
-        return False
-    _, fq = _fiscal_quarter_and_year(end, fye_month)
-    return fq not in (None, "Q4")
-
-
-def _valid_quarterly_instant(fact: dict, fye_month: int) -> bool:
-    if fact.get("form") not in ("10-Q", "10-Q/A"):
-        return False
-    end = pd.to_datetime(fact.get("end"), errors="coerce")
-    if pd.isna(end):
-        return False
-    if fact.get("start") is not None:
-        return False
-    _, fq = _fiscal_quarter_and_year(end, fye_month)
-    return fq not in (None, "Q4")

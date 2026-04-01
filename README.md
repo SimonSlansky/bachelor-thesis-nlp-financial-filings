@@ -29,10 +29,10 @@ Bachelor thesis investigating whether the divergence between narrative change an
 
 ## Data Pipeline
 
-1. **SEC EDGAR XBRL** → `scripts/build_annual_panel.py` / `scripts/build_quarterly_panel.py`
+1. **SEC EDGAR XBRL** → `scripts/build_annual_panel.py`
 2. Shared modules: `config.py` (constants), `sec_edgar.py` (API), `returns.py` (yfinance), `panel.py` (ratios & imputation)
-3. Raw output → `data/annual_financials.csv`, `data/quarterly_financials.csv`
-4. Final panels → `data/annual_panel.csv`, `data/quarterly_panel.csv`
+3. Raw output → `data/annual_financials.csv`
+4. Final panel → `data/annual_panel.csv`
 
 ## Building the Thesis
 

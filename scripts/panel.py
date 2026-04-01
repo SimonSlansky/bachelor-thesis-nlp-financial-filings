@@ -1,4 +1,4 @@
-"""Panel construction utilities shared by annual and quarterly pipelines."""
+"""Panel construction utilities for the annual (10-K) pipeline."""
 
 import numpy as np
 import pandas as pd
@@ -51,10 +51,8 @@ def add_financial_ratios(df: pd.DataFrame, date_col: str) -> pd.DataFrame:
 
     df["roa"] = np.where(df["total_assets"] > 0, df["net_income"] / df["total_assets"], np.nan)
 
-    # Asset growth: YoY for both annual (shift 1) and quarterly (shift 4)
-    is_quarterly = "quarter_end" in df.columns
-    lag_periods = 4 if is_quarterly else 1
-    lag = df.groupby("ticker")["total_assets"].shift(lag_periods)
+    # Asset growth: YoY (shift 1 period = 1 fiscal year)
+    lag = df.groupby("ticker")["total_assets"].shift(1)
     df["asset_growth"] = np.where(lag > 0, (df["total_assets"] - lag) / lag, np.nan)
 
     df["current_ratio"] = np.where(
@@ -159,23 +157,11 @@ ANNUAL_COLS = [
     "current_ratio", "accruals", "ocf_to_assets", "operating_roa",
 ]
 
-QUARTERLY_COLS = [
-    "ticker", "company_name", "sic", "fiscal_year_end",
-    "quarter_end", "filing_date",
-    "fiscal_year", "fiscal_quarter", "accession_number",
-    "net_income", "total_assets", "total_liabilities",
-    "operating_income", "operating_cash_flow", "eps_diluted",
-    "return_next_q", "vol_next_q", "lagged_vol",
-    "log_total_assets", "leverage", "roa", "asset_growth",
-    "current_ratio", "accruals", "ocf_to_assets", "operating_roa",
-]
-
 
 def save_panel(df: pd.DataFrame, path, columns: list[str]) -> None:
     """Select existing columns from *columns* and save to CSV."""
     cols = [c for c in columns if c in df.columns]
     out = df[cols]
     out.to_csv(path, index=False)
-    date_col = "year_end" if "year_end" in cols else "quarter_end"
     print(f"  Saved {path.name}: {out['ticker'].nunique()} firms × {len(out)} obs "
-          f"[{out[date_col].min()} — {out[date_col].max()}]")
+          f"[{out['year_end'].min()} — {out['year_end'].max()}]")

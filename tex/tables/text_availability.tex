@@ -1,0 +1,30 @@
+\begin{table}[htbp]
+\centering
+\caption{Textual Data Availability: 10-K vs.\ 10-Q Filings}
+\label{tab:text_availability}
+\begin{tabular}{lrr}
+\toprule
+ & 10-K & 10-Q \\
+\midrule
+Filings tested & 44 & 90 \\
+\addlinespace
+\multicolumn{3}{l}{\textit{MD\&A (Management's Discussion and Analysis)}} \\
+\quad Section found (\%) & 61 & 93 \\
+\quad Median word count & 876 & 5,314 \\
+\addlinespace
+\multicolumn{3}{l}{\textit{Risk Factors}} \\
+\quad Substantive section found (\%) & 95 & 36 \\
+\quad Boilerplate / reference only (\%) & 0 & 58 \\
+\quad Median word count (substantive) & 23,614 & 5,490 \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}
+\small
+\item \textit{Note:} ``Found'' requires $>$200 words extracted by regex-based section
+parser. ``Substantive'' for 10-Q excludes filings containing only a reference to the
+annual 10-K (e.g., ``no material changes from those disclosed in our Annual Report'').
+MD\&A corresponds to Item~7 in 10-K and Part~I Item~2 in 10-Q; Risk Factors
+corresponds to Item~1A in 10-K and Part~II Item~1A in 10-Q.
+Sample: 15 firms, most recent filings.
+\end{tablenotes}
+\end{table}

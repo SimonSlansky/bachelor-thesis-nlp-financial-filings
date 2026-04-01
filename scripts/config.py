@@ -37,19 +37,12 @@ NUM_YEARS = 17          # XBRL era FY2009-2025; one year consumed by asset-growt
 MIN_VALID_YEARS = 5
 ANNUAL_FLOW_RANGE = (350, 380)   # days
 
-# Quarterly (Q1-Q3 only; Q4 is implicit in 10-K)
-NUM_QUARTERS = 51          # 17 years × 3 quarters, consistent with NUM_YEARS
-MIN_VALID_QUARTERS = 4
-QUARTERLY_FLOW_RANGE = (65, 120)  # days
-
 # ---------------------------------------------------------------------------
 # Stock-return windows
 # ---------------------------------------------------------------------------
 POST_FILING_LAG_DAYS = 2
 ANNUAL_RETURN_WINDOW = 365   # calendar days
-QUARTERLY_RETURN_WINDOW = 63
 MIN_TRADING_DAYS_ANNUAL = 200
-MIN_TRADING_DAYS_QUARTERLY = 40
 MIN_FIRM_COVERAGE = 0.90
 
 # ---------------------------------------------------------------------------
