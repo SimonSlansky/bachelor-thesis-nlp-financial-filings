@@ -19,13 +19,16 @@ import pandas as pd
 from config import (
     SAMPLE_SIZE, DATA_DIR, NUM_YEARS, MIN_VALID_YEARS,
     ANNUAL_RETURN_WINDOW, MIN_TRADING_DAYS_ANNUAL, REQUEST_SLEEP,
+    MIN_FIRM_COVERAGE,
 )
 from sec_edgar import fetch_universe, load_company_metadata, extract_annual_facts
 from returns import compute_returns_and_volatility
 from panel import (
     compute_missing_components, impute_balance_sheet, add_financial_ratios,
     filter_transitions_and_duplicates, drop_earliest_year,
+    drop_low_return_coverage, cap_fiscal_year, winsorize_ratios,
     add_lagged_volatility, save_panel, ANNUAL_COLS,
+    lock_firm_tags, save_tag_diagnostics,
 )
 
 
@@ -68,8 +71,13 @@ def main() -> None:
     df_all.to_csv(raw_path, index=False)
     print(f"  Raw data → {raw_path.name}\n")
 
+    # 4b. Per-firm tag locking (ensures within-firm XBRL tag consistency)
+    print("Locking per-firm XBRL tags \u2026")
+    df_all = lock_firm_tags(df_all)
+    save_tag_diagnostics(df_all, DATA_DIR / "diagnostics" / "tag_provenance.csv")
+
     # 5. Clean transitions & duplicates
-    print("Cleaning transitions & duplicates …")
+    print("\nCleaning transitions & duplicates \u2026")
     df_all = filter_transitions_and_duplicates(df_all)
 
     # 6. Impute
@@ -89,11 +97,21 @@ def main() -> None:
         min_trading_days=MIN_TRADING_DAYS_ANNUAL,
     )
 
-    # 8. Financial ratios & winsorize
-    print("\nDeriving financial ratios …")
+    # 8. Financial ratios (raw, unwinsorized)
+    print("\nDeriving financial ratios \u2026")
     df_all = add_financial_ratios(df_all, "year_end")
     df_all = add_lagged_volatility(df_all, "vol_next_year", "year_end")
     df_all = drop_earliest_year(df_all)
+
+    # 8b. Cap fiscal year, then drop firms with insufficient return coverage
+    # FY2025 has ~86% missing returns (365-day windows extend into 2027),
+    # so cap at 2024 to avoid selection bias from partial-year survivors.
+    print("\nFiltering panel \u2026")
+    df_all = cap_fiscal_year(df_all, max_fy=2024)
+    df_all = drop_low_return_coverage(df_all, "vol_next_year", MIN_FIRM_COVERAGE)
+
+    # 8c. Winsorize on the final sample
+    df_all = winsorize_ratios(df_all)
 
     # 9. Save
     print("\nSaving final panel …")

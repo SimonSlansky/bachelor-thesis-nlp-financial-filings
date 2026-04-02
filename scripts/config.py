@@ -1,6 +1,46 @@
 """Shared configuration: paths, constants, sample definition, XBRL metric map."""
 
+import base64
+import os
+import ssl
+import sys
+import tempfile
 from pathlib import Path
+
+
+def _export_windows_ca_certs() -> None:
+    """Export Windows system CA certificates so curl_cffi trusts the corporate proxy.
+    """
+    if sys.platform != "win32" or os.environ.get("CURL_CA_BUNDLE"):
+        return
+
+    pem_path = os.path.join(tempfile.gettempdir(), "python_win_cacerts.pem")
+
+    der_certs: set[bytes] = set()
+    for store in ("ROOT", "CA"):
+        try:
+            for cert, encoding, _trust in ssl.enum_certificates(store):
+                if encoding == "x509_asn":
+                    der_certs.add(cert)
+        except PermissionError:
+            pass
+
+    if not der_certs:
+        return
+
+    with open(pem_path, "w", encoding="ascii") as f:
+        for der in der_certs:
+            b64 = base64.b64encode(der).decode("ascii")
+            f.write("-----BEGIN CERTIFICATE-----\n")
+            for i in range(0, len(b64), 64):
+                f.write(b64[i:i + 64] + "\n")
+            f.write("-----END CERTIFICATE-----\n")
+
+    os.environ["CURL_CA_BUNDLE"] = pem_path
+    os.environ["REQUESTS_CA_BUNDLE"] = pem_path
+
+
+_export_windows_ca_certs()
 
 # ---------------------------------------------------------------------------
 # Paths
@@ -8,6 +48,7 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 DATA_DIR = BASE_DIR / "data"
 DATA_DIR.mkdir(exist_ok=True)
+(DATA_DIR / "diagnostics").mkdir(exist_ok=True)
 
 # ---------------------------------------------------------------------------
 # SEC EDGAR API
@@ -64,9 +105,10 @@ METRICS_WITH_PRIORITY: list[tuple[str, str, int]] = [
     ("Liabilities",                     "total_liabilities",     1),
     ("LiabilitiesCurrent",              "liabilities_current",   1),
     # Stockholders' Equity (for fallback liabilities computation)
-    ("StockholdersEquity",              "stockholders_equity",   1),
+    # Priority: tag including NCI first, so the accounting identity A = L + E holds
     ("StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest",
-                                        "stockholders_equity",   2),
+                                        "stockholders_equity",   1),
+    ("StockholdersEquity",              "stockholders_equity",   2),
     # Net Income (flow)
     ("NetIncomeLoss",                   "net_income",            1),
     ("ProfitLoss",                      "net_income",            2),
@@ -77,10 +119,9 @@ METRICS_WITH_PRIORITY: list[tuple[str, str, int]] = [
     # Operating Cash Flow (flow) — for accruals ratio
     ("NetCashProvidedByUsedInOperatingActivities",
                                         "operating_cash_flow",   1),
-    # EPS (flow) — for descriptive statistics
-    ("EarningsPerShareDiluted",         "eps_diluted",           1),
-    ("EarningsPerShareBasic",           "eps_diluted",           2),
+    ("NetCashProvidedByUsedInOperatingActivitiesContinuingOperations",
+                                        "operating_cash_flow",   2),
 ]
 
-FLOW_METRICS = {"net_income", "operating_income", "operating_cash_flow", "eps_diluted"}
+FLOW_METRICS = {"net_income", "operating_income", "operating_cash_flow"}
 INSTANT_METRICS = {m for _, m, _ in METRICS_WITH_PRIORITY if m not in FLOW_METRICS}
