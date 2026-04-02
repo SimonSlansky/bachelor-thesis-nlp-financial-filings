@@ -53,126 +53,49 @@
 
 
 % ─────────────────────────────────────────────────────────────────────────────
-\section{Annual vs.\ Quarterly Filing Frequency}
+\section{Filing Frequency}
 \label{sec:annual_vs_quarterly}
 % ─────────────────────────────────────────────────────────────────────────────
 
-A fundamental design decision for any study combining textual and financial
-data from SEC filings is whether to use annual filings (Form~10-K, filed once
-per fiscal year) or quarterly filings (Form~10-Q, filed for quarters Q1--Q3).
-A quarterly approach would triple the number of observations but is only viable
-if both financial and textual data are available and of sufficient quality.
-We evaluate three dimensions: (i)~XBRL financial metric coverage,
-(ii)~fourth-quarter data reliability, and (iii)~textual content availability.
+Before proceeding to variable construction, a brief note on why this study
+works with annual 10-K filings rather than quarterly 10-Q reports is in order.
+Although quarterly data would roughly triple the sample, three practical
+obstacles---documented in Tables~\ref{tab:xbrl_coverage}--\ref{tab:text_availability}---ruled
+out that path.
 
-\subsection{XBRL Financial Metric Coverage}
-
-We compare the availability of nine financial metrics in 10-K (annual) and
-10-Q (Q1--Q3) filings for a diagnostic sample of 30 large non-financial U.S.\
-companies drawn from SEC EDGAR.  Table~\ref{tab:xbrl_coverage} reports the
-share of firm-periods for which each metric can be extracted from XBRL.
-
-\input{tables/xbrl_coverage}
-
-Annual filings exhibit near-universal coverage across all metrics.
-Quarterly filings generally show comparable coverage for balance-sheet items
-and income-statement metrics, but operating cash flow is substantially less
-available due to the SEC's practice of reporting year-to-date (rather than
-standalone quarterly) cash-flow figures in 10-Q filings.
-
-\subsection{Fourth-Quarter Reliability}
-\label{sec:q4_reliability}
-
-Even restricting quarterly data to Q1--Q3, a quarterly panel still requires
-reliable Q4 figures if any year-over-year analysis is needed.  Ideally, Q4
-would be computed as $\text{Annual} - \text{Q1} - \text{Q2} - \text{Q3}$, but
-this requires all three quarterly values to exist.  In addition, some companies
-file explicit Q4 period facts in XBRL, whose consistency with the implied value
-is not guaranteed.
-
-Table~\ref{tab:q4_reliability} summarises our diagnostic across three major
-flow metrics.  For Net Income, Q1--Q3 facts are present in approximately
-81\% of firm-years, but this drops to 80\% for Operating Income and only
-7\% for Operating Cash Flow.  Among 244 observations where both explicit and
-implied Q4 values exist across all tags, approximately 11\% exhibit material
-mismatches exceeding 1\% of the annual figure.  Notable examples include
-Amazon (FY2011, \$671M difference in net income) and Microsoft (FY2009--2012,
-discrepancies exceeding \$1B), likely caused by restatements, amendments, or
-differences in the scope of reported segments.
+\paragraph{Financial data gaps in Q4.}
+10-Q filings cover only Q1 through Q3; the fourth quarter must therefore be
+backed out as the residual between the annual figure and the three preceding
+quarters. Table~\ref{tab:q4_reliability} shows that complete Q1--Q3 XBRL
+data exist for roughly 80\% of firm-years in net income and operating income,
+but for only 7\% in operating cash flow---because most firms report
+cumulative year-to-date cash flows rather than standalone quarterly amounts.
+Where both an explicit Q4 fact and the implied residual can be compared,
+about 11\% of observations diverge by more than 1\% of the annual total.
+Because accruals depend directly on operating cash flow, the quarterly route
+would have made hypothesis~H3 untestable.
 
 \input{tables/q4_reliability}
 
-Operating Cash Flow is the most problematic: companies typically report
-cumulative year-to-date cash flows in 10-Q filings rather than standalone
-quarterly figures, making quarterly extraction nearly impossible for this metric.
-Since accruals---a key variable for our H3 interaction term---depend directly on
-operating cash flow, the quarterly approach would render this hypothesis
-untestable.
-
-
-\subsection{Textual Content Availability}
-\label{sec:text_availability}
-
-The most decisive factor for our frequency choice is the availability of
-textual data.  Our NLP pipeline requires two sections: (i)~MD\&A
-(Management's Discussion and Analysis)---Item~7 in 10-K, Part~I Item~2 in
-10-Q---for computing $\Delta$Sentiment and TextSim, and (ii)~Risk Factors
-(Item~1A in 10-K, Part~II Item~1A in 10-Q)---for computing $\Delta$Risk.
-
-Table~\ref{tab:text_availability} reports the results of our filing-level
-analysis of 15 companies across diverse sectors.
+\paragraph{Missing risk-factor text in 10-Q.}
+SEC Regulation S-K requires firms to update risk factors in quarterly filings
+only when ``material changes'' have occurred since the last 10-K.  Practically
+speaking, just over half the 10-Q filings we sampled (15 firms, 90 filings)
+contained a substantive risk-factor section; the rest reduced to a one-sentence
+reference back to the annual report (Table~\ref{tab:text_availability}).
+This pattern held across sectors---technology, healthcare, consumer goods,
+energy---with only occasional exceptions.  Constructing $\Delta$Risk, which
+enters both H1 and H2, is therefore not feasible at a quarterly frequency.
 
 \input{tables/text_availability}
 
-MD\&A is present in both filing types.  In 10-Q filings, the section is found
-in approximately 93\% of filings and contains a meaningful discussion
-(median $\sim$6{,}500 words), making it potentially viable for sentiment
-analysis.  However, the 10-Q MD\&A covers only one quarter's results and
-is therefore inherently shorter and narrower in scope than the annual Item~7.
+\paragraph{Chosen frequency.}
+On these grounds---and in line with prior textual-analysis work based on
+10-K filings \parencite{loughran2011,li2008,blankespoor2020}---we adopt an
+annual panel. The XBRL coverage comparison (Table~\ref{tab:xbrl_coverage})
+and a consolidated summary (Table~\ref{tab:annual_vs_quarterly}) are
+included in Appendix~\ref{app:diagnostics} for completeness.
 
-\textbf{Risk Factors are the critical bottleneck.}  SEC Regulation S-K
-Item~1A requires companies to update risk factors in 10-Q filings only when
-there are ``material changes'' from those disclosed in the most recent 10-K.
-In practice, our diagnostic shows that approximately 67\% of 10-Q filings
-contain only a boilerplate reference (e.g., ``There have been no material
-changes from the risk factors previously disclosed in our Annual Report on
-Form~10-K''), and fully substantive risk-factor updates appear in fewer than
-10\% of quarterly filings.  This renders the $\Delta$Risk variable---central
-to H1 and H2---essentially impossible to compute from 10-Q filings.
-
-Table~\ref{tab:text_per_company} in the appendix provides per-company detail,
-confirming that the boilerplate pattern holds across all sectors: technology
-(MSFT: 0/6 substantive), healthcare (JNJ, LLY: 0/6), energy (XOM, CVX:
-mixed), consumer staples (KO, PG: 0/6), and retail (HD: 0/6).  Only
-META~Platforms consistently reprints its full risk-factor section in every
-10-Q, an outlier practice rather than the norm.
-
-
-\subsection{Decision: Annual Panel}
-\label{sec:frequency_decision}
-
-Table~\ref{tab:annual_vs_quarterly} summarises the comparison across all
-dimensions.
-
-\input{tables/annual_vs_quarterly}
-
-We adopt the \textbf{annual (10-K) frequency} for three reasons:
-
-\begin{enumerate}
-    \item \textbf{Textual feasibility:} The $\Delta$Risk variable, central
-          to both H1 and H2, cannot be constructed from 10-Q filings.
-          Dropping this variable would substantially weaken the research
-          contribution.
-    \item \textbf{Financial data quality:} Annual data avoids the Q4 gap,
-          the year-to-date cash-flow problem, and the 11\% implied-Q4
-          mismatch rate, yielding a cleaner panel.
-    \item \textbf{Literature alignment:} Virtually all prior studies on
-          textual analysis of SEC filings
-          \parencite{loughran2011,li2008,blankespoor2020} use annual data,
-          making our results directly comparable.
-\end{enumerate}
-
-The resulting panel comprises approximately 9{,}000 firm-years over
-2009--2025, which provides ample statistical power for OLS estimation with
-industry and year fixed effects.  The quarterly approach is documented as a
-rejected alternative in this section for transparency and reproducibility.
+% Full diagnostic tables deferred to appendix:
+% \input{tables/xbrl_coverage}       → Appendix
+% \input{tables/annual_vs_quarterly} → Appendix
