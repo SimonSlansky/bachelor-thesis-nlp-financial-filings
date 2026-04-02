@@ -46,6 +46,7 @@
 \usepackage{booktabs}       % better horizontal lines in tables
 \usepackage{tabularx}       % tables with longer texts
 \usepackage{longtable}      % multi-page tables
+\newenvironment{tablenotes}{\par\smallskip\small\let\item\relax}{} % lightweight table notes
 \makeatletter
 \@ifpackageloaded{xcolor}{
    \@ifpackagewith{xcolor}{usenames}{}{\PassOptionsToPackage{usenames}{xcolor}}

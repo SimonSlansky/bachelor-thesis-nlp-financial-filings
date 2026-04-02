@@ -495,20 +495,21 @@ _SEC_PATTERNS = {
 
 
 def _find_section(text, start_pats, end_pats):
-    best_start = -1
+    """Extract text between start/end markers, picking the match that
+    yields the longest section (avoids TOC entries and cross-references)."""
+    best_section = ""
     for pat in start_pats:
         for m in re.finditer(pat, text, re.IGNORECASE | re.DOTALL):
-            if m.end() > best_start:
-                best_start = m.end()
-    if best_start < 0:
-        return ""
-    remainder = text[best_start:]
-    earliest_end = len(remainder)
-    for pat in end_pats:
-        m = re.search(pat, remainder, re.IGNORECASE)
-        if m and m.start() < earliest_end:
-            earliest_end = m.start()
-    return remainder[:earliest_end].strip()
+            remainder = text[m.end():]
+            earliest_end = len(remainder)
+            for ep in end_pats:
+                em = re.search(ep, remainder, re.IGNORECASE)
+                if em and em.start() < earliest_end:
+                    earliest_end = em.start()
+            candidate = remainder[:earliest_end].strip()
+            if len(candidate) > len(best_section):
+                best_section = candidate
+    return best_section
 
 
 def _word_count(text):
