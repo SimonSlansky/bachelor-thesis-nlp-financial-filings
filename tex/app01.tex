@@ -27,3 +27,32 @@ The following tables supplement the discussion in Section~\ref{sec:annual_vs_qua
 \input{tables/annual_vs_quarterly}
 
 \input{tables/text_per_company}
+
+\section{XBRL Tag Provenance}
+\label{sec:tag_provenance}
+
+Table~\ref{tab:tag_provenance} reports, for each metric with multiple
+candidate XBRL tags, the number and share of firms locked to each tag
+by the per-firm tag-locking procedure described in
+Section~\ref{sec:xbrl_tags}.
+
+% TODO: Generate this table from data/diagnostics/tag_provenance.csv
+% after re-running the pipeline.
+\begin{table}[htbp]
+  \centering
+  \caption{Per-firm XBRL tag distribution}
+  \label{tab:tag_provenance}
+  \small
+  \begin{tabular}{llrr}
+    \toprule
+    Metric & Locked XBRL tag & Firms & \% \\
+    \midrule
+    \multicolumn{4}{c}{\emph{To be populated after pipeline re-run}} \\
+    \bottomrule
+  \end{tabular}
+  \begin{minipage}{0.9\linewidth}\vspace{4pt}\footnotesize
+  \emph{Notes.} For each (firm, metric) pair, the tag with the highest
+  within-firm year-count is selected; values from other tags are set to
+  missing. See Section~\ref{sec:xbrl_tags} for the rationale.
+  \end{minipage}
+\end{table}

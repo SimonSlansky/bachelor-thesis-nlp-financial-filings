@@ -99,3 +99,52 @@ included in Appendix~\ref{app:diagnostics} for completeness.
 % Full diagnostic tables deferred to appendix:
 % \input{tables/xbrl_coverage}       → Appendix
 % \input{tables/annual_vs_quarterly} → Appendix
+
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{XBRL Tag Consistency}
+\label{sec:xbrl_tags}
+% ─────────────────────────────────────────────────────────────────────────────
+
+A practical challenge of the XBRL Company Facts API is that a single
+accounting concept may be reported under alternative US-GAAP taxonomy tags.
+For instance, operating cash flow appears as either
+\texttt{NetCashProvided\-ByUsed\-InOperating\-Activities} (total, including
+discontinued operations) or
+\texttt{...ContinuingOperations} (continuing operations only).
+Net income may be tagged as \texttt{NetIncomeLoss}, \texttt{ProfitLoss},
+or \texttt{IncomeLossFrom\-ContinuingOperations}.
+Stockholders' equity can include or exclude the non-controlling interest.
+Although the concepts overlap substantially, they are not identical:
+combining them within a single firm's time series could introduce
+artificial breaks, while selecting one tag globally would discard firms
+that consistently report under the alternative.
+
+We resolve this with a \emph{per-firm tag-locking} procedure.
+For each (firm, metric) pair where multiple source tags exist, we count
+which XBRL tag each firm reports in the most fiscal years, lock the firm
+to that dominant tag, and set values from non-dominant tags to missing.
+This ensures within-firm time-series consistency---the critical requirement
+for panel regressions that identify effects from within-firm variation.
+
+The approach is justified on three grounds.
+First, cross-sectional comparability is a secondary concern in our
+specification because industry and year fixed effects absorb level
+differences between tag definitions, and standard errors are clustered
+by firm \parencite{sloan1996}.
+Second, the practical discrepancy between alternative tags is negligible
+for the vast majority of observations: for firms that report \emph{both}
+total and continuing-operations OCF in the same filing, the median
+difference is below 0.5\% of the larger value, with over 90\% of
+overlapping observations showing an exact match.  The gap arises only in
+the specific year a firm acquires or divests a segment---a single-year
+event that winsorisation at the 1st and 99th percentiles clips.
+Third, the US~GAAP XBRL taxonomy explicitly nests the alternative tags
+under the same balance-sheet or income-statement line item;
+\textcite{chen2019} and the SEC's own interactive-data rules
+\parencite{sec2009} treat them as equivalent for consistency-check
+purposes.
+
+Per-firm tag choices and the overlap diagnostic are reported in
+Appendix~\ref{app:variables}
+(Table~\ref{tab:tag_provenance}).
