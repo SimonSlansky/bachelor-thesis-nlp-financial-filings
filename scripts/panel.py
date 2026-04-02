@@ -3,7 +3,104 @@
 import numpy as np
 import pandas as pd
 
-from config import WINSORIZE_LOWER, WINSORIZE_UPPER
+from config import WINSORIZE_LOWER, WINSORIZE_UPPER, METRICS_WITH_PRIORITY
+
+
+# ── per-firm tag locking ──────────────────────────────────────────────────
+
+def _metrics_with_alternatives() -> dict[str, list[str]]:
+    """Return {metric_name: [tag1, tag2, ...]} for metrics with >1 source tag."""
+    from collections import defaultdict
+    tags_per_metric: dict[str, list[str]] = defaultdict(list)
+    for tag, metric, _pri in METRICS_WITH_PRIORITY:
+        tags_per_metric[metric].append(tag)
+    return {m: tags for m, tags in tags_per_metric.items() if len(tags) > 1}
+
+
+def lock_firm_tags(df: pd.DataFrame) -> pd.DataFrame:
+    """For each (firm, metric) with multiple source tags, keep only the
+    tag the firm uses most frequently.  This ensures within-firm time-series
+    consistency and prevents mixing economically different XBRL concepts.
+
+    Requires ``_tag_{metric}`` columns produced by ``extract_annual_facts``.
+    Returns *df* with inconsistent values set to NaN and a summary printed.
+    """
+    df = df.copy()
+    multi = _metrics_with_alternatives()
+    summary_rows: list[dict] = []
+
+    for metric, tags in multi.items():
+        tag_col = f"_tag_{metric}"
+        if tag_col not in df.columns:
+            continue
+
+        # For each firm, find the tag used in the most years
+        firm_tag_counts = (
+            df.loc[df[tag_col].notna()]
+            .groupby(["ticker", tag_col])
+            .size()
+            .reset_index(name="n")
+        )
+        if firm_tag_counts.empty:
+            continue
+        dominant = (
+            firm_tag_counts
+            .sort_values("n", ascending=False)
+            .drop_duplicates(subset="ticker", keep="first")
+            .set_index("ticker")[tag_col]
+        )
+
+        # Null out values where the observation's tag ≠ the firm's locked tag
+        before_valid = df[metric].notna().sum()
+        for ticker, locked_tag in dominant.items():
+            mask = (df["ticker"] == ticker) & df[tag_col].notna() & (df[tag_col] != locked_tag)
+            df.loc[mask, metric] = np.nan
+            df.loc[mask, tag_col] = np.nan
+        after_valid = df[metric].notna().sum()
+        nulled = before_valid - after_valid
+
+        # Summary statistics per tag
+        for tag in tags:
+            n_firms = (dominant == tag).sum()
+            summary_rows.append({
+                "metric": metric, "tag": tag,
+                "firms": n_firms,
+                "pct": n_firms / len(dominant) * 100 if len(dominant) else 0,
+            })
+
+        if nulled:
+            print(f"  {metric}: locked per-firm tags, nulled {nulled} cross-tag values")
+        else:
+            print(f"  {metric}: all values already consistent")
+
+    # Save diagnostic summary
+    if summary_rows:
+        summary_df = pd.DataFrame(summary_rows)
+        print("\n  Tag distribution across firms:")
+        for _, row in summary_df.iterrows():
+            print(f"    {row['metric']:25s} {row['tag']:60s} → {row['firms']:4.0f} firms ({row['pct']:.1f}%)")
+
+    return df
+
+
+def save_tag_diagnostics(df: pd.DataFrame, path) -> None:
+    """Save per-firm tag choices to a CSV for the thesis appendix."""
+    multi = _metrics_with_alternatives()
+    rows: list[dict] = []
+    for metric, _tags in multi.items():
+        tag_col = f"_tag_{metric}"
+        if tag_col not in df.columns:
+            continue
+        firm_tags = (
+            df.loc[df[tag_col].notna()]
+            .groupby("ticker")[tag_col]
+            .agg(lambda s: s.mode().iloc[0] if len(s) > 0 else np.nan)
+        )
+        for ticker, tag in firm_tags.items():
+            rows.append({"ticker": ticker, "metric": metric, "locked_tag": tag})
+    if rows:
+        pd.DataFrame(rows).to_csv(path, index=False)
+        print(f"  Tag diagnostics → {path.name}")
 
 
 # ── missing-metric imputation ─────────────────────────────────────────────
@@ -40,8 +137,9 @@ def add_financial_ratios(df: pd.DataFrame, date_col: str) -> pd.DataFrame:
     """Compute financial ratios from raw metrics.
 
     Ratios: log_total_assets, leverage, roa, asset_growth,
-            current_ratio, accruals, ocf_to_assets, operating_roa.
-    Winsorizes ratio variables at the configured percentiles.
+            current_ratio, accruals, ocf_to_assets.
+    Winsorization is NOT done here — call ``winsorize_ratios`` on the
+    final sample after all filtering.
     """
     df = df.sort_values(["ticker", date_col]).reset_index(drop=True)
 
@@ -52,8 +150,12 @@ def add_financial_ratios(df: pd.DataFrame, date_col: str) -> pd.DataFrame:
     df["roa"] = np.where(df["total_assets"] > 0, df["net_income"] / df["total_assets"], np.nan)
 
     # Asset growth: YoY (shift 1 period = 1 fiscal year)
+    # Guard: only compute when consecutive rows are ~1 year apart;
+    # FYE changes can leave multi-year gaps after transition filtering.
     lag = df.groupby("ticker")["total_assets"].shift(1)
-    df["asset_growth"] = np.where(lag > 0, (df["total_assets"] - lag) / lag, np.nan)
+    days_gap = pd.to_datetime(df[date_col]).groupby(df["ticker"]).diff().dt.days
+    valid_gap = (days_gap >= 300) & (days_gap <= 400)
+    df["asset_growth"] = np.where((lag > 0) & valid_gap, (df["total_assets"] - lag) / lag, np.nan)
 
     df["current_ratio"] = np.where(
         df["liabilities_current"] > 0,
@@ -73,23 +175,23 @@ def add_financial_ratios(df: pd.DataFrame, date_col: str) -> pd.DataFrame:
             np.nan,
         )
 
-    if "operating_income" in df.columns:
-        df["operating_roa"] = np.where(
-            df["total_assets"] > 0,
-            df["operating_income"] / df["total_assets"],
-            np.nan,
-        )
+    return df
 
-    # winsorize
-    for col in ("leverage", "roa", "asset_growth", "current_ratio",
-                "accruals", "ocf_to_assets", "operating_roa"):
+
+WINSORIZE_COLS = ("leverage", "roa", "asset_growth", "current_ratio",
+                  "accruals", "ocf_to_assets")
+
+
+def winsorize_ratios(df: pd.DataFrame) -> pd.DataFrame:
+    """Clip ratio columns at configured percentiles on the FINAL sample."""
+    df = df.copy()
+    for col in WINSORIZE_COLS:
         if col not in df.columns:
             continue
         s = df[col].dropna()
         if len(s) > 0:
             lo, hi = s.quantile(WINSORIZE_LOWER), s.quantile(WINSORIZE_UPPER)
             df[col] = df[col].clip(lower=lo, upper=hi)
-
     return df
 
 
@@ -136,6 +238,36 @@ def drop_earliest_year(df: pd.DataFrame) -> pd.DataFrame:
     return df.loc[mask].reset_index(drop=True)
 
 
+# ── firm-level return coverage filter ──────────────────────────────────────
+
+def drop_low_return_coverage(
+    df: pd.DataFrame, vol_col: str, min_coverage: float,
+) -> pd.DataFrame:
+    """Drop firms where the share of non-NaN *vol_col* obs < *min_coverage*."""
+    stats = df.groupby("ticker")[vol_col].agg(["count", "size"])
+    stats["cov"] = stats["count"] / stats["size"]
+    keep = stats.loc[stats["cov"] >= min_coverage].index
+    n_before = df["ticker"].nunique()
+    df = df.loc[df["ticker"].isin(keep)].reset_index(drop=True)
+    n_after = df["ticker"].nunique()
+    dropped = n_before - n_after
+    if dropped:
+        print(f"  Dropped {dropped} firms with <{min_coverage:.0%} return coverage "
+              f"({n_before} → {n_after} firms)")
+    return df
+
+
+# ── fiscal-year cap ────────────────────────────────────────────────────────
+
+def cap_fiscal_year(df: pd.DataFrame, max_fy: int) -> pd.DataFrame:
+    """Remove observations with fiscal_year > *max_fy*."""
+    mask = df["fiscal_year"] <= max_fy
+    removed = (~mask).sum()
+    if removed:
+        print(f"  Removed {removed} obs with fiscal_year > {max_fy}")
+    return df.loc[mask].reset_index(drop=True)
+
+
 # ── lagged volatility ─────────────────────────────────────────────────────
 
 def add_lagged_volatility(df: pd.DataFrame, vol_col: str, date_col: str) -> pd.DataFrame:
@@ -151,10 +283,10 @@ ANNUAL_COLS = [
     "ticker", "company_name", "sic", "fiscal_year_end",
     "year_end", "filing_date", "fiscal_year", "accession_number",
     "net_income", "total_assets", "total_liabilities",
-    "operating_income", "operating_cash_flow", "eps_diluted",
+    "operating_income", "operating_cash_flow",
     "return_next_year", "vol_next_year", "lagged_vol",
     "log_total_assets", "leverage", "roa", "asset_growth",
-    "current_ratio", "accruals", "ocf_to_assets", "operating_roa",
+    "current_ratio", "accruals", "ocf_to_assets",
 ]
 
 
