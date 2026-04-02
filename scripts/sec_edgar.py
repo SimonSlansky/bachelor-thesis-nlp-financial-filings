@@ -6,7 +6,7 @@ import requests
 
 from config import (
     SEC_HEADERS, REQUEST_SLEEP, MAX_FILING_LAG_DAYS,
-    METRICS_WITH_PRIORITY, FLOW_METRICS, INSTANT_METRICS,
+    METRICS_WITH_PRIORITY, FLOW_METRICS,
     EXCLUDED_SIC_RANGE,
     ANNUAL_FLOW_RANGE,
 )
@@ -101,13 +101,24 @@ def extract_annual_facts(meta: dict, n_years: int) -> pd.DataFrame:
     """Extract annual (10-K) financial facts for one company.
 
     Returns one row per fiscal year-end with columns for each metric.
+
+    Two-pass approach:
+      Pass 1 — collect ALL valid facts grouped by (end_date, tag).
+      Pass 2 — for each end_date, decide amendment vs original, then
+               resolve metric priorities.
+    This avoids the bug where an amendment discovered mid-loop clears
+    metrics populated by earlier tags that the loop won't revisit.
     """
     us_gaap = _fetch_company_facts(meta)
     if us_gaap is None:
         return pd.DataFrame()
 
     fye = meta["fiscal_year_end"]
-    records: dict[pd.Timestamp, dict] = {}
+
+    # ── Pass 1: collect all valid facts ────────────────────────────────────
+    # Key: (end_date, tag) → list of fact dicts
+    from collections import defaultdict
+    raw_facts: dict[pd.Timestamp, list[tuple[str, str, int, dict]]] = defaultdict(list)
 
     for tag, metric, priority in METRICS_WITH_PRIORITY:
         for fact in _usd_facts(us_gaap, tag):
@@ -123,40 +134,63 @@ def extract_annual_facts(meta: dict, n_years: int) -> pd.DataFrame:
             if pd.isna(filing_date) or (filing_date - end).days > MAX_FILING_LAG_DAYS:
                 continue
 
-            is_amendment = fact.get("form", "").endswith("/A")
-            accession = fact.get("accn")
-            rec = records.setdefault(end, {
-                "ticker": meta["ticker"],
-                "company_name": meta["company_name"],
-                "year_end": end,
-                "filing_date": filing_date,
-                "fiscal_year": _fiscal_year(end, fye),
-                "accession_number": accession,
-                "_amend": is_amendment,
-            })
+            raw_facts[end].append((tag, metric, priority, fact))
 
-            # amendment beats original; among same type keep earlier filing
-            if is_amendment and not rec["_amend"]:
-                # Upgrading to amendment: clear all stale metric values
-                rec["filing_date"] = filing_date
-                rec["accession_number"] = accession
-                rec["_amend"] = True
-                for m2 in {m for _, m, _ in METRICS_WITH_PRIORITY}:
-                    rec.pop(m2, None)
-                    rec.pop(f"_p_{m2}", None)
-            elif not is_amendment and rec["_amend"]:
-                continue
-            elif filing_date > rec["filing_date"]:
-                continue
+    # ── Pass 2: resolve amendments and priorities per end_date ─────────────
+    records: dict[pd.Timestamp, dict] = {}
 
-            if priority < rec.get(f"_p_{metric}", 999):
+    for end, fact_list in raw_facts.items():
+        # Determine whether we have an amendment for this period
+        has_amendment = any(f.get("form", "").endswith("/A") for _, _, _, f in fact_list)
+
+        # If amendment exists, keep only amendment facts; otherwise only originals
+        if has_amendment:
+            fact_list = [(t, m, p, f) for t, m, p, f in fact_list
+                         if f.get("form", "").endswith("/A")]
+        else:
+            fact_list = [(t, m, p, f) for t, m, p, f in fact_list
+                         if not f.get("form", "").endswith("/A")]
+
+        if not fact_list:
+            continue
+
+        # filing_date = earliest amendment date (when corrected info first
+        # became public), used to anchor the return-measurement window.
+        all_filed = [pd.to_datetime(f.get("filed"), errors="coerce")
+                     for _, _, _, f in fact_list]
+        earliest_filing = min(d for d in all_filed if pd.notna(d))
+
+        rec = {
+            "ticker": meta["ticker"],
+            "company_name": meta["company_name"],
+            "year_end": end,
+            "filing_date": earliest_filing,
+            "fiscal_year": _fiscal_year(end, fye),
+            "accession_number": None,  # set below from winning fact
+        }
+
+        # Resolve metric priorities: lowest priority number wins.
+        # Among same-priority facts, prefer the LATEST filing — the
+        # most recent amendment supersedes all prior values.
+        for tag, metric, priority, fact in fact_list:
+            fd = pd.to_datetime(fact.get("filed"), errors="coerce")
+            cur_pri = rec.get(f"_p_{metric}", 999)
+            cur_fd = rec.get(f"_fd_{metric}")
+            if priority < cur_pri or (priority == cur_pri and cur_fd is not None and fd > cur_fd):
                 rec[metric] = fact["val"]
                 rec[f"_p_{metric}"] = priority
+                rec[f"_tag_{metric}"] = tag
+                rec[f"_fd_{metric}"] = fd
+                rec["accession_number"] = fact.get("accn")
+
+        records[end] = rec
 
     df = pd.DataFrame(records.values())
     if df.empty:
         return df
-    df = df[[c for c in df.columns if not c.startswith("_")]]
+    # Keep tag provenance columns (prefixed _tag_) but drop internal helper cols
+    df = df[[c for c in df.columns
+             if not c.startswith("_p_") and not c.startswith("_fd_")]]
     df = df.sort_values("year_end").tail(n_years).reset_index(drop=True)
     return df
 
@@ -198,14 +232,29 @@ def _usd_facts(us_gaap: dict, tag: str) -> list[dict]:
 
 
 def _fiscal_year(end_date: pd.Timestamp, fye_month: int) -> int:
-    return end_date.year + 1 if end_date.month > fye_month else end_date.year
+    m = end_date.month
+    # Tolerate a few days' overshoot past the nominal FYE-month boundary.
+    # E.g. FYE=Jan, end_date=Feb 2 → still the same fiscal year.
+    # For FYE=Dec, early-January dates (52/53-week filers) belong to the
+    # prior calendar year's fiscal year.
+    next_m = (fye_month % 12) + 1
+    adjusted = False
+    if m == next_m and end_date.day <= 5:
+        m = fye_month
+        adjusted = True
+    fy = end_date.year + 1 if m > fye_month else end_date.year
+    # When the tolerance fires and the raw month was in a later calendar year
+    # than the FYE month implies, subtract 1 (only matters for FYE=Dec→Jan).
+    if adjusted and end_date.month < fye_month:
+        fy -= 1
+    return fy
 
 
 def _fiscal_quarter_and_year(end_date: pd.Timestamp, fye_month: int) -> tuple[int, str | None]:
     diff = (end_date.month - fye_month) % 12
     qmap = {3: "Q1", 6: "Q2", 9: "Q3", 0: "Q4"}
     fq = qmap.get(diff)
-    fy = end_date.year + 1 if end_date.month > fye_month else end_date.year
+    fy = _fiscal_year(end_date, fye_month)
     return fy, fq
 
 
