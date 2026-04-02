@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 """Comprehensive annual-vs-quarterly diagnostic.
 
-Consolidates three tests into a single script with LaTeX-ready output:
+Consolidates two tests into a single script with LaTeX-ready output:
   A. XBRL financial-data coverage (annual vs quarterly metrics)
   B. Q4 reliability (annual − Q1−Q2−Q3 vs explicit Q4)
-  C. Textual-data availability (10-K vs 10-Q: MD&A and Risk Factors)
 
 Outputs:
   - Console summary
@@ -20,7 +19,6 @@ import sys
 import time
 import json
 import statistics
-from html.parser import HTMLParser
 from pathlib import Path
 
 import numpy as np
@@ -49,9 +47,6 @@ DIAG_DIR.mkdir(parents=True, exist_ok=True)
 
 # ── sample config ──────────────────────────────────────────────────────────
 SAMPLE_SIZE = 30            # companies for XBRL tests (A, B)
-TEXT_SAMPLE_SIZE = 15       # companies for text test (C) — downloads are slow
-N_10K = 3                   # 10-K filings per company for text test
-N_10Q = 6                   # 10-Q filings per company for text test
 
 # Tags to test in Part B (Q4 reliability)
 Q4_TAGS = [
@@ -387,7 +382,7 @@ annual figure. Sample: 30 non-financial firms, all available fiscal years.
 
 
 # ═══════════════════════════════════════════════════════════════════════════
-# Part C: Textual Data Availability (10-K vs 10-Q)
+# Summary & Recommendation
 # ═══════════════════════════════════════════════════════════════════════════
 
 class _TextExtractor(HTMLParser):
@@ -811,7 +806,6 @@ def main():
     # Run all three parts
     run_part_a(sample, xbrl_cache)
     run_part_b(sample, xbrl_cache)
-    run_part_c(sample)
 
     # Master summary table
     print("\n" + "=" * 70)
