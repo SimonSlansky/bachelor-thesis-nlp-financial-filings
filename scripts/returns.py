@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import yfinance as yf
 
-from config import POST_FILING_LAG_DAYS, MIN_FIRM_COVERAGE
+from config import POST_FILING_LAG_DAYS
 
 ANNUALISATION_FACTOR = np.sqrt(252)
 
@@ -38,11 +38,10 @@ def compute_returns_and_volatility(
         return df
 
     min_date = pd.to_datetime(df[date_col].min())
-    max_date = pd.to_datetime(df[date_col].max())
-    download_end = max_date + pd.Timedelta(days=window_days + 60)
+    max_filing = pd.to_datetime(df["filing_date"]).max()
+    download_end = max_filing + pd.Timedelta(days=POST_FILING_LAG_DAYS + window_days + 10)
 
     results: list[dict] = []
-    firm_stats: list[dict] = []
 
     for ticker in sorted(df["ticker"].unique()):
         prices = yf.download(
@@ -52,8 +51,17 @@ def compute_returns_and_volatility(
             progress=False,
             auto_adjust=True,
         )
-        if prices.empty or "Close" not in prices.columns:
+        if prices.empty:
             print(f"  {ticker}: no price data")
+            continue
+
+        # yfinance ≥1.2 returns MultiIndex columns even for a single ticker;
+        # flatten to simple column names so .iloc[] returns scalars.
+        if isinstance(prices.columns, pd.MultiIndex):
+            prices = prices.droplevel("Ticker", axis=1)
+
+        if "Close" not in prices.columns:
+            print(f"  {ticker}: no Close column")
             continue
 
         closes = prices[["Close"]].dropna()
@@ -83,15 +91,14 @@ def compute_returns_and_volatility(
             usable += 1
 
         n = len(firm)
-        cov = usable / n if n else 0
-        firm_stats.append({"ticker": ticker, "total": n, "with_return": usable, "coverage": cov})
         print(f"  {ticker}: {usable}/{n} periods")
 
     df_ret = pd.DataFrame(results)
 
-    if not df_ret.empty:
-        keep = {r["ticker"] for r in firm_stats if r["coverage"] >= MIN_FIRM_COVERAGE}
-        df_ret = df_ret.loc[df_ret["ticker"].isin(keep)]
+    # Coverage filtering is deferred to panel.drop_low_return_coverage(),
+    # which runs AFTER drop_earliest_year and cap_fiscal_year shrink the
+    # denominator.  Pre-filtering here would zero returns for firms whose
+    # post-trim coverage actually exceeds the threshold.
 
     if df_ret.empty:
         df = df.copy()
