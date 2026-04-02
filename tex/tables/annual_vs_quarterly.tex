@@ -7,14 +7,14 @@
 Criterion & Annual (10-K) & Quarterly (10-Q) \\
 \midrule
 Filing type & 10-K & 10-Q (Q1--Q3 only) \\
-MD\&A availability & 100\% (Item 7) & $\sim$93\% (Part I, Item 2) \\
-Risk Factors availability & 100\% (Item 1A) & $\sim$7\% substantive \\
-Risk Factors content & Median $\sim$25{,}000 words & Boilerplate reference \\
+MD\&A availability & 93\% (Item 7) & 100\% (Part I, Item 2) \\
+Risk Factors availability & 100\% (Item 1A) & $\sim$52\% substantive \\
+Risk Factors content & Median $\sim$30{,}000 words & Median $\sim$9{,}000 words (substantive); 48\% boilerplate \\
 Q4 financial data & Included in 10-K & Unreliable / absent \\
 Explicit Q4 XBRL facts & N/A & 3--43\% of firm-years \\
 Implied Q4 mismatch rate & N/A & $\sim$11\% of comparisons \\
 Cash-flow quarterly coverage & N/A & 7\% of firm-years \\
-NLP variable: $\Delta$Risk & Feasible & Not feasible \\
+NLP variable: $\Delta$Risk & Feasible & Limited (52\% substantive) \\
 NLP variable: $\Delta$Sentiment & Feasible & Feasible (noisier) \\
 NLP variable: TextSim & YoY (standard) & QoQ (unclear construct) \\
 Literature alignment & Standard & Uncommon \\
@@ -26,7 +26,8 @@ Expected observations & $\sim$9{,}000 firm-years & $\sim$27{,}000 firm-quarters 
 \item \textit{Note:} Summary based on diagnostic tests of 30 non-financial companies
 (XBRL, Q4 tests) and 15 companies (textual tests). Risk Factors in 10-Q filings
 are required by SEC Regulation S-K Item 1A only when there are ``material changes''
-from the most recent 10-K, which rarely occurs. See
+from the most recent 10-K; roughly half of companies include substantive risk
+disclosures, while the rest provide only a boilerplate reference. See
 Tables~\ref{tab:xbrl_coverage},~\ref{tab:q4_reliability},
 and~\ref{tab:text_availability} for detailed results.
 \end{tablenotes}

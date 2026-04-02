@@ -458,6 +458,10 @@ def _download_filing(cik, accession, primary_doc):
 
 
 # Section extraction patterns
+# NOTE: End patterns use item number + section title to avoid matching
+# inline cross-references like "see Part II, Item 8, 'Financial Statements'".
+# Bare fallback end patterns (e.g. ITEM\s*8\b) were removed because they
+# matched cross-references mid-section, truncating extraction to ~200 words.
 _SEC_PATTERNS = {
     "10-K_mda_start": [
         r"item\s*7[.\s\u2014\u2013\-–—:]*\s*management['\u2019]?s?\s*discussion",
@@ -466,7 +470,6 @@ _SEC_PATTERNS = {
     "10-K_mda_end": [
         r"item\s*7a[.\s\u2014\u2013\-–—:]*\s*quantitative",
         r"item\s*8[.\s\u2014\u2013\-–—:]*\s*financial",
-        r"ITEM\s*7A\b", r"ITEM\s*8\b",
     ],
     "10-K_risk_start": [
         r"item\s*1a[.\s\u2014\u2013\-–—:]*\s*risk\s*factors",
@@ -475,21 +478,18 @@ _SEC_PATTERNS = {
     "10-K_risk_end": [
         r"item\s*1b[.\s\u2014\u2013\-–—:]*\s*unresolved",
         r"item\s*2[.\s\u2014\u2013\-–—:]*\s*properties",
-        r"ITEM\s*1B\b", r"ITEM\s*2\b",
     ],
     "10-Q_mda_start": [
         r"item\s*2[.\s\u2014\u2013\-–—:]*\s*management['\u2019]?s?\s*discussion",
     ],
     "10-Q_mda_end": [
         r"item\s*3[.\s\u2014\u2013\-–—:]*\s*quantitative",
-        r"ITEM\s*3\b",
     ],
     "10-Q_risk_start": [
         r"item\s*1a[.\s\u2014\u2013\-–—:]*\s*risk\s*factors",
     ],
     "10-Q_risk_end": [
         r"item\s*2[.\s\u2014\u2013\-–—:]*\s*unregistered",
-        r"ITEM\s*2\b",
     ],
 }
 
@@ -748,14 +748,14 @@ def write_summary_table():
 Criterion & Annual (10-K) & Quarterly (10-Q) \\
 \midrule
 Filing type & 10-K & 10-Q (Q1--Q3 only) \\
-MD\&A availability & 100\% (Item 7) & $\sim$93\% (Part I, Item 2) \\
-Risk Factors availability & 100\% (Item 1A) & $\sim$7\% substantive \\
-Risk Factors content & Median $\sim$25{,}000 words & Boilerplate reference \\
+MD\&A availability & 93\% (Item 7) & 100\% (Part I, Item 2) \\
+Risk Factors availability & 100\% (Item 1A) & $\sim$52\% substantive \\
+Risk Factors content & Median $\sim$30{,}000 words & Median $\sim$9{,}000 words (substantive); 48\% boilerplate \\
 Q4 financial data & Included in 10-K & Unreliable / absent \\
 Explicit Q4 XBRL facts & N/A & 3--43\% of firm-years \\
 Implied Q4 mismatch rate & N/A & $\sim$11\% of comparisons \\
 Cash-flow quarterly coverage & N/A & 7\% of firm-years \\
-NLP variable: $\Delta$Risk & Feasible & Not feasible \\
+NLP variable: $\Delta$Risk & Feasible & Limited (52\% substantive) \\
 NLP variable: $\Delta$Sentiment & Feasible & Feasible (noisier) \\
 NLP variable: TextSim & YoY (standard) & QoQ (unclear construct) \\
 Literature alignment & Standard & Uncommon \\
@@ -767,7 +767,8 @@ Expected observations & $\sim$9{,}000 firm-years & $\sim$27{,}000 firm-quarters 
 \item \textit{Note:} Summary based on diagnostic tests of 30 non-financial companies
 (XBRL, Q4 tests) and 15 companies (textual tests). Risk Factors in 10-Q filings
 are required by SEC Regulation S-K Item 1A only when there are ``material changes''
-from the most recent 10-K, which rarely occurs. See
+from the most recent 10-K; roughly half of companies include substantive risk
+disclosures, while the rest provide only a boilerplate reference. See
 Tables~\ref{tab:xbrl_coverage},~\ref{tab:q4_reliability},
 and~\ref{tab:text_availability} for detailed results.
 \end{tablenotes}
