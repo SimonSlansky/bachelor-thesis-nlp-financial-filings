@@ -145,6 +145,21 @@ under the same balance-sheet or income-statement line item;
 \parencite{sec2009} treat them as equivalent for consistency-check
 purposes.
 
+One residual limitation deserves mention.  The accruals ratio is
+defined as $(\text{NI} - \text{OCF}) / \text{TA}$, so its
+interpretation hinges on NI and OCF measuring income and cash flow at
+the \emph{same} scope---total or continuing operations.  Our tag-locking
+procedure enforces consistency \emph{within} each metric, but not
+\emph{across} metrics: 22~firms (approximately 4\% of the sample) lock
+to the continuing-operations OCF tag while using total net income.  For
+these firms the accruals ratio inadvertently captures the cash-flow
+effect of discontinued operations, introducing modest noise.  We
+consider this acceptable for three reasons: the affected share is small,
+winsorisation at the 1st and 99th percentiles clips the most extreme
+values, and the same cross-tag mismatch is present---and typically
+unaddressed---in the large-scale XBRL studies we build on
+\parencite{chen2019}.
+
 Per-firm tag choices and the overlap diagnostic are reported in
 Appendix~\ref{app:variables}
 (Table~\ref{tab:tag_provenance}).

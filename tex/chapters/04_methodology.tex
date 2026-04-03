@@ -51,6 +51,22 @@
 % - OLS with industry (SIC-2) and year fixed effects
 % - Standard errors clustered by firm
 %
+% NOTE (from pipeline audit): 60\% of consecutive (firm, year) return
+% windows overlap because the 365-day post-filing window often extends
+% past the next year's filing date.  This creates serial correlation in
+% both return\_next\_year and vol\_next\_year within firms.  Firm-clustered
+% standard errors (Petersen 2009) are robust to arbitrary within-firm
+% dependence, so no adjustment is needed---but the overlap should be
+% acknowledged here when writing this section.
+%
+% NOTE (from pipeline audit): 12~firms changed their fiscal year-end
+% during the sample period (e.g.~ADM from June to December, BBY from
+% March to January).  The transition year is removed by the pipeline,
+% leaving one multi-year gap in the firm's time series.  Asset growth is
+% set to NaN at the gap; lagged volatility and returns are unaffected
+% because they are anchored to filing dates.  Mention this in the
+% estimation or data-construction discussion.
+%
 % \section{Model Comparison}
 % - Incremental $R^2$ across the three nested models
 % - F-test for joint significance of textual / divergence terms
