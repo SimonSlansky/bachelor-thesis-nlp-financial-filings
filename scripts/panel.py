@@ -78,7 +78,7 @@ def lock_firm_tags(df: pd.DataFrame) -> pd.DataFrame:
         summary_df = pd.DataFrame(summary_rows)
         print("\n  Tag distribution across firms:")
         for _, row in summary_df.iterrows():
-            print(f"    {row['metric']:25s} {row['tag']:60s} → {row['firms']:4.0f} firms ({row['pct']:.1f}%)")
+            print(f"    {row['metric']:25s} {row['tag']:60s} -> {row['firms']:4.0f} firms ({row['pct']:.1f}%)")
 
     return df
 
@@ -100,7 +100,7 @@ def save_tag_diagnostics(df: pd.DataFrame, path) -> None:
             rows.append({"ticker": ticker, "metric": metric, "locked_tag": tag})
     if rows:
         pd.DataFrame(rows).to_csv(path, index=False)
-        print(f"  Tag diagnostics → {path.name}")
+        print(f"  Tag diagnostics -> {path.name}")
 
 
 # ── missing-metric imputation ─────────────────────────────────────────────
@@ -225,7 +225,7 @@ def filter_transitions_and_duplicates(df: pd.DataFrame) -> pd.DataFrame:
     df = df.drop(columns=[c for c in df.columns if c.startswith("_")])
     removed = n_before - len(df)
     if removed:
-        print(f"  Removed {removed} transition/duplicate rows ({n_before} → {len(df)})")
+        print(f"  Removed {removed} transition/duplicate rows ({n_before} -> {len(df)})")
     return df.reset_index(drop=True)
 
 
@@ -253,7 +253,7 @@ def drop_low_return_coverage(
     dropped = n_before - n_after
     if dropped:
         print(f"  Dropped {dropped} firms with <{min_coverage:.0%} return coverage "
-              f"({n_before} → {n_after} firms)")
+              f"({n_before} -> {n_after} firms)")
     return df
 
 
@@ -295,5 +295,5 @@ def save_panel(df: pd.DataFrame, path, columns: list[str]) -> None:
     cols = [c for c in columns if c in df.columns]
     out = df[cols]
     out.to_csv(path, index=False)
-    print(f"  Saved {path.name}: {out['ticker'].nunique()} firms × {len(out)} obs "
-          f"[{out['year_end'].min()} — {out['year_end'].max()}]")
+    print(f"  Saved {path.name}: {out['ticker'].nunique()} firms x {len(out)} obs "
+          f"[{out['year_end'].min()} - {out['year_end'].max()}]")
