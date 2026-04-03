@@ -250,14 +250,6 @@ def _fiscal_year(end_date: pd.Timestamp, fye_month: int) -> int:
     return fy
 
 
-def _fiscal_quarter_and_year(end_date: pd.Timestamp, fye_month: int) -> tuple[int, str | None]:
-    diff = (end_date.month - fye_month) % 12
-    qmap = {3: "Q1", 6: "Q2", 9: "Q3", 0: "Q4"}
-    fq = qmap.get(diff)
-    fy = _fiscal_year(end_date, fye_month)
-    return fy, fq
-
-
 # ── XBRL fact validators (annual) ─────────────────────────────────────────
 
 def _valid_annual_flow(fact: dict) -> bool:
