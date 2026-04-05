@@ -30,6 +30,7 @@ from panel import (
     add_lagged_volatility, save_panel, ANNUAL_COLS,
     lock_firm_tags, save_tag_diagnostics,
 )
+from text_parser import load_cik_map, build_text_dataset
 
 # ── pipeline tracker ──────────────────────────────────────────────────────
 
@@ -176,6 +177,12 @@ def main() -> None:
     # 9. Save
     print("\nSaving final panel …")
     save_panel(df_all, DATA_DIR / "annual_panel.csv", ANNUAL_COLS)
+
+    # 10. Extract 10-K text sections (Item 1A, Item 7)
+    print("\nExtracting 10-K text sections …")
+    cik_map = load_cik_map()
+    build_text_dataset(df_all, cik_map)
+
     print("\nDone.")
 
 

@@ -124,4 +124,25 @@ METRICS_WITH_PRIORITY: list[tuple[str, str, int]] = [
 ]
 
 FLOW_METRICS = {"net_income", "operating_income", "operating_cash_flow"}
-INSTANT_METRICS = {m for _, m, _ in METRICS_WITH_PRIORITY if m not in FLOW_METRICS}
+
+# ---------------------------------------------------------------------------
+# Tags that are economically equivalent and safe to mix within a firm.
+# Operating cash flow: the "ContinuingOperations" variant was introduced in
+#   later XBRL taxonomies; for firms without material discontinued operations
+#   (the vast majority) both tags report the identical figure.
+# Net income: ProfitLoss includes NCI, NetIncomeLoss excludes it.  For large
+#   US firms NCI is typically <0.5 % of total assets, making the accruals and
+#   ROA impact negligible (Hribar & Collins 2002 treat OCF the same way).
+# IncomeLossFromContinuingOperations is NOT included — it deliberately
+#   excludes discontinued operations, which can be material.
+# ---------------------------------------------------------------------------
+EQUIVALENT_TAG_GROUPS: dict[str, set[str]] = {
+    "operating_cash_flow": {
+        "NetCashProvidedByUsedInOperatingActivities",
+        "NetCashProvidedByUsedInOperatingActivitiesContinuingOperations",
+    },
+    "net_income": {
+        "NetIncomeLoss",
+        "ProfitLoss",
+    },
+}

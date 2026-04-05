@@ -167,6 +167,7 @@ def extract_annual_facts(meta: dict, n_years: int) -> pd.DataFrame:
             "filing_date": earliest_filing,
             "fiscal_year": _fiscal_year(end, fye),
             "accession_number": None,  # set below from winning fact
+            "form_type": "10-K/A" if has_amendment else "10-K",
         }
 
         # Resolve metric priorities: lowest priority number wins.

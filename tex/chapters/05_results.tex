@@ -5,11 +5,6 @@
 
 % TODO: Structure
 %
-% \section{Baseline Results (Financial Controls + Lagged Volatility)}
-% - Table with coefficients: lagged vol, size, leverage, ROA, asset growth
-% - Interpretation: vol persistence, size-vol relation, leverage-vol relation
-% - Benchmark $R^2$
-%
 % \section{Text Model Results (H1)}
 % - Coefficients for $\Delta$Sentiment, $\Delta$Risk, TextSim
 % - Incremental $R^2$ over baseline
@@ -28,3 +23,67 @@
 % \section{Economic Magnitude}
 % - Portfolio sorts by divergence quartile → spread in future volatility
 % - What does a 1-SD increase in divergence imply for annual vol?
+
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Baseline: Financial Determinants of Volatility}
+\label{sec:baseline}
+% ─────────────────────────────────────────────────────────────────────────────
+
+Before introducing textual variables, we establish the predictive
+power of standard financial determinants over future stock return
+volatility.  Table~\ref{tab:baseline} reports OLS estimates of post-filing
+annualised volatility on progressively richer sets of financial controls,
+with two-digit SIC industry and fiscal-year fixed effects absorbed in all
+specifications and standard errors clustered at the firm level.
+
+\input{tables/baseline_regression}
+
+\paragraph{Volatility persistence.}
+Column~(1) includes only lagged volatility ($\sigma_{i,t}$) alongside the
+fixed effects.  Its coefficient of $0.67$ ($t = 32.0$) confirms the
+well-documented persistence of firm-level return volatility: a one
+percentage-point increase in last year's annualised volatility is
+associated with a two-thirds percentage-point increase in next year's
+volatility.  Even this parsimonious specification, combined with industry
+and year fixed effects, explains roughly 63\% of the variation in
+post-filing volatility, indicating that the bulk of the predictable
+component of volatility is mechanical.
+
+\paragraph{Firm size and capital structure.}
+Column~(2) adds firm size, measured as the natural logarithm of total
+assets, and leverage, defined as total liabilities over total assets.
+Size enters with a negative and highly significant coefficient
+($-0.016$, $t = -7.3$): all else equal, larger firms exhibit lower
+future volatility, consistent with their greater diversification, deeper
+analyst coverage, and more liquid stock markets
+\parencite{campbell2014}.  Leverage is economically negligible and
+statistically insignificant ($t = 0.3$), likely because the
+industry fixed effects already absorb much of the cross-sectional
+variation in capital structure---leverage norms differ markedly by
+industry---and because the leverage--volatility link operates partly
+through the lagged-volatility channel (more leveraged firms had higher
+past volatility).
+
+\paragraph{Profitability and growth.}
+The full specification in Column~(3) adds return on assets and asset
+growth.  ROA carries a large negative coefficient ($-0.226$, $t = -8.0$):
+more profitable firms face lower future volatility, reflecting both
+lower fundamental uncertainty and a reduced probability of financial
+distress.  Asset growth enters positively ($+0.027$, $t = 3.2$),
+consistent with the intuition that rapid expansion---whether through
+investment or acquisition---introduces additional uncertainty about
+future cash flows.  The incremental adjusted~$R^2$ from these two
+variables is modest (0.651 vs.\ 0.639), indicating that profitability
+and growth refine the prediction beyond what size and past volatility
+already capture, but do not dominate it.
+
+\paragraph{Benchmark for textual analysis.}
+The full baseline model explains 65.1\% of the variation in post-filing
+volatility.  This adjusted~$R^2$ serves as the benchmark against which
+subsequent models---augmented with textual features and the divergence
+measure---will be evaluated.  Any incremental explanatory power from
+narrative disclosures must exceed this already high bar, which is
+consistent with the view that financial-statement variables and
+volatility persistence jointly account for the majority of predictable
+firm-level risk.

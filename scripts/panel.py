@@ -3,7 +3,10 @@
 import numpy as np
 import pandas as pd
 
-from config import WINSORIZE_LOWER, WINSORIZE_UPPER, METRICS_WITH_PRIORITY
+from config import (
+    WINSORIZE_LOWER, WINSORIZE_UPPER, METRICS_WITH_PRIORITY,
+    EQUIVALENT_TAG_GROUPS,
+)
 
 
 # ── per-firm tag locking ──────────────────────────────────────────────────
@@ -22,6 +25,10 @@ def lock_firm_tags(df: pd.DataFrame) -> pd.DataFrame:
     tag the firm uses most frequently.  This ensures within-firm time-series
     consistency and prevents mixing economically different XBRL concepts.
 
+    Tags listed in ``EQUIVALENT_TAG_GROUPS`` are treated as interchangeable
+    (e.g. both OCF tags are taxonomy variants of the same concept) and are
+    exempt from locking.
+
     Requires ``_tag_{metric}`` columns produced by ``extract_annual_facts``.
     Returns *df* with inconsistent values set to NaN and a summary printed.
     """
@@ -33,6 +40,8 @@ def lock_firm_tags(df: pd.DataFrame) -> pd.DataFrame:
         tag_col = f"_tag_{metric}"
         if tag_col not in df.columns:
             continue
+
+        equiv = EQUIVALENT_TAG_GROUPS.get(metric, set())
 
         # For each firm, find the tag used in the most years
         firm_tag_counts = (
@@ -50,10 +59,21 @@ def lock_firm_tags(df: pd.DataFrame) -> pd.DataFrame:
             .set_index("ticker")[tag_col]
         )
 
-        # Null out values where the observation's tag ≠ the firm's locked tag
+        # Null out values where the observation's tag ≠ the firm's locked tag,
+        # UNLESS both the observation's tag and the locked tag belong to the
+        # same equivalence group.
         before_valid = df[metric].notna().sum()
         for ticker, locked_tag in dominant.items():
-            mask = (df["ticker"] == ticker) & df[tag_col].notna() & (df[tag_col] != locked_tag)
+            mask = (
+                (df["ticker"] == ticker)
+                & df[tag_col].notna()
+                & (df[tag_col] != locked_tag)
+            )
+            if equiv:
+                # Keep rows where BOTH tags are in the equivalence group
+                obs_tags = df.loc[mask, tag_col]
+                safe = obs_tags.isin(equiv) & (locked_tag in equiv)
+                mask = mask & ~safe
             df.loc[mask, metric] = np.nan
             df.loc[mask, tag_col] = np.nan
         after_valid = df[metric].notna().sum()
@@ -68,7 +88,9 @@ def lock_firm_tags(df: pd.DataFrame) -> pd.DataFrame:
                 "pct": n_firms / len(dominant) * 100 if len(dominant) else 0,
             })
 
-        if nulled:
+        if equiv:
+            print(f"  {metric}: equivalent tags accepted, nulled {nulled} non-equivalent values")
+        elif nulled:
             print(f"  {metric}: locked per-firm tags, nulled {nulled} cross-tag values")
         else:
             print(f"  {metric}: all values already consistent")
@@ -281,7 +303,7 @@ def add_lagged_volatility(df: pd.DataFrame, vol_col: str, date_col: str) -> pd.D
 
 ANNUAL_COLS = [
     "ticker", "company_name", "sic", "fiscal_year_end",
-    "year_end", "filing_date", "fiscal_year", "accession_number",
+    "year_end", "filing_date", "fiscal_year", "accession_number", "form_type",
     "net_income", "total_assets", "total_liabilities",
     "operating_income", "operating_cash_flow",
     "return_next_year", "vol_next_year", "lagged_vol",

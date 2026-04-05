@@ -1,0 +1,30 @@
+\begin{table}[htbp]
+\centering
+\caption{Baseline Volatility Determinants}
+\label{tab:baseline}
+\begin{tabular}{lccc}
+\toprule
+ & (1) & (2) & (3) \\
+\midrule
+Lagged Volatility & $+0.6697$*** & $+0.6108$*** & $+0.5483$*** \\
+ & $(31.98)$ & $(29.54)$ & $(19.97)$ \\[4pt]
+$\ln(\text{Total Assets})$ &  & $-0.0163$*** & $-0.0162$*** \\
+ &  & $(-7.26)$ & $(-7.36)$ \\[4pt]
+Leverage &  & $+0.0029$ & $+0.0004$ \\
+ &  & $(0.29)$ & $(0.04)$ \\[4pt]
+ROA &  &  & $-0.2260$*** \\
+ &  &  & $(-8.01)$ \\[4pt]
+Asset Growth &  &  & $+0.0267$*** \\
+ &  &  & $(3.24)$ \\[4pt]
+\midrule
+Industry FE & Yes & Yes & Yes \\
+Year FE & Yes & Yes & Yes \\
+Observations & 6,349 & 6,349 & 6,349 \\
+Firms & 540 & 540 & 540 \\
+Adj.\ $R^2$ & 0.626 & 0.639 & 0.651 \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}
+\item \textit{Note:} This table reports OLS estimates of post-filing annualised volatility on financial determinants. The dependent variable is the annualised standard deviation of daily log returns over the 365-day window following each 10-K filing date. All specifications include two-digit SIC industry (49 groups) and fiscal-year fixed effects. $t$-statistics, reported in parentheses, are based on standard errors clustered at the firm level. ***, **, and * denote significance at the 1\%, 5\%, and 10\% levels, respectively.
+\end{tablenotes}
+\end{table}
