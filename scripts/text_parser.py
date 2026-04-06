@@ -24,6 +24,16 @@ _PAGE_HEADER_RE = re.compile(
     r"(?:^|\n)\s*\d{1,3}\s+Table of Contents\s*(?:\n|$)",
     re.IGNORECASE,
 )
+# Standalone "Table of Contents" on its own line (no page number)
+_TOC_LINE_RE = re.compile(
+    r"(?m)^\s*Table of Contents\s*$",
+    re.IGNORECASE,
+)
+# Page footers like "2019 Form 10-K 59", "Annual Report 33"
+_PAGE_FOOTER_RE = re.compile(
+    r"(?m)^\s*(?:\d{4}\s+)?(?:Form\s+10-K|Annual\s+Report(?:\s+on\s+Form\s+10-K)?)\s+\d{1,3}\s*$",
+    re.IGNORECASE,
+)
 
 _INLINE_TAGS = frozenset(
     ["span", "a", "b", "i", "em", "strong", "font", "sup", "sub",
@@ -32,9 +42,9 @@ _INLINE_TAGS = frozenset(
 
 # Broad item-number patterns (no subtitle required)
 _ITEM_RE: dict[str, re.Pattern] = {
-    "1a":  re.compile(r"\bitem\s+1[\s.]*a\b\.?",  re.IGNORECASE),
-    "1b":  re.compile(r"\bitem\s+1[\s.]*b\b\.?",  re.IGNORECASE),
-    "1c":  re.compile(r"\bitem\s+1[\s.]*c\b\.?",  re.IGNORECASE),
+    "1a":  re.compile(r"\bitem\s+1[\s.]*\(?a\)?\.?",  re.IGNORECASE),
+    "1b":  re.compile(r"\bitem\s+1[\s.]*\(?b\)?\.?",  re.IGNORECASE),
+    "1c":  re.compile(r"\bitem\s+1[\s.]*\(?c\)?\.?",  re.IGNORECASE),
     "2":   re.compile(r"\bitem\s+2\b\.?",          re.IGNORECASE),
     "7":   re.compile(r"\bitem\s+7\b\.?(?![\s.(]*a)", re.IGNORECASE),
     "7a":  re.compile(r"\bitem\s+7[\s.]*\(?a\)?\.?",  re.IGNORECASE),
@@ -198,7 +208,7 @@ def _find_html_headers(soup) -> dict[str, list]:
     for tag in soup.find_all(
         ["p", "div", "td", "h1", "h2", "h3", "h4", "h5", "h6"]
     ):
-        txt = tag.get_text(separator="", strip=True)
+        txt = " ".join(tag.get_text().split())
         wc = len(txt.split())
         if wc > 25 or wc < 2:
             continue
@@ -221,7 +231,7 @@ def _find_html_headers(soup) -> dict[str, list]:
             if wc <= _TITLE_MAX_WORDS:
                 for key, pat in _TITLE_RE.items():
                     m = pat.search(txt)
-                    if m and m.start() <= 10:
+                    if m and m.start() <= 15:
                         results.setdefault(f"t_{key}", []).append(tag)
                         break
     return results
@@ -257,6 +267,45 @@ def _parse_html(html: str) -> tuple[str, dict[str, list[int]]]:
         tag.decompose()
     for tag in soup.find_all("ix:header"):
         tag.decompose()
+    # Remove data tables while preserving layout tables (prose in <table>).
+    # Two-level heuristic:
+    #   (a) Cell-level: count <td> cells whose text is a bare number/currency.
+    #       Financial data tables have many such cells; layout tables have few.
+    #   (b) Character-level fallback: >40% of non-whitespace chars are numeric.
+    # A table is removed if EITHER test fires AND it has ≥2 <tr> rows.
+    _NUM_CELL_RE = re.compile(r"^[\d$€£¥%,.()\-–−\s]+$")
+    _NUM_CHARS = re.compile(r"[\d$%,.()−–\-]")
+    for table in soup.find_all("table"):
+        raw = table.get_text()
+        non_ws = raw.replace(" ", "").replace("\n", "").replace("\t", "")
+        if not non_ws:
+            table.decompose()
+            continue
+        rows = table.find_all("tr")
+        cells = table.find_all("td")
+        non_empty_cells = [c for c in cells if c.get_text(strip=True)]
+        is_data = False
+        # (a) Cell-level: if ≥30% of non-empty cells are bare numbers
+        if len(non_empty_cells) >= 4:
+            num_cells = sum(
+                1 for c in non_empty_cells
+                if _NUM_CELL_RE.match(c.get_text(strip=True))
+            )
+            if num_cells / len(non_empty_cells) >= 0.30 and len(rows) >= 2:
+                is_data = True
+        # (b) Character-level fallback
+        if not is_data:
+            char_ratio = len(_NUM_CHARS.findall(non_ws)) / len(non_ws)
+            if char_ratio > 0.40:
+                is_data = True
+        if is_data:
+            # Rescue section-header markers before removing
+            for cell in list(table.find_all("td")):
+                cell_text = cell.get_text()
+                if _MARKER_CHAR in cell_text:
+                    table.insert_before(NavigableString(cell_text))
+            table.decompose()
+        # else: layout table — keep as-is
     for tag in soup.find_all(list(_INLINE_TAGS)):
         tag.unwrap()
     soup.smooth()
@@ -372,10 +421,39 @@ def _clean_section(text: str) -> str:
     """Remove running page headers, standalone page numbers, and HTML entities."""
     # '18 Table of Contents' running headers
     text = _PAGE_HEADER_RE.sub("\n", text)
+    # Standalone 'Table of Contents' lines
+    text = _TOC_LINE_RE.sub("", text)
+    # Page footers: "2019 Form 10-K 59", "Annual Report 33"
+    text = _PAGE_FOOTER_RE.sub("", text)
     # Standalone page numbers on their own line (1–3 digits)
     text = re.sub(r"(?m)^\s*\d{1,3}\s*$", "", text)
     # Non-breaking spaces (\xa0 from &nbsp;)
     text = text.replace("\xa0", " ")
+    # Safety-net: strip residual garbled table lines that survived HTML removal.
+    # Lines ≥4 tokens where >40% are bare numbers (e.g. "Revenue 1,234 5,678 9.0").
+    _NUM_TOKEN_RE = re.compile(r"^[\d$%,.()\-–−]+$")
+    lines = text.split("\n")
+    lines = [
+        ln for ln in lines
+        if not (
+            len(tokens := ln.split()) >= 4
+            and (nc := sum(1 for t in tokens if _NUM_TOKEN_RE.match(t))) >= 3
+            and nc / len(tokens) > 0.40
+        )
+    ]
+    text = "\n".join(lines)
+    # Repeating running headers/footers (exhibit annual reports):
+    # any short line (≤8 words) appearing 4+ times is a page header/footer.
+    lines = text.split("\n")
+    if len(lines) > 50:
+        from collections import Counter
+        short_lines = [ln.strip() for ln in lines
+                       if 1 <= len(ln.split()) <= 8 and ln.strip()]
+        counts = Counter(short_lines)
+        spam = {ln for ln, c in counts.items() if c >= 4}
+        if spam:
+            lines = [ln for ln in lines if ln.strip() not in spam]
+            text = "\n".join(lines)
     # Collapse resulting blank lines
     text = re.sub(r"\n\s*\n", "\n", text)
     return text.strip()
