@@ -40,7 +40,7 @@ if _ca:
 N_SAMPLE = 10
 SEED = 42
 MODEL = "gemini-2.5-flash"
-GEMINI_API_KEY = "AIzaSyB-h9wDXAGRvg0pMU9U8iJ5-qBUI2ZBC8U"
+GEMINI_API_KEY = "AIzaSyDS-OhwiU1IuN03Xd9mRaHmU-NT2Hypgwg"
 MAX_API_RETRIES = 3
 RETRY_BACKOFF_SECONDS = 12
 # 5 RPM => one request every 12 seconds.
