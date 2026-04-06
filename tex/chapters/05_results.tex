@@ -32,27 +32,36 @@
 
 Table~\ref{tab:summary} reports summary statistics for the regression
 sample.  The dependent variable, post-filing annualised volatility, has a
-mean of roughly 0.32 and a standard deviation of 0.13, reflecting
+mean of roughly 0.33 and a standard deviation of 0.17, reflecting
 substantial cross-sectional variation in firm-level risk.  The
-interquartile range (0.22 to 0.38) indicates that the distribution is
+interquartile range (0.22 to 0.39) indicates that the distribution is
 right-skewed, consistent with occasional spikes during market stress
 periods such as 2020.
 
 Lagged volatility has a nearly identical distribution, as expected
 for a persistent series.  Firm size, measured as $\ln(\text{Total Assets})$,
-ranges from mid-sized industrials (P25~$\approx$~9.3) to large
-conglomerates (P75~$\approx$~11.2).  Leverage centres around 0.63 with
+ranges from mid-sized industrials (P25~$\approx$~22.1) to large
+conglomerates (P75~$\approx$~24.2).  Leverage centres around 0.61 with
 moderate dispersion.  ROA has a mean near 0.06, and asset growth
-averages roughly 0.08 with a long right tail reflecting acquisitive firms.
+averages roughly 0.12 with a long right tail reflecting acquisitive firms.
+Accruals average $-0.05$, consistent with the typical pattern
+where operating cash flows exceed net income; the negative sign reflects
+the predominance of non-cash charges such as depreciation and
+amortisation.
 
 \input{tables/summary_statistics}
 
 Table~\ref{tab:correlation} presents pairwise Pearson correlations.
-Volatility and its lag are strongly positively correlated ($r = 0.60$),
+Volatility and its lag are strongly positively correlated ($r = 0.61$),
 confirming persistence.  Firm size is negatively correlated with
-volatility ($r \approx -0.40$), consistent with the well-documented
+volatility ($r \approx -0.32$), consistent with the well-documented
 size--risk relation.  ROA also correlates negatively with volatility,
 while leverage and asset growth show weaker univariate associations.
+Accruals correlate negatively with volatility ($r = -0.19$) and share a
+moderate positive correlation with ROA ($r = 0.44$), reflecting the
+mechanical link through net income---this overlap motivates including
+both in the regression to disentangle cash-based and accrual-based
+profitability effects.
 None of the pairwise correlations among the explanatory variables
 exceed 0.45 in absolute value, alleviating multicollinearity concerns
 (confirmed by variance inflation factors below 1.4 for all regressors).
@@ -76,7 +85,7 @@ specifications and standard errors clustered at the firm level.
 
 \paragraph{Volatility persistence.}
 Column~(1) includes only lagged volatility ($\sigma_{i,t}$) alongside the
-fixed effects.  Its coefficient of $0.67$ ($t = 32.6$) confirms the
+fixed effects.  Its coefficient of $0.67$ ($t = 32.5$) confirms the
 well-documented persistence of firm-level return volatility: a one
 percentage-point increase in last year's annualised volatility is
 associated with roughly a two-thirds percentage-point increase in next
@@ -93,28 +102,41 @@ Size enters with a negative and highly significant coefficient
 future volatility, consistent with their greater diversification, deeper
 analyst coverage, and more liquid stock markets
 \parencite{campbell2014}.  Leverage is economically negligible and
-statistically insignificant ($t = 0.01$), likely because the
+statistically insignificant ($t = 0.08$), likely because the
 industry fixed effects already absorb much of the cross-sectional
 variation in capital structure---leverage norms differ markedly by
 industry---and because the leverage--volatility link operates partly
 through the lagged-volatility channel (more leveraged firms had higher
 past volatility).
 
-\paragraph{Profitability and growth.}
-The full specification in Column~(3) adds return on assets and asset
-growth.  ROA carries a large negative coefficient ($-0.224$, $t = -7.9$):
-more profitable firms face lower future volatility, reflecting both
-lower fundamental uncertainty and a reduced probability of financial
-distress.  Asset growth enters positively ($+0.027$, $t = 3.3$),
-consistent with the intuition that rapid expansion---whether through
-investment or acquisition---introduces additional uncertainty about
-future cash flows.  The incremental adjusted~$R^2$ from these two
-variables is modest (0.654 vs.\ 0.642), indicating that profitability
-and growth refine the prediction beyond what size and past volatility
-already capture, but do not dominate it.
+\paragraph{Profitability, growth, and earnings quality.}
+The full specification in Column~(3) adds return on assets, asset
+growth, and accruals.  ROA carries a large negative coefficient
+($-0.240$, $t = -6.8$): more profitable firms face lower future
+volatility, reflecting both lower fundamental uncertainty and a reduced
+probability of financial distress.  Asset growth enters positively
+($+0.027$, $t = 3.4$), consistent with the intuition that rapid
+expansion---whether through investment or acquisition---introduces
+additional uncertainty about future cash flows.
+
+Accruals, defined as $(\text{NI} - \text{OCF}) / \text{Total Assets}$,
+enter with a positive but statistically insignificant coefficient
+($0.057$, $t = 1.2$).  The positive sign is directionally consistent
+with the earnings-quality channel: higher accruals indicate that a
+larger share of reported earnings is non-cash, potentially masking
+underlying volatility.  However, the overlap with ROA---both share net
+income in their numerator ($r = 0.44$)---absorbs most of the standalone
+predictive content.  Importantly, accruals serve a critical role in the
+subsequent divergence analysis (Hypothesis~3), where the interaction
+between earnings quality and textual--financial divergence is tested.
+
+The incremental adjusted~$R^2$ from these three
+variables is modest (0.653 vs.\ 0.642), indicating that profitability,
+growth, and earnings quality refine the prediction beyond what size and
+past volatility already capture, but do not dominate it.
 
 \paragraph{Benchmark for textual analysis.}
-The full baseline model explains 65.4\% of the variation in post-filing
+The full baseline model explains 65.3\% of the variation in post-filing
 volatility.  This adjusted~$R^2$ serves as the benchmark against which
 subsequent models---augmented with textual features and the divergence
 measure---will be evaluated.  Any incremental explanatory power from

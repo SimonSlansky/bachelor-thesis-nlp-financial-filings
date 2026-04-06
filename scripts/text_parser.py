@@ -19,6 +19,12 @@ from config import SEC_HEADERS, REQUEST_SLEEP, DATA_DIR
 # ---------------------------------------------------------------------------
 MIN_SECTION_WORDS = 200          # below this → stub / cross-reference
 
+# Running page headers/footers inserted by SEC HTML filings
+_PAGE_HEADER_RE = re.compile(
+    r"(?:^|\n)\s*\d{1,3}\s+Table of Contents\s*(?:\n|$)",
+    re.IGNORECASE,
+)
+
 _INLINE_TAGS = frozenset(
     ["span", "a", "b", "i", "em", "strong", "font", "sup", "sub",
      "u", "s", "small", "big", "mark", "abbr", "cite", "code"]
@@ -331,6 +337,11 @@ def _extract(text: str, target: str,
     return None
 
 
+def _clean_section(text: str) -> str:
+    """Remove running page headers (e.g. '18 Table of Contents') from extracted text."""
+    return _PAGE_HEADER_RE.sub("\n", text).strip()
+
+
 # ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
@@ -382,7 +393,7 @@ def extract_filing_text(cik: str, accn: str,
                     if section is not None:
                         break
 
-        result[out_key] = section
+        result[out_key] = _clean_section(section) if section else None
 
     return result
 

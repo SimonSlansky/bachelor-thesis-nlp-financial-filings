@@ -57,7 +57,7 @@ def run_baseline(df: pd.DataFrame | None = None):
 
     (1) Lagged vol only  + Industry FE + Year FE
     (2) + Size, Leverage
-    (3) + ROA, Asset Growth  (full baseline)
+    (3) + ROA, Asset Growth, Accruals  (full baseline)
 
     Returns (results, df, specs).
     """

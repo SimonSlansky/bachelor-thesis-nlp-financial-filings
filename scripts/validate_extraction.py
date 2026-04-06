@@ -47,6 +47,9 @@ RETRY_BACKOFF_SECONDS = 12
 REQUEST_GAP_SECONDS = 13
 CHECKPOINT_EVERY = 5
 
+# Era boundaries for stratified sampling
+_ERA_BINS = [(2010, 2014), (2015, 2019), (2020, 2024)]
+
 PROMPT_TEMPLATE = """\
 You are validating the quality of an automated text extraction from an SEC 10-K filing.
 
@@ -59,17 +62,23 @@ Below is the COMPLETE extracted text ({total_words:,} words).
 {full_text}
 --- END OF EXTRACTED TEXT ---
 
-Judge the extraction on these criteria:
-1. **Correct section**: Does this text belong to {section_name}? (Yes/No)
-2. **Start boundary**: Does the text start at or near the section header? (Yes/No)
-3. **End boundary**: Does the text end where the section should end — before the next item starts, not mid-sentence? (Yes/No)
-4. **Content quality**: Is the text clean prose (not table-of-contents, not exhibit list, not garbled HTML)? (Yes/No)
+Judge the extraction on ALL of these criteria:
+1. **Correct section**: Does this text genuinely belong to {section_name}? (Yes/No)
+2. **Start boundary**: Does the text start at or very near the section header, not with content from a prior section? (Yes/No)
+3. **End boundary**: Does the text end where the section should end — before the next Item starts, not mid-sentence or mid-paragraph? (Yes/No)
+4. **Content quality**: Is the text clean readable prose? Answer No if you find ANY of these artifacts:
+   - "Table of Contents" running page headers or page numbers between paragraphs
+   - Residual HTML tags or XBRL inline tags (e.g. <ix:nonfraction>, <div>, &nbsp;)
+   - Large blocks of table data that are garbled (numbers without column context)
+   - Exhibit lists or index pages instead of narrative content
+5. **Completeness**: Does the section appear to contain the full expected content (not truncated, not just a stub or cross-reference to an exhibit)? (Yes/No)
 
 Respond with EXACTLY this format (no extra text):
 correct_section: Yes/No
 start_boundary: Yes/No
 end_boundary: Yes/No
 content_quality: Yes/No
+completeness: Yes/No
 notes: <one-line explanation if any No, otherwise "OK">
 """
 
@@ -160,8 +169,20 @@ def main():
         return
 
     random.seed(SEED)
-    sample = rows.sample(n=min(N_SAMPLE, len(rows)), random_state=SEED)
-    print(f"Sampled {len(sample)} filings for validation")
+    # Stratified sampling: equal draws from each era for diverse coverage
+    per_era = max(1, N_SAMPLE // len(_ERA_BINS))
+    strata = []
+    for lo, hi in _ERA_BINS:
+        era_rows = rows[(rows["fiscal_year"] >= lo) & (rows["fiscal_year"] <= hi)]
+        n_draw = min(per_era, len(era_rows))
+        if n_draw > 0:
+            strata.append(era_rows.sample(n=n_draw, random_state=SEED))
+    sample = pd.concat(strata, ignore_index=True)
+    # Shuffle so eras are interleaved (avoids sequential doc-map cache misses)
+    sample = sample.sample(frac=1, random_state=SEED).reset_index(drop=True)
+    era_counts = {f"{lo}-{hi}": ((sample["fiscal_year"] >= lo) & (sample["fiscal_year"] <= hi)).sum()
+                  for lo, hi in _ERA_BINS}
+    print(f"Sampled {len(sample)} filings for validation (eras: {era_counts})")
 
     cik_map = load_cik_map()
 
@@ -195,7 +216,8 @@ def main():
                     "ticker": ticker, "fiscal_year": fy, "section": out_key,
                     "total_words": 0, "correct_section": "ERROR",
                     "start_boundary": "ERROR", "end_boundary": "ERROR",
-                    "content_quality": "ERROR", "notes": str(e),
+                    "content_quality": "ERROR", "completeness": "ERROR",
+                    "notes": str(e),
                     "extracted_text": "",
                     "ai_raw_response": "",
                 })
@@ -208,7 +230,8 @@ def main():
                     "ticker": ticker, "fiscal_year": fy, "section": out_key,
                     "total_words": 0, "correct_section": "MISSING",
                     "start_boundary": "MISSING", "end_boundary": "MISSING",
-                    "content_quality": "MISSING", "notes": "No text extracted",
+                    "content_quality": "MISSING", "completeness": "MISSING",
+                    "notes": "No text extracted",
                     "extracted_text": "",
                     "ai_raw_response": "",
                 })
@@ -232,6 +255,7 @@ def main():
                     "start_boundary": "API_ERROR",
                     "end_boundary": "API_ERROR",
                     "content_quality": "API_ERROR",
+                    "completeness": "API_ERROR",
                     "notes": str(e),
                 }
 
@@ -244,6 +268,7 @@ def main():
                 "start_boundary": parsed.get("start_boundary", "PARSE_ERR"),
                 "end_boundary": parsed.get("end_boundary", "PARSE_ERR"),
                 "content_quality": parsed.get("content_quality", "PARSE_ERR"),
+                "completeness": parsed.get("completeness", "PARSE_ERR"),
                 "notes": parsed.get("notes", ""),
                 "extracted_text": txt,
                 "ai_raw_response": raw,
@@ -262,7 +287,8 @@ def main():
                      if r["correct_section"] == "Yes"
                      and r["start_boundary"] == "Yes"
                      and r["end_boundary"] == "Yes"
-                     and r["content_quality"] == "Yes")
+                     and r["content_quality"] == "Yes"
+                     and r["completeness"] == "Yes")
             total = sum(1 for r in results if r["correct_section"] not in
                         ("ERROR", "MISSING", "API_ERROR", "PARSE_ERR"))
             rate = f"{ok}/{total} ({ok/total:.0%})" if total else "N/A"
@@ -281,7 +307,7 @@ def main():
     if len(judged) == 0:
         print("  No sections judged (all rows were API_ERROR / MISSING / PARSE_ERR).")
     else:
-        for col in ["correct_section", "start_boundary", "end_boundary", "content_quality"]:
+        for col in ["correct_section", "start_boundary", "end_boundary", "content_quality", "completeness"]:
             yes = (judged[col] == "Yes").sum()
             print(f"  {col:20s}: {yes}/{len(judged)} ({yes/len(judged):.1%})")
 
