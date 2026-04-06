@@ -285,9 +285,11 @@ def _extract(text: str, target: str,
     def _section_end(start: int) -> int:
         end = len(text)
         for ei in end_items:
-            # Item-based end markers preferred; title-based fallback
-            ends = sorted(positions.get(ei, []) or
-                          positions.get(f"t_{ei}", []))
+            # Merge item-based and title-based end positions
+            ends = sorted(
+                set(positions.get(ei, []))
+                | set(positions.get(f"t_{ei}", []))
+            )
             for ep in ends:
                 if ep > start + 100:
                     end = min(end, ep)
@@ -338,8 +340,16 @@ def _extract(text: str, target: str,
 
 
 def _clean_section(text: str) -> str:
-    """Remove running page headers (e.g. '18 Table of Contents') from extracted text."""
-    return _PAGE_HEADER_RE.sub("\n", text).strip()
+    """Remove running page headers, standalone page numbers, and HTML entities."""
+    # '18 Table of Contents' running headers
+    text = _PAGE_HEADER_RE.sub("\n", text)
+    # Standalone page numbers on their own line (1–3 digits)
+    text = re.sub(r"(?m)^\s*\d{1,3}\s*$", "", text)
+    # Non-breaking spaces (\xa0 from &nbsp;)
+    text = text.replace("\xa0", " ")
+    # Collapse resulting blank lines
+    text = re.sub(r"\n\s*\n", "\n", text)
+    return text.strip()
 
 
 # ---------------------------------------------------------------------------
