@@ -14,10 +14,12 @@ import sys
 import ssl
 import time
 import random
-import httpx
 
 import pandas as pd
-from google import genai
+try:
+    from google import genai
+except Exception:
+    genai = None
 
 # Re-use the Windows CA cert export from config (sets CURL_CA_BUNDLE / REQUESTS_CA_BUNDLE)
 from config import DATA_DIR, REQUEST_SLEEP
@@ -33,9 +35,17 @@ if _ca:
 # ---------------------------------------------------------------------------
 # Config
 # ---------------------------------------------------------------------------
-N_SAMPLE = 100
+# Validation sample size
+# With 20 RPD and 2 section calls per filing, max practical daily sample is 10 filings.
+N_SAMPLE = 10
 SEED = 42
-MODEL = "gemini-2.0-flash"
+MODEL = "gemini-2.5-flash"
+GEMINI_API_KEY = "AIzaSyA37KvH5XF8_MB5-klo7x_CpROLNyvS0Ho"
+MAX_API_RETRIES = 3
+RETRY_BACKOFF_SECONDS = 12
+# 5 RPM => one request every 12 seconds.
+REQUEST_GAP_SECONDS = 13
+CHECKPOINT_EVERY = 5
 
 PROMPT_TEMPLATE = """\
 You are validating the quality of an automated text extraction from an SEC 10-K filing.
@@ -76,23 +86,81 @@ def _parse_response(text: str) -> dict:
     return result
 
 
+def _is_rate_limited(exc: Exception) -> bool:
+    msg = str(exc).upper()
+    return ("429" in msg) or ("RESOURCE_EXHAUSTED" in msg) or ("RATE" in msg and "LIMIT" in msg)
+
+
+def _generate_with_retry(client, prompt: str) -> str:
+    """Call Gemini with basic retry/backoff for transient quota throttling."""
+    last_err = None
+    for attempt in range(1, MAX_API_RETRIES + 1):
+        try:
+            response = client.models.generate_content(model=MODEL, contents=prompt)
+            return response.text or ""
+        except Exception as e:
+            last_err = e
+            if _is_rate_limited(e) and attempt < MAX_API_RETRIES:
+                sleep_s = RETRY_BACKOFF_SECONDS * attempt
+                print(f"    Rate-limited (attempt {attempt}/{MAX_API_RETRIES}), sleeping {sleep_s}s ...")
+                time.sleep(sleep_s)
+                continue
+            raise
+    raise last_err
+
+
 def main():
-    api_key = os.environ.get("GEMINI_API_KEY")
+    if genai is None:
+        print("ERROR: Missing Google GenAI SDK.")
+        print("Install with: pip install google-genai")
+        sys.exit(1)
+
+    api_key = GEMINI_API_KEY
     if not api_key:
-        print("ERROR: Set GEMINI_API_KEY environment variable first.")
-        print('  $env:GEMINI_API_KEY = "your-key-here"')
+        print("ERROR: GEMINI_API_KEY is empty in script.")
         sys.exit(1)
 
     client = genai.Client(api_key=api_key)
 
-    # Load panel and sample
+    # Load panel and build unique filing rows (same style as text_parser)
     df = pd.read_csv(DATA_DIR / "annual_panel.csv")
     if "form_type" in df.columns:
         df = df[df["form_type"] != "10-K/A"]
-    df = df.dropna(subset=["accession_number"])
+    rows = (
+        df[["ticker", "accession_number", "fiscal_year"]]
+        .dropna(subset=["accession_number"])
+        .drop_duplicates()
+    )
+
+    out_path = DATA_DIR / "extraction_validation.csv"
+
+    # Guard: exclude firm-years already validated in previous runs
+    done_firm_years: set[tuple[str, int]] = set()
+    if out_path.exists():
+        try:
+            prev = pd.read_csv(out_path, usecols=["ticker", "fiscal_year"], on_bad_lines="skip")
+            prev = prev.dropna(subset=["ticker", "fiscal_year"]).drop_duplicates()
+            done_firm_years = {
+                (str(t), int(fy))
+                for t, fy in zip(prev["ticker"], prev["fiscal_year"])
+            }
+        except Exception as e:
+            print(f"WARNING: Could not read prior validation file for dedupe guard: {e}")
+
+    if done_firm_years:
+        before = len(rows)
+        keys = list(zip(rows["ticker"].astype(str), rows["fiscal_year"].astype(int)))
+        mask_new = [k not in done_firm_years for k in keys]
+        rows = rows.loc[mask_new].copy()
+        excluded = before - len(rows)
+        print(f"Excluded {excluded} already validated firm-years from sampling pool")
+
+    if rows.empty:
+        print("No new firm-years left to validate. Delete/rename extraction_validation.csv to resample from scratch.")
+        return
 
     random.seed(SEED)
-    sample = df.sample(n=min(N_SAMPLE, len(df)), random_state=SEED)
+    sample = rows.sample(n=min(N_SAMPLE, len(rows)), random_state=SEED)
     print(f"Sampled {len(sample)} filings for validation")
 
     cik_map = load_cik_map()
@@ -128,6 +196,8 @@ def main():
                     "total_words": 0, "correct_section": "ERROR",
                     "start_boundary": "ERROR", "end_boundary": "ERROR",
                     "content_quality": "ERROR", "notes": str(e),
+                    "extracted_text": "",
+                    "ai_raw_response": "",
                 })
             continue
 
@@ -139,6 +209,8 @@ def main():
                     "total_words": 0, "correct_section": "MISSING",
                     "start_boundary": "MISSING", "end_boundary": "MISSING",
                     "content_quality": "MISSING", "notes": "No text extracted",
+                    "extracted_text": "",
+                    "ai_raw_response": "",
                 })
                 continue
 
@@ -151,11 +223,10 @@ def main():
             )
 
             try:
-                response = client.models.generate_content(
-                    model=MODEL, contents=prompt,
-                )
-                parsed = _parse_response(response.text)
+                raw = _generate_with_retry(client, prompt)
+                parsed = _parse_response(raw)
             except Exception as e:
+                raw = ""
                 parsed = {
                     "correct_section": "API_ERROR",
                     "start_boundary": "API_ERROR",
@@ -174,10 +245,17 @@ def main():
                 "end_boundary": parsed.get("end_boundary", "PARSE_ERR"),
                 "content_quality": parsed.get("content_quality", "PARSE_ERR"),
                 "notes": parsed.get("notes", ""),
+                "extracted_text": txt,
+                "ai_raw_response": raw,
             })
 
-            # Gemini free tier: 15 RPM
-            time.sleep(4.5)
+            # Conservative pacing to avoid free-tier throttling
+            time.sleep(REQUEST_GAP_SECONDS)
+
+        # Checkpoint partial progress so long runs are resumable/inspectable
+        if (idx + 1) % CHECKPOINT_EVERY == 0 or idx == len(sample) - 1:
+            pd.DataFrame(results).to_csv(out_path, index=False)
+            print(f"    checkpoint saved: {out_path} ({len(results)} rows)")
 
         if (idx + 1) % 10 == 0 or idx == len(sample) - 1:
             ok = sum(1 for r in results
@@ -192,7 +270,6 @@ def main():
 
     # Save results
     out = pd.DataFrame(results)
-    out_path = DATA_DIR / "extraction_validation.csv"
     out.to_csv(out_path, index=False)
 
     # Summary
@@ -201,9 +278,19 @@ def main():
     print(f"\n{'='*60}")
     print(f"VALIDATION SUMMARY ({len(judged)} sections judged)")
     print(f"{'='*60}")
-    for col in ["correct_section", "start_boundary", "end_boundary", "content_quality"]:
-        yes = (judged[col] == "Yes").sum()
-        print(f"  {col:20s}: {yes}/{len(judged)} ({yes/len(judged):.1%})")
+    if len(judged) == 0:
+        print("  No sections judged (all rows were API_ERROR / MISSING / PARSE_ERR).")
+    else:
+        for col in ["correct_section", "start_boundary", "end_boundary", "content_quality"]:
+            yes = (judged[col] == "Yes").sum()
+            print(f"  {col:20s}: {yes}/{len(judged)} ({yes/len(judged):.1%})")
+
+    err_counts = out["correct_section"].value_counts()
+    if any(k in err_counts.index for k in ["API_ERROR", "PARSE_ERR", "ERROR"]):
+        print("\nError breakdown:")
+        for k in ["API_ERROR", "PARSE_ERR", "ERROR", "MISSING"]:
+            if k in err_counts.index:
+                print(f"  {k:10s}: {int(err_counts[k])}")
 
     missed = out[out["correct_section"] == "MISSING"]
     if len(missed):
