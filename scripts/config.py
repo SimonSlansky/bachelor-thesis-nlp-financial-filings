@@ -48,7 +48,6 @@ _export_windows_ca_certs()
 BASE_DIR = Path(__file__).resolve().parent.parent
 DATA_DIR = BASE_DIR / "data"
 DATA_DIR.mkdir(exist_ok=True)
-(DATA_DIR / "diagnostics").mkdir(exist_ok=True)
 
 # ---------------------------------------------------------------------------
 # SEC EDGAR API

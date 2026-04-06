@@ -125,7 +125,7 @@ def main() -> None:
     # 4b. Per-firm tag locking (ensures within-firm XBRL tag consistency)
     print("\nLocking per-firm XBRL tags …")
     df_all = lock_firm_tags(df_all)
-    save_tag_diagnostics(df_all, DATA_DIR / "diagnostics" / "tag_provenance.csv")
+    save_tag_diagnostics(df_all, DATA_DIR / "tag_provenance.csv")
     df_all = _track(df_all, "tag locking")
 
     # 5. Clean transitions & duplicates

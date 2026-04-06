@@ -18,12 +18,20 @@ TEX_TABLE_DIR.mkdir(parents=True, exist_ok=True)
 # ── Variable labels for LaTeX output ──────────────────────────────────────
 
 LABELS = {
+    "vol_next_year": r"Volatility$_{t+1}$",
     "lagged_vol": "Lagged Volatility",
     "log_total_assets": r"$\ln(\text{Total Assets})$",
     "leverage": "Leverage",
     "roa": "ROA",
     "asset_growth": "Asset Growth",
+    "accruals": "Accruals",
 }
+
+# Variable order for summary / correlation tables
+PANEL_VARS = [
+    "vol_next_year", "lagged_vol", "log_total_assets",
+    "leverage", "roa", "asset_growth", "accruals",
+]
 
 
 # ── Data loading ──────────────────────────────────────────────────────────
@@ -35,7 +43,7 @@ def load_regression_panel() -> pd.DataFrame:
 
     needed = [
         "vol_next_year", "lagged_vol", "log_total_assets",
-        "leverage", "roa", "asset_growth",
+        "leverage", "roa", "asset_growth", "accruals",
         "sic2", "fiscal_year", "ticker",
     ]
     df = df[needed].dropna().copy()
@@ -63,7 +71,7 @@ def run_baseline(df: pd.DataFrame | None = None):
     specs = [
         ["lagged_vol"],
         ["lagged_vol", "log_total_assets", "leverage"],
-        ["lagged_vol", "log_total_assets", "leverage", "roa", "asset_growth"],
+        ["lagged_vol", "log_total_assets", "leverage", "roa", "asset_growth", "accruals"],
     ]
 
     results = []
@@ -116,7 +124,7 @@ def baseline_to_latex(results, df, specs, path: Path | None = None) -> str:
                 c = res.params[var]
                 t = res.tstats[var]
                 p = res.pvalues[var]
-                coefs.append(f"${c:+.4f}${_stars(p)}")
+                coefs.append(f"${c:.4f}${_stars(p)}")
                 tstats.append(f"$({t:.2f})$")
             else:
                 coefs.append("")
@@ -167,6 +175,128 @@ def baseline_to_latex(results, df, specs, path: Path | None = None) -> str:
     return tex
 
 
+# ── Descriptive statistics ─────────────────────────────────────────────────
+
+def descriptive_stats_to_latex(df: pd.DataFrame,
+                               path: Path | None = None) -> str:
+    """Generate Panel A: Descriptive Statistics."""
+    stats = df[PANEL_VARS].describe(percentiles=[0.25, 0.50, 0.75]).T
+    stats = stats[["mean", "std", "25%", "50%", "75%"]]
+    stats.columns = ["Mean", "SD", "P25", "Median", "P75"]
+
+    lines = []
+    lines.append(r"\begin{table}[htbp]")
+    lines.append(r"\centering")
+    lines.append(r"\caption{Summary Statistics}")
+    lines.append(r"\label{tab:summary}")
+    lines.append(r"\begin{tabular}{lccccc}")
+    lines.append(r"\toprule")
+    lines.append(r" & Mean & SD & P25 & Median & P75 \\")
+    lines.append(r"\midrule")
+
+    for var in PANEL_VARS:
+        label = LABELS.get(var, var)
+        row = stats.loc[var]
+        lines.append(
+            f"{label} & {row['Mean']:.3f} & {row['SD']:.3f} & "
+            f"{row['P25']:.3f} & {row['Median']:.3f} & {row['P75']:.3f} \\\\"
+        )
+
+    lines.append(r"\midrule")
+    n_firms = df["ticker"].nunique()
+    lines.append(
+        rf"Observations & \multicolumn{{5}}{{c}}{{{len(df):,}}} \\"
+    )
+    lines.append(
+        rf"Firms & \multicolumn{{5}}{{c}}{{{n_firms}}} \\"
+    )
+    lines.append(r"\bottomrule")
+    lines.append(r"\end{tabular}")
+    lines.append(r"\begin{tablenotes}")
+    lines.append(
+        r"\item \textit{Note:} "
+        r"This table reports summary statistics for the regression sample. "
+        r"Volatility$_{t+1}$ is the annualised standard deviation of daily "
+        r"log returns over the 365-day window following each 10-K filing date. "
+        r"Leverage, ROA, and Asset Growth are winsorised at the "
+        r"1st and 99th percentiles."
+    )
+    lines.append(r"\end{tablenotes}")
+    lines.append(r"\end{table}")
+
+    tex = "\n".join(lines)
+    if path is not None:
+        path.write_text(tex, encoding="utf-8")
+        print(f"  Table saved → {path.name}")
+    return tex
+
+
+# ── Correlation matrix ────────────────────────────────────────────────────
+
+def correlation_to_latex(df: pd.DataFrame,
+                         path: Path | None = None) -> str:
+    """Generate Pearson correlation matrix with significance stars."""
+    from scipy.stats import pearsonr
+
+    n = len(PANEL_VARS)
+    corr_vals = pd.DataFrame(np.nan, index=PANEL_VARS, columns=PANEL_VARS)
+    pvals = pd.DataFrame(np.nan, index=PANEL_VARS, columns=PANEL_VARS)
+
+    for i in range(n):
+        for j in range(n):
+            r, p = pearsonr(df[PANEL_VARS[i]], df[PANEL_VARS[j]])
+            corr_vals.iloc[i, j] = r
+            pvals.iloc[i, j] = p
+
+    lines = []
+    lines.append(r"\begin{table}[htbp]")
+    lines.append(r"\centering")
+    lines.append(r"\caption{Pearson Correlation Matrix}")
+    lines.append(r"\label{tab:correlation}")
+    col_spec = "l" + "c" * n
+    lines.append(r"\begin{tabular}{" + col_spec + "}")
+    lines.append(r"\toprule")
+
+    # Column numbers header
+    header = " & ".join([f"({i+1})" for i in range(n)])
+    lines.append(f" & {header} \\\\")
+    lines.append(r"\midrule")
+
+    # Lower triangle only (standard in finance)
+    for i in range(n):
+        label = LABELS.get(PANEL_VARS[i], PANEL_VARS[i])
+        cells = []
+        for j in range(n):
+            if j > i:
+                cells.append("")
+            elif i == j:
+                cells.append("1")
+            else:
+                r = corr_vals.iloc[i, j]
+                p = pvals.iloc[i, j]
+                cells.append(f"{r:.2f}{_stars(p)}")
+        row_label = f"({i+1}) {label}"
+        lines.append(f"{row_label} & " + " & ".join(cells) + r" \\")
+
+    lines.append(r"\bottomrule")
+    lines.append(r"\end{tabular}")
+    lines.append(r"\begin{tablenotes}")
+    lines.append(
+        r"\item \textit{Note:} "
+        r"This table reports pairwise Pearson correlation coefficients. "
+        r"***, **, and * denote significance at the 1\%, 5\%, "
+        r"and 10\% levels, respectively."
+    )
+    lines.append(r"\end{tablenotes}")
+    lines.append(r"\end{table}")
+
+    tex = "\n".join(lines)
+    if path is not None:
+        path.write_text(tex, encoding="utf-8")
+        print(f"  Table saved → {path.name}")
+    return tex
+
+
 # ── Main ──────────────────────────────────────────────────────────────────
 
 def main():
@@ -174,6 +304,12 @@ def main():
     df = load_regression_panel()
     print(f"  {df['ticker'].nunique()} firms, {len(df):,} observations, "
           f"FY {df['fiscal_year'].min()}–{df['fiscal_year'].max()}")
+
+    print("\nGenerating summary statistics …")
+    descriptive_stats_to_latex(df, TEX_TABLE_DIR / "summary_statistics.tex")
+
+    print("Generating correlation matrix …")
+    correlation_to_latex(df, TEX_TABLE_DIR / "correlation_matrix.tex")
 
     print("\nRunning baseline regressions …")
     results, df, specs = run_baseline(df)

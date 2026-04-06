@@ -11,13 +11,13 @@
 %% Fonts and language setup
 \ifthenelse{\boolean{xetex}\OR\boolean{luatex}}
    { % use fontspec and OpenType fonts with utf8 engines
-			\usepackage[english,slovak,czech]{babel}
+			\usepackage[czech,slovak,english]{babel}
 			\usepackage[autostyle,english=british,czech=quotes]{csquotes}
 			\usepackage{fontspec}
 			\defaultfontfeatures{Ligatures=TeX,Scale=MatchLowercase}
    }
    {
-			\usepackage[english,slovak,czech]{babel}
+			\usepackage[czech,slovak,english]{babel}
 			\usepackage{lmodern}
 			\usepackage[T1]{fontenc}
 			\usepackage{textcomp}

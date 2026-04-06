@@ -26,6 +26,41 @@
 
 
 % ─────────────────────────────────────────────────────────────────────────────
+\section{Descriptive Statistics}
+\label{sec:descriptive}
+% ─────────────────────────────────────────────────────────────────────────────
+
+Table~\ref{tab:summary} reports summary statistics for the regression
+sample.  The dependent variable, post-filing annualised volatility, has a
+mean of roughly 0.32 and a standard deviation of 0.13, reflecting
+substantial cross-sectional variation in firm-level risk.  The
+interquartile range (0.22 to 0.38) indicates that the distribution is
+right-skewed, consistent with occasional spikes during market stress
+periods such as 2020.
+
+Lagged volatility has a nearly identical distribution, as expected
+for a persistent series.  Firm size, measured as $\ln(\text{Total Assets})$,
+ranges from mid-sized industrials (P25~$\approx$~9.3) to large
+conglomerates (P75~$\approx$~11.2).  Leverage centres around 0.63 with
+moderate dispersion.  ROA has a mean near 0.06, and asset growth
+averages roughly 0.08 with a long right tail reflecting acquisitive firms.
+
+\input{tables/summary_statistics}
+
+Table~\ref{tab:correlation} presents pairwise Pearson correlations.
+Volatility and its lag are strongly positively correlated ($r = 0.60$),
+confirming persistence.  Firm size is negatively correlated with
+volatility ($r \approx -0.40$), consistent with the well-documented
+size--risk relation.  ROA also correlates negatively with volatility,
+while leverage and asset growth show weaker univariate associations.
+None of the pairwise correlations among the explanatory variables
+exceed 0.45 in absolute value, alleviating multicollinearity concerns
+(confirmed by variance inflation factors below 1.4 for all regressors).
+
+\input{tables/correlation_matrix}
+
+
+% ─────────────────────────────────────────────────────────────────────────────
 \section{Baseline: Financial Determinants of Volatility}
 \label{sec:baseline}
 % ─────────────────────────────────────────────────────────────────────────────
@@ -41,13 +76,13 @@ specifications and standard errors clustered at the firm level.
 
 \paragraph{Volatility persistence.}
 Column~(1) includes only lagged volatility ($\sigma_{i,t}$) alongside the
-fixed effects.  Its coefficient of $0.67$ ($t = 32.0$) confirms the
+fixed effects.  Its coefficient of $0.67$ ($t = 32.6$) confirms the
 well-documented persistence of firm-level return volatility: a one
 percentage-point increase in last year's annualised volatility is
-associated with a two-thirds percentage-point increase in next year's
-volatility.  Even this parsimonious specification, combined with industry
-and year fixed effects, explains roughly 63\% of the variation in
-post-filing volatility, indicating that the bulk of the predictable
+associated with roughly a two-thirds percentage-point increase in next
+year's volatility.  Even this parsimonious specification, combined with
+industry and year fixed effects, explains roughly 63\% of the variation
+in post-filing volatility, indicating that the bulk of the predictable
 component of volatility is mechanical.
 
 \paragraph{Firm size and capital structure.}
@@ -58,7 +93,7 @@ Size enters with a negative and highly significant coefficient
 future volatility, consistent with their greater diversification, deeper
 analyst coverage, and more liquid stock markets
 \parencite{campbell2014}.  Leverage is economically negligible and
-statistically insignificant ($t = 0.3$), likely because the
+statistically insignificant ($t = 0.01$), likely because the
 industry fixed effects already absorb much of the cross-sectional
 variation in capital structure---leverage norms differ markedly by
 industry---and because the leverage--volatility link operates partly
@@ -67,19 +102,19 @@ past volatility).
 
 \paragraph{Profitability and growth.}
 The full specification in Column~(3) adds return on assets and asset
-growth.  ROA carries a large negative coefficient ($-0.226$, $t = -8.0$):
+growth.  ROA carries a large negative coefficient ($-0.224$, $t = -7.9$):
 more profitable firms face lower future volatility, reflecting both
 lower fundamental uncertainty and a reduced probability of financial
-distress.  Asset growth enters positively ($+0.027$, $t = 3.2$),
+distress.  Asset growth enters positively ($+0.027$, $t = 3.3$),
 consistent with the intuition that rapid expansion---whether through
 investment or acquisition---introduces additional uncertainty about
 future cash flows.  The incremental adjusted~$R^2$ from these two
-variables is modest (0.651 vs.\ 0.639), indicating that profitability
+variables is modest (0.654 vs.\ 0.642), indicating that profitability
 and growth refine the prediction beyond what size and past volatility
 already capture, but do not dominate it.
 
 \paragraph{Benchmark for textual analysis.}
-The full baseline model explains 65.1\% of the variation in post-filing
+The full baseline model explains 65.4\% of the variation in post-filing
 volatility.  This adjusted~$R^2$ serves as the benchmark against which
 subsequent models---augmented with textual features and the divergence
 measure---will be evaluated.  Any incremental explanatory power from

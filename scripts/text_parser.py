@@ -18,9 +18,6 @@ from config import SEC_HEADERS, REQUEST_SLEEP, DATA_DIR
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
-FILINGS_DIR = DATA_DIR / "filings"
-FILINGS_DIR.mkdir(exist_ok=True)
-
 MIN_SECTION_WORDS = 200          # below this → stub / cross-reference
 
 _INLINE_TAGS = frozenset(
@@ -400,9 +397,9 @@ def build_text_dataset(panel: pd.DataFrame, cik_map: dict[str, str]) -> pd.DataF
 
     Returns:
         DataFrame with columns [ticker, fiscal_year, item_1a, item_7].
-        Saved incrementally to data/filings/text_sections.csv for resume.
+        Saved incrementally to data/text_sections.csv for resume.
     """
-    out_path = FILINGS_DIR / "text_sections.csv"
+    out_path = DATA_DIR / "text_sections.csv"
 
     # Resume: load already-extracted rows
     done: set[str] = set()
