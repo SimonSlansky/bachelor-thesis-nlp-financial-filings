@@ -331,6 +331,37 @@ parser also matches title-only patterns (e.g.\ ``Risk Factors'',
 ``Management's Discussion and Analysis'') as a secondary detection
 layer for both the main document and exhibits.
 
+\subsection{Post-Processing}
+\label{ssec:text_postprocessing}
+
+The raw text produced by the HTML-to-plain-text conversion retains
+several artefacts of the original filing's page layout.  Before any
+textual feature is computed, each extracted section passes through a
+cleaning step that removes three classes of noise:
+
+\begin{enumerate}
+  \item \textbf{Running page headers.}  Many filings embed
+    ``\textit{$\langle$page number$\rangle$~Table of Contents}''
+    strings at page boundaries.  A regular expression strips any
+    line matching a one- to three-digit number followed by
+    ``Table of Contents.''
+  \item \textbf{Standalone page numbers.}  After removing the full
+    header pattern, some filings still contain bare page numbers on
+    otherwise empty lines.  These are removed by a second pass that
+    deletes any line consisting solely of a one- to three-digit
+    integer.
+  \item \textbf{Non-breaking spaces.}  HTML \texttt{\&nbsp;} entities
+    (Unicode~\texttt{U+00A0}) are replaced with standard spaces to
+    ensure consistent tokenisation in downstream word-count and
+    dictionary-based measures.
+\end{enumerate}
+
+\noindent
+The cleaning rules are intentionally conservative: they target only
+patterns that cannot plausibly form part of meaningful sentence text
+and are applied after section boundaries have already been
+resolved---so they do not interfere with header detection.
+
 \subsection{Coverage and Limitations}
 \label{ssec:text_coverage}
 
@@ -357,6 +388,27 @@ None of these failures is systematic with respect to firm
 characteristics.  On the full panel---after excluding amendments---we
 expect a coverage rate of approximately 96--97\%, with missing values
 treated as NaN in the textual variable construction.
+
+\paragraph{AI-assisted quality audit.}
+To verify not only coverage but also content quality, we conducted an
+independent audit using a large language model (Gemini~2.5 Flash).
+A stratified random sample of 30~filings---10~per era
+(2010--2014, 2015--2019, 2020--2024)---was drawn, and for each filing
+both sections were extracted and submitted in full to the model with
+a structured evaluation prompt.  The model judged each section on
+five binary criteria: (i)~correct section identity, (ii)~start-boundary
+accuracy, (iii)~end-boundary accuracy, (iv)~content quality (absence
+of residual HTML tags, page headers, garbled tables, or exhibit lists),
+and (v)~completeness (full narrative, not a stub or truncated fragment).
+This audit was performed after the post-processing step described above.
+
+The AI audit identified the artefacts whose removal is documented in
+Section~\ref{ssec:text_postprocessing}.  On the final, cleaned
+extraction, the procedure achieves high accuracy across all five
+criteria and across all three eras.  Residual failures---where
+they occur---are confined to filings with non-standard HTML layouts
+and are not systematic with respect to industry, firm size, or
+filing year.
 
 \paragraph{Relation to prior approaches.}
 The extraction strategy follows the general methodology described by

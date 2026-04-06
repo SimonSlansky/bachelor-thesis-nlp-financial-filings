@@ -36,9 +36,12 @@ _ITEM_RE: dict[str, re.Pattern] = {
     "1b":  re.compile(r"\bitem\s+1[\s.]*b\b\.?",  re.IGNORECASE),
     "1c":  re.compile(r"\bitem\s+1[\s.]*c\b\.?",  re.IGNORECASE),
     "2":   re.compile(r"\bitem\s+2\b\.?",          re.IGNORECASE),
-    "7":   re.compile(r"\bitem\s+7\b\.?(?![\s.]*a)", re.IGNORECASE),
-    "7a":  re.compile(r"\bitem\s+7[\s.]*a\b\.?",  re.IGNORECASE),
+    "7":   re.compile(r"\bitem\s+7\b\.?(?![\s.(]*a)", re.IGNORECASE),
+    "7a":  re.compile(r"\bitem\s+7[\s.]*\(?a\)?\.?",  re.IGNORECASE),
     "8":   re.compile(r"\bitem\s+8\b\.?",          re.IGNORECASE),
+    "9":   re.compile(r"\bitem\s+9\b\.?(?![\s.(]*[ab])", re.IGNORECASE),
+    "9a":  re.compile(r"\bitem\s+9[\s.]*\(?a\)?\.?",  re.IGNORECASE),
+    "9b":  re.compile(r"\bitem\s+9[\s.]*\(?b\)?\.?",  re.IGNORECASE),
 }
 
 # Subtitle keywords expected right after the section header
@@ -50,21 +53,33 @@ _SUBTITLE_KW: dict[str, list[str]] = {
 # Which items terminate each section
 _END_ITEMS: dict[str, list[str]] = {
     "1a": ["1b", "1c", "2"],
-    "7":  ["7a", "8"],
+    "7":  ["7a", "8", "9", "9a", "9b"],
 }
 
 _EXHIBIT_RE = re.compile(r"exhibit\s+\(?(\d+(?:\.\d+)?)\)?", re.IGNORECASE)
 _MARKER_CHAR = "\x00"
 
 # Title-only patterns for exhibits (no "Item X" prefix)
+# These must match near the START of the element text (first 10 chars)
+# to avoid mid-sentence false positives like "see Note 4 to the
+# consolidated financial statements".
 _TITLE_RE: dict[str, re.Pattern] = {
     "1a":  re.compile(r"\brisk\s+factors\b",                          re.IGNORECASE),
     "1b":  re.compile(r"\bunresolved\s+staff\s+comments\b",           re.IGNORECASE),
     "2":   re.compile(r"\bproperties\b",                              re.IGNORECASE),
     "7":   re.compile(r"\bmanagement.s\s+discussion",                 re.IGNORECASE),
     "7a":  re.compile(r"\bquantitative\s+and\s+qualitative",          re.IGNORECASE),
-    "8":   re.compile(r"\b(?:consolidated\s+)?financial\s+statements", re.IGNORECASE),
+    "8":   re.compile(r"\b(?:consolidated\s+)?financial\s+statements"
+                      r"|(?:consolidated\s+balance\s+sheets?)"
+                      r"|(?:report\s+of\s+independent\s+registered)",
+                      re.IGNORECASE),
+    "9a":  re.compile(r"\bmanagement.s\s+report\s+on\s+internal\s+control",
+                      re.IGNORECASE),
 }
+
+# Max words for title-only (t_*) header candidates.  Item-based headers
+# use the global 25-word limit from _find_html_headers.
+_TITLE_MAX_WORDS = 12
 
 
 # ---------------------------------------------------------------------------
@@ -202,10 +217,13 @@ def _find_html_headers(soup) -> dict[str, list]:
                 matched = True
                 break
         if not matched:
-            for key, pat in _TITLE_RE.items():
-                if pat.search(txt):
-                    results.setdefault(f"t_{key}", []).append(tag)
-                    break
+            # Title-only: stricter word limit and require match near start
+            if wc <= _TITLE_MAX_WORDS:
+                for key, pat in _TITLE_RE.items():
+                    m = pat.search(txt)
+                    if m and m.start() <= 10:
+                        results.setdefault(f"t_{key}", []).append(tag)
+                        break
     return results
 
 
@@ -284,6 +302,7 @@ def _extract(text: str, target: str,
 
     def _section_end(start: int) -> int:
         end = len(text)
+        # Primary: expected next items
         for ei in end_items:
             # Merge item-based and title-based end positions
             ends = sorted(
@@ -294,6 +313,16 @@ def _extract(text: str, target: str,
                 if ep > start + 100:
                     end = min(end, ep)
                     break
+        # Fallback: if no primary end marker found, use ANY later-section
+        # position as a safety boundary (handles missing intermediate items)
+        if end == len(text):
+            skip = {target, f"t_{target}"}
+            for key, plist in positions.items():
+                if key in skip:
+                    continue
+                for ep in plist:
+                    if ep > start + 100:
+                        end = min(end, ep)
         return end
 
     def _section_len(start: int) -> int:
