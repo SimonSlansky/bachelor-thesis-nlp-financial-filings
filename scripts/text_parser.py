@@ -7,7 +7,6 @@ panel (~6 700 filings).
 
 import re
 import time
-from pathlib import Path
 
 import pandas as pd
 import requests
@@ -406,7 +405,7 @@ def build_text_dataset(panel: pd.DataFrame, cik_map: dict[str, str]) -> pd.DataF
     if out_path.exists():
         prev = pd.read_csv(out_path, usecols=["ticker", "fiscal_year"],
                            on_bad_lines="skip")
-        done = set(prev["ticker"] + "_" + prev["fiscal_year"].astype(str))
+        done = set(prev["ticker"] + "_" + prev["fiscal_year"].astype(int).astype(str))
         print(f"  Resuming: {len(done)} filings already extracted")
 
     # Skip 10-K/A amendments (cover pages only, no extractable text)
@@ -446,11 +445,20 @@ def build_text_dataset(panel: pd.DataFrame, cik_map: dict[str, str]) -> pd.DataF
             sections = {"item_1a": None, "item_7": None}
             failed += 1
 
+        # Replace newlines with spaces so each CSV row = 1 physical line
+        # (prevents "EOF inside string" on crash-interrupted writes)
+        i1a_text = sections["item_1a"]
+        i7_text = sections["item_7"]
+        if i1a_text:
+            i1a_text = i1a_text.replace("\n", " ")
+        if i7_text:
+            i7_text = i7_text.replace("\n", " ")
+
         rec = {
             "ticker": r.ticker,
             "fiscal_year": int(r.fiscal_year),
-            "item_1a": sections["item_1a"],
-            "item_7": sections["item_7"],
+            "item_1a": i1a_text,
+            "item_7": i7_text,
         }
 
         # Append incrementally (one row at a time for crash safety)
