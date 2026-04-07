@@ -7,10 +7,13 @@ panel (~6 700 filings).
 
 import re
 import time
+import warnings
 
 import pandas as pd
 import requests
-from bs4 import BeautifulSoup, NavigableString
+from bs4 import BeautifulSoup, NavigableString, XMLParsedAsHTMLWarning
+
+warnings.filterwarnings("ignore", category=XMLParsedAsHTMLWarning)
 
 from config import SEC_HEADERS, REQUEST_SLEEP, DATA_DIR
 
@@ -56,8 +59,8 @@ _ITEM_RE: dict[str, re.Pattern] = {
 
 # Subtitle keywords expected right after the section header
 _SUBTITLE_KW: dict[str, list[str]] = {
-    "1a": ["risk", "ris k"],
-    "7":  ["management", "discussion", "md&a", "md a"],
+    "1a": ["risk"],
+    "7":  ["management", "discussion", "md&a"],
 }
 
 # Which items terminate each section
@@ -65,6 +68,9 @@ _END_ITEMS: dict[str, list[str]] = {
     "1a": ["1b", "1c", "2"],
     "7":  ["7a", "8", "9", "9a", "9b"],
 }
+
+# Canonical Item ordering within the 10-K (used for fallback end-boundary)
+_ITEM_ORDER = ["1a", "1b", "1c", "2", "7", "7a", "8", "9", "9a", "9b"]
 
 _EXHIBIT_RE = re.compile(r"exhibit\s+\(?(\d+(?:\.\d+)?)\)?", re.IGNORECASE)
 _MARKER_CHAR = "\x00"
@@ -90,6 +96,28 @@ _TITLE_RE: dict[str, re.Pattern] = {
 # Max words for title-only (t_*) header candidates.  Item-based headers
 # use the global 25-word limit from _find_html_headers.
 _TITLE_MAX_WORDS = 12
+
+# Section-boundary detection thresholds
+_MAX_HEADER_WORDS = 25           # max words for an item-based header candidate
+_TITLE_MATCH_OFFSET = 15         # title-only pattern must start within first N chars
+_ITEM_END_MIN_DIST = 100         # min chars past start for item-based end markers
+_TITLE_END_MIN_DIST = 2000       # min chars past start for title-based end markers
+_TOC_PROXIMITY = 300             # char window for neighboring-item TOC detection
+_TOC_MIN_NEIGHBORS = 3           # min distinct neighbor items to classify as TOC
+_XREF_LOOKBACK = 30              # chars before header to check for cross-ref phrases
+_SUBTITLE_WINDOW = 300           # chars after header to search for keywords
+_STUB_MAX_WORDS = 500            # max section words to treat as incorporated-ref stub
+_MAX_EXHIBIT_TRIES = 3           # cap on exhibit files to attempt per section
+
+# Pre-compiled regexes used inside hot-path functions (avoid recompilation)
+_NUM_CELL_RE = re.compile(r"^[\d$€£¥%,.()\-–−\s]+$")
+_NUM_CHAR_RE = re.compile(r"[\d$%,.()−–\-]")
+_NUM_TOKEN_RE = re.compile(r"^[\d$%,.()\-–−]+$")
+_LIKELY_EXHIBIT_RE = re.compile(r'^EX-(13|99(?:\.\d+)?)$')
+_XREF_TRAILING_RE = re.compile(
+    r'\b(?:see|see\s+also|refer\s+to|as\s+described\s+in|included\s+in)\s*$',
+    re.IGNORECASE,
+)
 
 
 # ---------------------------------------------------------------------------
@@ -214,19 +242,19 @@ def _find_html_headers(soup) -> dict[str, list]:
             continue
         # If the block is too long, check for a bold leading span that
         # could be an inline section header (common in iXBRL filings).
-        if wc > 25:
+        if wc > _MAX_HEADER_WORDS:
             first_span = tag.find(["span"], recursive=False)
             if first_span is None:
                 continue
             span_txt = " ".join(first_span.get_text().split())
             span_wc = len(span_txt.split())
-            if span_wc < 2 or span_wc > 25:
+            if span_wc < 2 or span_wc > _MAX_HEADER_WORDS:
                 continue
             if not (_has_bold_style(first_span) or _has_large_font(first_span)):
                 continue
             # Use the span text as a potential header; pass the tag for marker
             txt, wc, tag = span_txt, span_wc, first_span
-        if "continued" in txt.lower():
+        if re.search(r"\bcontinued\b\s*\)?$", txt, re.IGNORECASE):
             continue
         if not (_has_bold_style(tag) or (txt.upper() == txt and wc >= 2)
                or _has_large_font(tag)):
@@ -245,7 +273,7 @@ def _find_html_headers(soup) -> dict[str, list]:
             if wc <= _TITLE_MAX_WORDS:
                 for key, pat in _TITLE_RE.items():
                     m = pat.search(txt)
-                    if m and m.start() <= 15:
+                    if m and m.start() <= _TITLE_MATCH_OFFSET:
                         results.setdefault(f"t_{key}", []).append(tag)
                         break
     return results
@@ -287,8 +315,6 @@ def _parse_html(html: str) -> tuple[str, dict[str, list[int]]]:
     #       Financial data tables have many such cells; layout tables have few.
     #   (b) Character-level fallback: >40% of non-whitespace chars are numeric.
     # A table is removed if EITHER test fires AND it has ≥2 <tr> rows.
-    _NUM_CELL_RE = re.compile(r"^[\d$€£¥%,.()\-–−\s]+$")
-    _NUM_CHARS = re.compile(r"[\d$%,.()−–\-]")
     for table in soup.find_all("table"):
         raw = table.get_text()
         non_ws = raw.replace(" ", "").replace("\n", "").replace("\t", "")
@@ -309,7 +335,7 @@ def _parse_html(html: str) -> tuple[str, dict[str, list[int]]]:
                 is_data = True
         # (b) Character-level fallback
         if not is_data:
-            char_ratio = len(_NUM_CHARS.findall(non_ws)) / len(non_ws)
+            char_ratio = len(_NUM_CHAR_RE.findall(non_ws)) / len(non_ws)
             if char_ratio > 0.40:
                 is_data = True
         if is_data:
@@ -365,43 +391,60 @@ def _extract(text: str, target: str,
 
     def _section_end(start: int) -> int:
         end = len(text)
+
+        def _first_past(key: str) -> int | None:
+            """First position for *key* past its type-appropriate threshold."""
+            min_dist = (_TITLE_END_MIN_DIST if key.startswith("t_")
+                        else _ITEM_END_MIN_DIST)
+            for ep in sorted(positions.get(key, [])):
+                if ep > start + min_dist:
+                    return ep
+            return None
+
         # Primary: expected next items
         for ei in end_items:
-            # Merge item-based and title-based end positions
-            ends = sorted(
-                set(positions.get(ei, []))
-                | set(positions.get(f"t_{ei}", []))
-            )
-            for ep in ends:
-                if ep > start + 100:
+            for key in (ei, f"t_{ei}"):
+                ep = _first_past(key)
+                if ep is not None:
                     end = min(end, ep)
-                    break
-        # Fallback: if no primary end marker found, use ANY later-section
-        # position as a safety boundary (handles missing intermediate items)
+
+        # Fallback: later items in canonical 10-K ordering
         if end == len(text):
-            skip = {target, f"t_{target}"}
-            for key, plist in positions.items():
-                if key in skip:
-                    continue
-                for ep in plist:
-                    if ep > start + 100:
+            try:
+                t_idx = _ITEM_ORDER.index(target)
+            except ValueError:
+                t_idx = -1
+            for item in _ITEM_ORDER[t_idx + 1:]:
+                for key in (item, f"t_{item}"):
+                    ep = _first_past(key)
+                    if ep is not None:
                         end = min(end, ep)
+
         return end
 
     def _section_len(start: int) -> int:
         end = _section_end(start)
         wc = len(text[start:end].split())
-        return wc if end < len(text) else min(wc, MIN_SECTION_WORDS - 1)
+        # Prefer bounded sections, but don't hard-reject unbounded ones
+        return wc if end < len(text) else min(wc, MIN_SECTION_WORDS + 1)
 
     def _is_toc(p: int) -> bool:
-        nearby = 0
+        nearby_keys: set[str] = set()
         for k, plist in positions.items():
             if k in (target, f"t_{target}"):
                 continue
-            for op in plist:
-                if abs(op - p) < 300:
-                    nearby += 1
-        return nearby >= 2
+            if any(abs(op - p) < _TOC_PROXIMITY for op in plist):
+                nearby_keys.add(k.removeprefix("t_"))
+        return len(nearby_keys) >= _TOC_MIN_NEIGHBORS
+
+    def _is_cross_ref(p: int) -> bool:
+        """True if the header at *p* is a cross-reference like 'See Item 7.'"""
+        lookback = text[max(0, p - _XREF_LOOKBACK):p].lower().strip()
+        lookahead = text[p:p + 10].lower().strip()
+        return bool(
+            _XREF_TRAILING_RE.search(lookback)
+            or lookahead.startswith("see ")
+        )
 
     # Try item-based candidates, then title-based
     for key in (target, f"t_{target}"):
@@ -410,15 +453,20 @@ def _extract(text: str, target: str,
             continue
 
         if keywords:
-            candidates = [p for p in candidates
-                          if any(kw in text[p:p + 150].lower()
-                                 for kw in keywords)]
+            def _has_subtitle(p: int) -> bool:
+                window = re.sub(r'\s+', '', text[p:p + _SUBTITLE_WINDOW].lower())
+                return any(kw.replace(' ', '') in window for kw in keywords)
+            candidates = [p for p in candidates if _has_subtitle(p)]
         if not candidates:
             continue
 
         non_toc = [p for p in candidates if not _is_toc(p)]
         if non_toc:
             candidates = non_toc
+
+        non_xref = [p for p in candidates if not _is_cross_ref(p)]
+        if non_xref:
+            candidates = non_xref
 
         best = max(candidates, key=_section_len)
         section = text[best:_section_end(best)].strip()
@@ -445,7 +493,6 @@ def _clean_section(text: str) -> str:
     text = text.replace("\xa0", " ")
     # Safety-net: strip residual garbled table lines that survived HTML removal.
     # Lines ≥4 tokens where >40% are bare numbers (e.g. "Revenue 1,234 5,678 9.0").
-    _NUM_TOKEN_RE = re.compile(r"^[\d$%,.()\-–−]+$")
     lines = text.split("\n")
     lines = [
         ln for ln in lines
@@ -471,6 +518,57 @@ def _clean_section(text: str) -> str:
     # Collapse resulting blank lines
     text = re.sub(r"\n\s*\n", "\n", text)
     return text.strip()
+
+
+def _try_exhibit_fallback(
+    cik: str, accn: str, target: str,
+    text: str, positions: dict[str, list[int]],
+    exhibit_map: dict[str, str] | None,
+) -> tuple[str | None, dict[str, str] | None]:
+    """Attempt to extract *target* from exhibit files when main doc is a stub.
+
+    Returns (section_text_or_None, updated_exhibit_map).
+    """
+    stub = _extract(text, target, positions, allow_stub=True)
+    if not stub:
+        return None, exhibit_map
+
+    stub_lower = stub.lower()
+    is_ref = (len(stub.split()) < _STUB_MAX_WORDS
+              and ("incorporat" in stub_lower
+                   or "refer to" in stub_lower
+                   or "annual report" in stub_lower))
+    if not is_ref:
+        return None, exhibit_map
+
+    if exhibit_map is None:
+        exhibit_map = _fetch_exhibit_map(cik, accn)
+        time.sleep(REQUEST_SLEEP)
+
+    # Determine which exhibit numbers to try
+    m = _EXHIBIT_RE.search(stub)
+    if m:
+        ex_numbers = [m.group(1)]
+    else:
+        ex_numbers = [_LIKELY_EXHIBIT_RE.match(t).group(1)
+                      for t in exhibit_map
+                      if _LIKELY_EXHIBIT_RE.match(t)]
+
+    for ex_num in ex_numbers[:_MAX_EXHIBIT_TRIES]:
+        ex_doc = exhibit_map.get(f"EX-{ex_num}")
+        if not ex_doc:
+            continue
+        try:
+            ex_html = _download_html(cik, accn, ex_doc)
+            time.sleep(REQUEST_SLEEP)
+            ex_text, ex_pos = _parse_html(ex_html)
+            section = _extract(ex_text, target, ex_pos)
+            if section is not None:
+                return section, exhibit_map
+        except Exception:
+            pass
+
+    return None, exhibit_map
 
 
 # ---------------------------------------------------------------------------
@@ -502,27 +600,11 @@ def extract_filing_text(cik: str, accn: str,
     for target, out_key in [("1a", "item_1a"), ("7", "item_7")]:
         section = _extract(text, target, positions)
 
-        # Exhibit fallback for "incorporated by reference" stubs
+        # Exhibit fallback for stubs that reference an exhibit / annual report
         if section is None:
-            stub = _extract(text, target, positions, allow_stub=True)
-            if stub and "incorporat" in stub.lower():
-                m = _EXHIBIT_RE.search(stub)
-                ex_numbers = [m.group(1)] if m else ["13"]
-                if exhibit_map is None:
-                    exhibit_map = _fetch_exhibit_map(cik, accn)
-                    time.sleep(REQUEST_SLEEP)
-                for ex_num in ex_numbers:
-                    ex_doc = exhibit_map.get(f"EX-{ex_num}")
-                    if ex_doc:
-                        try:
-                            ex_html = _download_html(cik, accn, ex_doc)
-                            time.sleep(REQUEST_SLEEP)
-                            ex_text, ex_pos = _parse_html(ex_html)
-                            section = _extract(ex_text, target, ex_pos)
-                        except Exception:
-                            pass
-                    if section is not None:
-                        break
+            section, exhibit_map = _try_exhibit_fallback(
+                cik, accn, target, text, positions, exhibit_map,
+            )
 
         result[out_key] = _clean_section(section) if section else None
 
