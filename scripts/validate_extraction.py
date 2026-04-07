@@ -63,7 +63,7 @@ TRUNC_THRESHOLD = 12_000            # send full text below this word count
 TRUNC_HEAD = 3_000                  # first N words when truncating
 TRUNC_TAIL = 3_000                  # last N words when truncating
 
-_ERA_BINS = [(2010, 2014), (2015, 2019), (2020, 2024)]
+_ERA_BINS = [(2010, 2012), (2013, 2015), (2016, 2018), (2019, 2021), (2022, 2024)]
 
 CRITERIA = [
     "correct_section", "start_boundary", "end_boundary",
