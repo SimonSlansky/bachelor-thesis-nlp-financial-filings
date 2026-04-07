@@ -11,9 +11,11 @@ Design for thesis-quality results:
   - Three-level scoring  →  strict *and* lenient pass rates
 
 Usage:
-    # Put one Gemini API key per line in a text file:
-    python validate_extraction.py --key-file keys.txt
-    # The script rotates keys automatically (20 calls each).
+    python validate_extraction.py --api-key YOUR_KEY
+    # (processes up to 20 filings, then stops)
+    # ... swap API key ...
+    python validate_extraction.py --api-key NEW_KEY
+    # (continues from checkpoint until all 100 filings are validated)
 """
 
 import argparse
@@ -355,34 +357,15 @@ def _print_summary():
 
 # ── main ──────────────────────────────────────────────────────────────────
 
-CALLS_PER_KEY = 20          # free-tier daily limit per key
-
-
-def _load_keys(path):
-    """Read API keys from a text file (one per line, # comments ok)."""
-    keys = []
-    with open(path, encoding="utf-8") as f:
-        for line in f:
-            line = line.strip()
-            if line and not line.startswith("#"):
-                keys.append(line)
-    if not keys:
-        sys.exit(f"ERROR: no keys found in {path}")
-    return keys
+MAX_CALLS_DEFAULT = 20      # free-tier limit per key
 
 
 def main():
     ap = argparse.ArgumentParser(
         description="AI-based extraction validation (Gemini 2.5 Flash)")
-    key_grp = ap.add_mutually_exclusive_group(required=True)
-    key_grp.add_argument("--key-file",
-                         help="Path to text file with one Gemini API key "
-                              "per line (# comments allowed)")
-    key_grp.add_argument("--api-key",
-                         help="Single Gemini API key (processes up to "
-                              f"{CALLS_PER_KEY} filings then stops)")
-    ap.add_argument("--calls-per-key", type=int, default=CALLS_PER_KEY,
-                    help=f"API calls per key (default {CALLS_PER_KEY})")
+    ap.add_argument("--api-key", required=True, help="Gemini API key")
+    ap.add_argument("--max-calls", type=int, default=MAX_CALLS_DEFAULT,
+                    help=f"Max API calls this run (default {MAX_CALLS_DEFAULT})")
     ap.add_argument("--n", type=int, default=100,
                     help="Total filings to validate (default 100)")
     ap.add_argument("--seed", type=int, default=42,
@@ -392,17 +375,7 @@ def main():
     if genai is None:
         sys.exit("ERROR: pip install google-genai")
 
-    # build key list
-    if args.key_file:
-        keys = _load_keys(args.key_file)
-    else:
-        keys = [args.api_key]
-    max_calls = len(keys) * args.calls_per_key
-    print(f"Loaded {len(keys)} API key(s) -> up to {max_calls} calls")
-
-    key_idx = 0
-    key_calls = 0
-    client = genai.Client(api_key=keys[key_idx])
+    client = genai.Client(api_key=args.api_key)
 
     # ── load panel ────────────────────────────────────────────────────────
     df = pd.read_csv(DATA_DIR / "annual_panel.csv")
@@ -475,7 +448,7 @@ def main():
         _print_summary()
         return
 
-    to_process = min(len(remaining), max_calls)
+    to_process = min(len(remaining), args.max_calls)
     print(f"  Remaining: {len(remaining)} filings"
           f"  (will process up to {to_process} this run)\n")
 
@@ -494,9 +467,9 @@ def main():
     # ── validation loop ──────────────────────────────────────────────────
     calls = 0
     for seq, (_, row) in enumerate(remaining, 1):
-        if calls >= max_calls:
-            print(f"\nAll {len(keys)} key(s) exhausted "
-                  f"({calls} calls). Add more keys to continue.")
+        if calls >= args.max_calls:
+            print(f"\nReached {args.max_calls}-call limit. "
+                  f"Re-run with a new --api-key to continue.")
             break
 
         ticker = str(row["ticker"])
@@ -546,54 +519,24 @@ def main():
             response_format=rfmt,
         )
 
-        # call Gemini (with automatic key rotation)
+        # call Gemini
         try:
             raw = _call_gemini(client, prompt)
             parsed = _parse_response(raw)
             calls += 1
-            key_calls += 1
-            # rotate key if this one is exhausted
-            if (key_calls >= args.calls_per_key
-                    and key_idx + 1 < len(keys)):
-                key_idx += 1
-                key_calls = 0
-                client = genai.Client(api_key=keys[key_idx])
-                print(f"    -> rotated to key {key_idx + 1}/{len(keys)}")
         except Exception as e:
-            if _is_rate_limited(e) and key_idx + 1 < len(keys):
-                key_idx += 1
-                key_calls = 0
-                client = genai.Client(api_key=keys[key_idx])
-                print(f"    rate-limited -> rotated to key "
-                      f"{key_idx + 1}/{len(keys)}, retrying ...")
-                try:
-                    time.sleep(REQUEST_GAP_S)
-                    raw = _call_gemini(client, prompt)
-                    parsed = _parse_response(raw)
-                    calls += 1
-                    key_calls += 1
-                except Exception as e2:
-                    print(f"  [{seq}] {ticker} FY{fy}: "
-                          f"API error after rotation -- {e2}")
-                    for s, wc in [("item_1a", wc1a), ("item_7", wc7)]:
-                        results.append({"ticker": ticker, "fiscal_year": fy,
-                                        "section": s, "word_count": wc,
-                                        **{c: "API_ERROR" for c in CRITERIA},
-                                        "notes": str(e2)})
-                    _save(results)
-                    continue
-            else:
-                print(f"  [{seq}] {ticker} FY{fy}: API error -- {e}")
-                for s, wc in [("item_1a", wc1a), ("item_7", wc7)]:
-                    results.append({"ticker": ticker, "fiscal_year": fy,
-                                    "section": s, "word_count": wc,
-                                    **{c: "API_ERROR" for c in CRITERIA},
-                                    "notes": str(e)})
-                _save(results)
-                if _is_rate_limited(e):
-                    print("  All keys exhausted. Add more to continue.")
-                    break
-                continue
+            print(f"  [{seq}] {ticker} FY{fy}: API error -- {e}")
+            for s, wc in [("item_1a", wc1a), ("item_7", wc7)]:
+                results.append({"ticker": ticker, "fiscal_year": fy,
+                                "section": s, "word_count": wc,
+                                **{c: "API_ERROR" for c in CRITERIA},
+                                "notes": str(e)})
+            _save(results)
+            if _is_rate_limited(e):
+                print("  Rate-limit hit -- stopping. "
+                      "Re-run with a new --api-key.")
+                break
+            continue
 
         # record per-section results
         for s, wc, has in [("item_1a", wc1a, bool(t1a)),
@@ -611,11 +554,10 @@ def main():
             else:
                 tags.append(f"{s}=FAIL")
         print(f"  [{seq}] {ticker} FY{fy}  {' '.join(tags)}"
-              f"   ({calls}/{max_calls} calls,"
-              f" key {key_idx + 1}/{len(keys)})")
+              f"   ({calls}/{args.max_calls} calls)")
 
         _save(results)
-        if calls < max_calls:
+        if calls < args.max_calls:
             time.sleep(REQUEST_GAP_S)
 
     # final
