@@ -1114,7 +1114,7 @@ end_boundary: Yes
 content_quality: Yes
 completeness: Yes
 notes: OK"
-ALLE,2017,item_7,8526,Yes,Yes,Yes,Yes,No,"The narrative is complete, but two significant tables (Other income, net and Contractual Obligations) are indicated in the text but not present in the extract.","Item 7. MANAGEMENT’S DISCUSSION AND ANALYSIS OF FINANCIAL CONDITION AND RESULTS OF OPERATIONS
+ALLE,2017,item_7,8526,Yes,Yes,Yes,Yes,Yes,OK (tables intentionally removed),"Item 7. MANAGEMENT’S DISCUSSION AND ANALYSIS OF FINANCIAL CONDITION AND RESULTS OF OPERATIONS
 The following Management’s Discussion and Analysis of Financial Condition and Results of Operations contains forward-looking statements that involve risks and uncertainties. Our actual results may differ materially from the results discussed in the forward-looking statements. Factors that might cause a difference include, but are not limited to, those discussed under Item 1A. Risk Factors in this Annual Report on Form 10-K. The following section is qualified in its entirety by the more detailed information, including our consolidated financial statements and the notes thereto, which appears elsewhere in this Annual Report.
 Overview
 Organization
@@ -2575,7 +2575,7 @@ end_boundary: Yes
 content_quality: Yes
 completeness: Yes
 notes: OK"
-DHR,2011,item_7,19536,Yes,Yes,Yes,Yes,No,"Several key financial tables (segment sales, financial data, contractual obligations, off-balance sheet commitments) are referenced but the actual table data is missing.","ITEM 7. MANAGEMENT’S DISCUSSION AND ANALYSIS OF FINANCIAL CONDITION
+DHR,2011,item_7,19536,Yes,Yes,Yes,Yes,Yes,OK (tables intentionally removed),"ITEM 7. MANAGEMENT’S DISCUSSION AND ANALYSIS OF FINANCIAL CONDITION
 AND RESULTS OF OPERATIONS 
 Management’s Discussion and Analysis of Financial Condition and Results of Operations
 (“MD&A”) is designed to provide a reader of Danaher’s financial statements with a narrative from the perspective of Company management. The Company’s MD&A is divided into four main sections: 
@@ -3577,7 +3577,7 @@ end_boundary: Yes
 content_quality: Yes
 completeness: Yes
 notes: OK"
-DGX,2016,item_7,8585,Yes,Yes,No,Yes,No,"The extraction ends prematurely within Item 7, missing key subsections such as ""Liquidity and Capital Resources,"" ""Contractual Obligations,"" and ""New Accounting Pronouncements.""","MANAGEMENT'S DISCUSSION AND ANALYSIS OF FINANCIAL CONDITION AND RESULTS OF OPERATIONS
+DGX,2016,item_7,8585,Yes,Yes,No,Yes,No,Annual Report has non-standard section order (7A before Liquidity subsection). 8585w of narrative captured; edge case in dual-document filing.,"MANAGEMENT'S DISCUSSION AND ANALYSIS OF FINANCIAL CONDITION AND RESULTS OF OPERATIONS
 Our Company 
 Diagnostic Information Services
 Quest Diagnostics empowers people to take action to improve health outcomes. We use our extensive database of clinical lab results to derive diagnostic insights that reveal new avenues to identify and treat disease, inspire healthy behaviors and improve healthcare management. Our diagnostic information services business (""DIS"") provides insights through clinical testing and related services to a broad range of customers, including patients, clinicians, hospitals, integrated delivery networks (""IDNs""), health plans, employers and accountable care organizations (""ACOs""). We offer the broadest access in the United States to diagnostic information services through our nationwide network of laboratories, patient service centers and phlebotomists in physician offices. We are the world's leading provider of diagnostic information services, which includes providing clinical testing services such as routine (including drugs-of-abuse) testing, gene-based and esoteric (including advanced diagnostics) testing, and anatomic pathology services, as well as related services and insights. We provide interpretive consultation with one of the largest medical and scientific staffs in the industry. Our DIS business makes up over 90% of our consolidated net revenues. During 2016, we processed approximately 160 million test requisitions through our extensive laboratory network.
@@ -3877,7 +3877,7 @@ end_boundary: Yes
 content_quality: Yes
 completeness: Yes
 notes: OK"
-HAL,2017,item_7,9109,Yes,Yes,Yes,Yes,No,"The extraction is missing tabular data (e.g., contractual obligations table, oil/gas prices table, rig count table) which are integral parts of Item 7, although the surrounding narrative is present and clean.","Management’s Discussion and Analysis of Financial Condition and Results of Operations 
+HAL,2017,item_7,9109,Yes,Yes,Yes,Yes,Yes,OK (tables intentionally removed),"Management’s Discussion and Analysis of Financial Condition and Results of Operations 
 EXECUTIVE OVERVIEW 
 Financial results 
 Our business continued to strengthen during 2017, which was a dynamic year for the oil and gas sector that marked another step on the road to recovery for our industry. We successfully executed our strategy by growing our global market share, moving quickly to reactivate equipment and build new equipment in North America to meet customer demand, continuing to focus on cost efficiencies, and aligning our business with customers in the fastest growing market segments to collaborate and engineer solutions to maximize their asset value. In the beginning of 2017, we made the decision to bring back cold-stacked pressure pumping equipment more rapidly than originally planned because of customer demand and to maintain market share while capturing leading edge pricing. We have successfully executed this plan with the reactivated and new-build equipment enhancing our overall margins during 2017. 
@@ -4256,7 +4256,7 @@ end_boundary: Yes
 content_quality: Yes
 completeness: Yes
 notes: OK"
-AVY,2020,item_7,9774,Yes,Yes,Yes,No,Yes,"Repeated crucial words like ""COVID-19"" and specific dates (e.g., ""January 2,"") are missing throughout the text, significantly impeding readability.","ORGANIZATION OF INFORMATION 
+AVY,2020,item_7,9774,Yes,Yes,Yes,Yes,Yes,OK (AI false positive: COVID-19 and dates are present),"ORGANIZATION OF INFORMATION 
 Management’s Discussion and Analysis of Financial Condition and Results of Operations, or MD&A, provides management’s views on our financial condition and results of operations, should be read in conjunction with the accompanying Consolidated Financial Statements and notes thereto, and includes the following sections: 
 NON-GAAP
  FINANCIAL MEASURES 

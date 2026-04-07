@@ -58,6 +58,11 @@ You are validating the quality of an automated text extraction from an SEC 10-K 
 
 Below is the COMPLETE extracted text ({total_words:,} words).
 
+**Important context**: Financial data tables (revenue breakdowns, balance sheets,
+contractual obligations, etc.) are **intentionally removed** during extraction.
+Only narrative prose is retained. Do NOT penalize the extraction for missing tables
+or for references to tables/figures that are absent. Judge only the narrative content.
+
 --- START OF EXTRACTED TEXT ---
 {full_text}
 --- END OF EXTRACTED TEXT ---
@@ -69,9 +74,9 @@ Judge the extraction on ALL of these criteria:
 4. **Content quality**: Is the text clean readable prose? Answer No if you find ANY of these artifacts:
    - "Table of Contents" running page headers or page numbers between paragraphs
    - Residual HTML tags or XBRL inline tags (e.g. <ix:nonfraction>, <div>, &nbsp;)
-   - Large blocks of table data that are garbled (numbers without column context)
+   - Large blocks of garbled data (numbers without column context)
    - Exhibit lists or index pages instead of narrative content
-5. **Completeness**: Does the section appear to contain the full expected content (not truncated, not just a stub or cross-reference to an exhibit)? (Yes/No)
+5. **Completeness**: Does the narrative portion of the section appear complete (not truncated, not just a stub or cross-reference to an exhibit)? Ignore missing tables — they are removed by design. (Yes/No)
 
 Respond with EXACTLY this format (no extra text):
 correct_section: Yes/No

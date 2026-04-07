@@ -77,7 +77,7 @@ _TITLE_RE: dict[str, re.Pattern] = {
     "1a":  re.compile(r"\brisk\s+factors\b",                          re.IGNORECASE),
     "1b":  re.compile(r"\bunresolved\s+staff\s+comments\b",           re.IGNORECASE),
     "2":   re.compile(r"\bproperties\b",                              re.IGNORECASE),
-    "7":   re.compile(r"\bmanagement.s\s+discussion",                 re.IGNORECASE),
+    "7":   re.compile(r"\bmanagement.?s?\s+discussion",               re.IGNORECASE),
     "7a":  re.compile(r"\bquantitative\s+and\s+qualitative",          re.IGNORECASE),
     "8":   re.compile(r"\b(?:consolidated\s+)?financial\s+statements"
                       r"|(?:consolidated\s+balance\s+sheets?)"
@@ -210,8 +210,22 @@ def _find_html_headers(soup) -> dict[str, list]:
     ):
         txt = " ".join(tag.get_text().split())
         wc = len(txt.split())
-        if wc > 25 or wc < 2:
+        if wc < 2:
             continue
+        # If the block is too long, check for a bold leading span that
+        # could be an inline section header (common in iXBRL filings).
+        if wc > 25:
+            first_span = tag.find(["span"], recursive=False)
+            if first_span is None:
+                continue
+            span_txt = " ".join(first_span.get_text().split())
+            span_wc = len(span_txt.split())
+            if span_wc < 2 or span_wc > 25:
+                continue
+            if not (_has_bold_style(first_span) or _has_large_font(first_span)):
+                continue
+            # Use the span text as a potential header; pass the tag for marker
+            txt, wc, tag = span_txt, span_wc, first_span
         if "continued" in txt.lower():
             continue
         if not (_has_bold_style(tag) or (txt.upper() == txt and wc >= 2)
