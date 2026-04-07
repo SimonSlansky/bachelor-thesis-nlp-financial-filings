@@ -139,7 +139,6 @@ def baseline_to_latex(results, df, specs, path: Path | None = None) -> str:
 
     obs = [f"{res.nobs:,.0f}" for res in results]
     firms = [str(n_firms)] * n_cols
-    r2 = [f"{res.rsquared:.3f}" for res in results]
     adj_r2 = [f"{res.rsquared_adj:.3f}" for res in results]
 
     lines.append("Observations & " + " & ".join(obs) + r" \\")
