@@ -53,11 +53,11 @@ for _env in ("REQUESTS_CA_BUNDLE", "CURL_CA_BUNDLE"):
 
 # ── constants ─────────────────────────────────────────────────────────────
 
-MODEL = "gemini-2.5-flash"
+MODEL = "gemini-1.5-flash-lite"
 TEMPERATURE = 0.0                   # deterministic for reproducibility
 MAX_API_RETRIES = 3
 RETRY_BACKOFF_S = 15
-REQUEST_GAP_S = 4                   # seconds between API calls
+REQUEST_GAP_S = 4                # seconds between API calls
 
 TRUNC_THRESHOLD = 12_000            # send full text below this word count
 TRUNC_HEAD = 3_000                  # first N words when truncating
@@ -209,6 +209,22 @@ def _is_rate_limited(exc):
     msg = str(exc).upper()
     return ("429" in msg or "RESOURCE_EXHAUSTED" in msg
             or ("RATE" in msg and "LIMIT" in msg))
+
+
+def _fetch_doc_map_safe(cik, max_retries=3):
+    """Fetch doc map with retry for SEC timeouts."""
+    for attempt in range(1, max_retries + 1):
+        try:
+            return _build_primary_doc_map(cik)
+        except Exception as e:
+            if "timeout" in str(e).lower() and attempt < max_retries:
+                wait = 10 * attempt
+                print(f"      SEC timeout (try {attempt}/{max_retries}), "
+                      f"sleeping {wait}s ...")
+                time.sleep(wait)
+            else:
+                raise
+    return None
 
 
 def _call_gemini(client, prompt):
@@ -390,13 +406,29 @@ def main():
     if fresh:
         random.seed(args.seed)
         per_era = max(1, args.n // len(_ERA_BINS))
-        parts = []
+
+        # Sample Item 1A independently
+        parts_1a = []
         for lo, hi in _ERA_BINS:
             era = pool[(pool["fiscal_year"] >= lo) & (pool["fiscal_year"] <= hi)]
             n_draw = min(per_era, len(era))
             if n_draw:
-                parts.append(era.sample(n=n_draw, random_state=args.seed))
-        sample = (pd.concat(parts, ignore_index=True)
+                parts_1a.append(era.sample(n=n_draw, random_state=args.seed))
+        sample_1a = pd.concat(parts_1a, ignore_index=True).reset_index(drop=True)
+        sample_1a["section"] = "item_1a"
+
+        # Sample Item 7 independently (different firms)
+        parts_7 = []
+        for lo, hi in _ERA_BINS:
+            era = pool[(pool["fiscal_year"] >= lo) & (pool["fiscal_year"] <= hi)]
+            n_draw = min(per_era, len(era))
+            if n_draw:
+                parts_7.append(era.sample(n=n_draw, random_state=args.seed + 1000))
+        sample_7 = pd.concat(parts_7, ignore_index=True).reset_index(drop=True)
+        sample_7["section"] = "item_7"
+
+        # Combine both samples
+        sample = (pd.concat([sample_1a, sample_7], ignore_index=True)
                   .sample(frac=1, random_state=args.seed)
                   .reset_index(drop=True))
         sample.to_csv(SAMPLE_PATH, index=False)
@@ -418,6 +450,7 @@ def main():
 
     # ── checkpoint ────────────────────────────────────────────────────────
     done = set()
+    errors_to_retry = set()
     results = []
     if RESULTS_PATH.exists():
         try:
@@ -426,8 +459,13 @@ def main():
             prev = pd.DataFrame()
         if not prev.empty:
             results = prev.to_dict("records")
+            # successfully judged (Pass/Minor/Fail) -> skip
             done = {(str(r["ticker"]), int(r["fiscal_year"])) for r in results
                     if r.get("correct_section") not in _SKIP}
+            # API_ERROR or EXTRACT_ERR -> retry
+            errors_to_retry = {(str(r["ticker"]), int(r["fiscal_year"]), str(r["section"]))
+                               for r in results
+                               if r.get("correct_section") in ("API_ERROR", "EXTRACT_ERR")}
             # deduplicate (ticker, fy, section)
             seen = set()
             deduped = []
@@ -438,13 +476,18 @@ def main():
                     seen.add(key)
                     deduped.append(r)
             results = deduped
-            print(f"  Checkpoint: {len(done)} filings already validated")
+            print(f"  Checkpoint: {len(done)} sections validated, "
+                  f"{len(errors_to_retry)} to retry")
+
+    # Track which (ticker, fy, section) pairs are done
+    done_sections = {(str(r["ticker"]), int(r["fiscal_year"]), str(r["section"]))
+                     for r in results if (str(r["ticker"]), int(r["fiscal_year"])) in done}
 
     remaining = [(i, row) for i, row in sample.iterrows()
-                 if (str(row["ticker"]), int(row["fiscal_year"])) not in done]
+                 if (str(row["ticker"]), int(row["fiscal_year"]), str(row["section"])) not in done_sections]
 
     if not remaining:
-        print("\nAll filings validated!")
+        print("\nAll sections validated!")
         _print_summary()
         return
 
@@ -475,16 +518,20 @@ def main():
         ticker = str(row["ticker"])
         fy = int(row["fiscal_year"])
         accn = str(row["accession_number"])
+        target_section = str(row["section"])  # item_1a or item_7
         cik = cik_map.get(ticker)
         if not cik:
-            print(f"  [{seq}] {ticker} FY{fy}: no CIK -- skipped")
+            print(f"  [{seq}] {ticker} FY{fy} {target_section}: no CIK -- skipped")
             continue
 
         # extract
         try:
+            # fetch doc map if not already cached
+            if cik not in doc_maps:
+                doc_maps[cik] = _fetch_doc_map_safe(cik)
             ex = extract_filing_text(cik, accn, doc_maps.get(cik))
         except Exception as e:
-            print(f"  [{seq}] {ticker} FY{fy}: extraction error -- {e}")
+            print(f"  [{seq}] {ticker} FY{fy} {target_section}: extraction error -- {e}")
             for s in ("item_1a", "item_7"):
                 results.append({"ticker": ticker, "fiscal_year": fy,
                                 "section": s, "word_count": 0,
@@ -493,26 +540,31 @@ def main():
             _save(results)
             continue
 
-        t1a = ex.get("item_1a") or ""
-        t7  = ex.get("item_7")  or ""
-        wc1a = len(t1a.split()) if t1a else 0
-        wc7  = len(t7.split())  if t7  else 0
+        # Extract only the target section
+        if target_section == "item_1a":
+            text = ex.get("item_1a") or ""
+            label = "ITEM 1A"
+            name = "Risk Factors"
+        else:  # item_7
+            text = ex.get("item_7") or ""
+            label = "ITEM 7"
+            name = "MD&A"
 
-        if not t1a and not t7:
-            print(f"  [{seq}] {ticker} FY{fy}: both empty -- no API call")
-            for s, wc in [("item_1a", wc1a), ("item_7", wc7)]:
-                results.append({"ticker": ticker, "fiscal_year": fy,
-                                "section": s, "word_count": wc,
-                                **{c: "EMPTY" for c in CRITERIA},
-                                "notes": "No text extracted"})
+        wc = len(text.split()) if text else 0
+
+        if not text:
+            print(f"  [{seq}] {ticker} FY{fy} {target_section}: empty -- no API call")
+            results.append({"ticker": ticker, "fiscal_year": fy,
+                            "section": target_section, "word_count": wc,
+                            **{c: "EMPTY" for c in CRITERIA},
+                            "notes": "No text extracted"})
             _save(results)
             continue
 
-        # build prompt (both sections in one call)
-        sblock = (_section_block("ITEM 1A", "Risk Factors", t1a, wc1a)
-                  + "\n"
-                  + _section_block("ITEM 7", "MD&A", t7, wc7))
-        rfmt = _response_format(bool(t1a), bool(t7))
+        # build prompt (single section only)
+        sblock = _section_block(label, name, text, wc)
+        rfmt = _response_format(target_section == "item_1a", target_section == "item_7")
+
         prompt = PROMPT_TEMPLATE.format(
             ticker=ticker, fy=fy,
             sections_block=sblock,
@@ -538,30 +590,113 @@ def main():
                 break
             continue
 
-        # record per-section results
-        for s, wc, has in [("item_1a", wc1a, bool(t1a)),
-                           ("item_7",  wc7,  bool(t7))]:
-            results.append(_section_rows(parsed, s, ticker, fy, wc, has))
+        # record single-section results
+        results.append(_section_rows(parsed, target_section, ticker, fy, wc, True))
 
         # console status
-        tags = []
-        for s in ("item_1a", "item_7"):
-            scores = [parsed.get(f"{s}_{c}", "?") for c in CRITERIA]
-            if all(v == "Pass" for v in scores):
-                tags.append(f"{s}=PASS")
-            elif all(v in ("Pass", "Minor") for v in scores):
-                tags.append(f"{s}=MINOR")
-            else:
-                tags.append(f"{s}=FAIL")
-        print(f"  [{seq}] {ticker} FY{fy}  {' '.join(tags)}"
+        scores = [parsed.get(f"{target_section}_{c}", "?") for c in CRITERIA]
+        if all(v == "Pass" for v in scores):
+            tag = "PASS"
+        elif all(v in ("Pass", "Minor") for v in scores):
+            tag = "MINOR"
+        else:
+            tag = "FAIL"
+        print(f"  [{seq}] {ticker} FY{fy} {target_section}={tag}"
               f"   ({calls}/{args.max_calls} calls)")
 
         _save(results)
         if calls < args.max_calls:
             time.sleep(REQUEST_GAP_S)
 
-    # final
-    _save(results)
+    # ── retry errors at end of session ───────────────────────────────────
+    if errors_to_retry and calls < args.max_calls:
+        print(f"\n--- Retrying {len(errors_to_retry)} filings with prior errors "
+              f"(API_ERROR/EXTRACT_ERR) ---\n")
+        for ticker, fy in sorted(errors_to_retry):
+            if calls >= args.max_calls:
+                print(f"Reached call limit before retrying all errors.")
+                break
+
+            # Find this filing in sample
+            try:
+                row = sample[(sample["ticker"] == ticker)
+                            & (sample["fiscal_year"] == fy)].iloc[0]
+            except IndexError:
+                continue
+
+            accn = str(row["accession_number"])
+            cik = cik_map.get(ticker)
+            if not cik:
+                continue
+
+            # extract
+            try:
+                if cik not in doc_maps:
+                    doc_maps[cik] = _fetch_doc_map_safe(cik)
+                ex = extract_filing_text(cik, accn, doc_maps.get(cik))
+            except Exception as e:
+                print(f"  [RETRY] {ticker} FY{fy}: extraction still failing -- {e}")
+                continue
+
+            t1a = ex.get("item_1a") or ""
+            t7  = ex.get("item_7")  or ""
+            wc1a = len(t1a.split()) if t1a else 0
+            wc7  = len(t7.split())  if t7  else 0
+
+            if not t1a and not t7:
+                print(f"  [RETRY] {ticker} FY{fy}: still empty")
+                continue
+
+            # build prompt
+            sblock = (_section_block("ITEM 1A", "Risk Factors", t1a, wc1a)
+                      + "\n"
+                      + _section_block("ITEM 7", "MD&A", t7, wc7))
+            rfmt = _response_format(bool(t1a), bool(t7))
+            prompt = PROMPT_TEMPLATE.format(
+                ticker=ticker, fy=fy,
+                sections_block=sblock,
+                response_format=rfmt,
+            )
+
+            # call Gemini
+            try:
+                raw = _call_gemini(client, prompt)
+                parsed = _parse_response(raw)
+                calls += 1
+                key_calls += 1
+
+                # Remove old API_ERROR rows for this filing
+                results = [r for r in results
+                          if not (str(r.get("ticker")) == ticker
+                                  and int(r.get("fiscal_year")) == fy)]
+
+                # Add new results
+                for s, wc, has in [("item_1a", wc1a, bool(t1a)),
+                                   ("item_7",  wc7,  bool(t7))]:
+                    results.append(_section_rows(parsed, s, ticker, fy, wc, has))
+
+                print(f"  [RETRY] {ticker} FY{fy}: SUCCESS")
+                _save(results)
+            except Exception as e:
+                print(f"  [RETRY] {ticker} FY{fy}: still API error -- {e}")
+                if _is_rate_limited(e):
+                    print("  Rate-limited; stopping retry loop.")
+                    break
+
+            if calls < args.max_calls:
+                time.sleep(REQUEST_GAP_S)
+
+    # final (deduplicate before saving)
+    seen = set()
+    deduped_final = []
+    for r in results:
+        key = (str(r.get("ticker")), int(r.get("fiscal_year")),
+               str(r.get("section")))
+        if key not in seen:
+            seen.add(key)
+            deduped_final.append(r)
+
+    pd.DataFrame(deduped_final).to_csv(RESULTS_PATH, index=False)
     print(f"\nThis run: {calls} API calls")
     _print_summary()
 
