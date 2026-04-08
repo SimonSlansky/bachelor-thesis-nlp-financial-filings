@@ -1,27 +1,27 @@
 """AI-assisted validation of SEC 10-K section extraction quality.
 
-Uses Google Gemini 2.5 Flash as an independent judge to evaluate extraction
-quality on five criteria with a three-level rubric (Pass / Minor / Fail).
+Uses Gemini 2.5 Flash (via OpenAI-compatible endpoint) as an independent
+judge to evaluate extraction quality on five criteria with a three-level
+rubric (Pass / Minor / Fail).
 
 Design for thesis-quality results:
-  - One API call per filing (both Item 1A and Item 7 judged together)
+  - One API call per filing (one section judged per call)
+  - Full text sent to model (no truncation -- 1M token context)
   - Stratified random sampling across fiscal-year eras
-  - Checkpoint / resume: stops after --max-calls; re-run with a new key
+  - Checkpoint / resume: stops after --max-calls; re-run to continue
   - Wilson 95 % confidence intervals for all reported proportions
   - Three-level scoring  →  strict *and* lenient pass rates
 
 Usage:
-    python validate_extraction.py --api-key YOUR_KEY
-    # (processes up to 20 filings, then stops)
-    # ... swap API key ...
-    python validate_extraction.py --api-key NEW_KEY
-    # (continues from checkpoint until all 100 filings are validated)
+    # All 100 Item 1A sections with key #1:
+    python validate_extraction.py --section item_1a --api-key KEY_1
+
+    # All 100 Item 7 sections with key #2:
+    python validate_extraction.py --section item_7 --api-key KEY_2
 """
 
 import argparse
 import math
-import os
-import random
 import shutil
 import sys
 import time
@@ -38,30 +38,19 @@ from text_parser import (                            # noqa: E402
 )
 
 try:
-    from google import genai
-    from google.genai import types as genai_types
+    from openai import OpenAI as _OpenAI
 except Exception:
-    genai = None
-    genai_types = None
-
-# SSL cert forwarding for corporate proxies / httpx (Gemini SDK)
-for _env in ("REQUESTS_CA_BUNDLE", "CURL_CA_BUNDLE"):
-    _val = os.environ.get(_env)
-    if _val and os.path.isfile(_val):
-        os.environ.setdefault("SSL_CERT_FILE", _val)
-        break
+    _OpenAI = None
 
 # ── constants ─────────────────────────────────────────────────────────────
 
-MODEL = "gemini-1.5-flash-lite"
+MODEL = "gemini-2.5-flash"
+GEMINI_ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/openai/"
+
 TEMPERATURE = 0.0                   # deterministic for reproducibility
 MAX_API_RETRIES = 3
 RETRY_BACKOFF_S = 15
-REQUEST_GAP_S = 4                # seconds between API calls
-
-TRUNC_THRESHOLD = 12_000            # send full text below this word count
-TRUNC_HEAD = 3_000                  # first N words when truncating
-TRUNC_TAIL = 3_000                  # last N words when truncating
+REQUEST_GAP_S = 4                 # seconds between API calls
 
 _ERA_BINS = [(2010, 2012), (2013, 2015), (2016, 2018), (2019, 2021), (2022, 2024)]
 
@@ -81,8 +70,8 @@ You are an independent SEC financial-document quality auditor.
 
 Filing: **{ticker}  FY{fy}**
 
-Below are sections automatically extracted from this company's 10-K filing.
-Evaluate each NON-EMPTY section on five quality criteria.
+Below is a section automatically extracted from this company's 10-K filing.
+Evaluate it on five quality criteria.
 
 **Important context**: Financial data tables (revenue breakdowns, balance sheets,
 contractual obligations, etc.) are *intentionally removed* during extraction.
@@ -92,7 +81,7 @@ tables or for references to tables/figures that are absent.
 {sections_block}
 ---
 
-**Criteria** (evaluate each for every non-empty section):
+**Criteria:**
 
 1. **correct_section** -- Does the text belong to the claimed section?
    Item 1A must contain risk-factor descriptions.
@@ -125,7 +114,7 @@ tables or for references to tables/figures that are absent.
            (sentiment, readability, topic modelling)
   Fail  -- issue that WOULD materially distort NLP results
 
-Respond in **exactly** this format (omit any section marked [EMPTY]):
+Respond in **exactly** this format:
 
 {response_format}
 """
@@ -133,29 +122,11 @@ Respond in **exactly** this format (omit any section marked [EMPTY]):
 
 # ── helpers ───────────────────────────────────────────────────────────────
 
-def _truncate(text):
-    """Return (possibly truncated text, was_truncated)."""
-    words = text.split()
-    if len(words) <= TRUNC_THRESHOLD:
-        return text, False
-    head = " ".join(words[:TRUNC_HEAD])
-    tail = " ".join(words[-TRUNC_TAIL:])
-    omitted = len(words) - TRUNC_HEAD - TRUNC_TAIL
-    return (
-        f"[FIRST {TRUNC_HEAD:,} WORDS]:\n{head}\n\n"
-        f"[... {omitted:,} words omitted for brevity ...]\n\n"
-        f"[LAST {TRUNC_TAIL:,} WORDS]:\n{tail}"
-    ), True
-
-
 def _section_block(label, name, text, wc):
     """Build the text block for one section in the prompt."""
     if not text:
         return f"=== {label} ({name}) ===\n[EMPTY -- extraction returned no text]\n"
-    body, trunc = _truncate(text)
-    note = (f"  (showing first {TRUNC_HEAD:,} + last {TRUNC_TAIL:,}"
-            f" of {wc:,} total words)") if trunc else ""
-    return f"=== {label} ({name}) ===\nWord count: {wc:,}{note}\n\n{body}\n"
+    return f"=== {label} ({name}) ===\nWord count: {wc:,}\n\n{text}\n"
 
 
 def _response_format(has_1a, has_7):
@@ -227,16 +198,17 @@ def _fetch_doc_map_safe(cik, max_retries=3):
     return None
 
 
-def _call_gemini(client, prompt):
+def _call_llm(client, prompt):
+    """Call Gemini via OpenAI-compatible endpoint."""
     last = None
-    cfg = (genai_types.GenerateContentConfig(temperature=TEMPERATURE)
-           if genai_types else None)
     for attempt in range(1, MAX_API_RETRIES + 1):
         try:
-            resp = client.models.generate_content(
-                model=MODEL, contents=prompt, config=cfg,
+            resp = client.chat.completions.create(
+                model=MODEL,
+                messages=[{"role": "user", "content": prompt}],
+                temperature=TEMPERATURE,
             )
-            return resp.text or ""
+            return resp.choices[0].message.content or ""
         except Exception as e:
             last = e
             if _is_rate_limited(e) and attempt < MAX_API_RETRIES:
@@ -302,12 +274,14 @@ def _print_summary():
         n_p = int((judged[c] == "Pass").sum())
         n_m = int((judged[c] == "Minor").sum())
         n_f = int((judged[c] == "Fail").sum())
+        n_err = n - n_p - n_m - n_f
         lenient = n_p + n_m
         lo, hi = wilson_ci(lenient, n)
+        err_note = f"  ({n_err} parse-err)" if n_err else ""
         print(f"  {c:<22}{n_p:>3}/{n} {n_p/n:>5.1%}"
               f"  {lenient:>3}/{n} {lenient/n:>5.1%}"
               f"  {n_f:>5}"
-              f"   [{lo:.1%} - {hi:.1%}]")
+              f"   [{lo:.1%} - {hi:.1%}]{err_note}")
 
     # overall
     strict_all = int(judged.apply(
@@ -373,13 +347,17 @@ def _print_summary():
 
 # ── main ──────────────────────────────────────────────────────────────────
 
-MAX_CALLS_DEFAULT = 20      # free-tier limit per key
+MAX_CALLS_DEFAULT = 200     # Gemini free tier: 500 RPD
 
 
 def main():
     ap = argparse.ArgumentParser(
         description="AI-based extraction validation (Gemini 2.5 Flash)")
-    ap.add_argument("--api-key", required=True, help="Gemini API key")
+    ap.add_argument("--api-key", required=True,
+                    help="Gemini API key (from aistudio.google.com)")
+    ap.add_argument("--section", choices=["item_1a", "item_7"],
+                    default=None,
+                    help="Validate only this section (default: both)")
     ap.add_argument("--max-calls", type=int, default=MAX_CALLS_DEFAULT,
                     help=f"Max API calls this run (default {MAX_CALLS_DEFAULT})")
     ap.add_argument("--n", type=int, default=100,
@@ -388,10 +366,13 @@ def main():
                     help="Sampling seed (default 42)")
     args = ap.parse_args()
 
-    if genai is None:
-        sys.exit("ERROR: pip install google-genai")
+    if _OpenAI is None:
+        sys.exit("ERROR: pip install openai")
 
-    client = genai.Client(api_key=args.api_key)
+    client = _OpenAI(base_url=GEMINI_ENDPOINT, api_key=args.api_key)
+    section_filter = args.section
+    print(f"Model: {MODEL}"
+          + (f"  Section: {section_filter}" if section_filter else ""))
 
     # ── load panel ────────────────────────────────────────────────────────
     df = pd.read_csv(DATA_DIR / "annual_panel.csv")
@@ -404,7 +385,6 @@ def main():
     # ── create or load sample ─────────────────────────────────────────────
     fresh = not SAMPLE_PATH.exists()
     if fresh:
-        random.seed(args.seed)
         per_era = max(1, args.n // len(_ERA_BINS))
 
         # Sample Item 1A independently
@@ -449,42 +429,28 @@ def main():
     print(f"  Eras: {era_c}")
 
     # ── checkpoint ────────────────────────────────────────────────────────
-    done = set()
-    errors_to_retry = set()
     results = []
+    done_sections = set()
     if RESULTS_PATH.exists():
         try:
             prev = pd.read_csv(RESULTS_PATH)
         except Exception:
             prev = pd.DataFrame()
         if not prev.empty:
-            results = prev.to_dict("records")
-            # successfully judged (Pass/Minor/Fail) -> skip
-            done = {(str(r["ticker"]), int(r["fiscal_year"])) for r in results
-                    if r.get("correct_section") not in _SKIP}
-            # API_ERROR or EXTRACT_ERR -> retry
-            errors_to_retry = {(str(r["ticker"]), int(r["fiscal_year"]), str(r["section"]))
-                               for r in results
-                               if r.get("correct_section") in ("API_ERROR", "EXTRACT_ERR")}
             # deduplicate (ticker, fy, section)
             seen = set()
-            deduped = []
-            for r in results:
+            for r in prev.to_dict("records"):
                 key = (str(r["ticker"]), int(r["fiscal_year"]),
                        str(r["section"]))
                 if key not in seen:
                     seen.add(key)
-                    deduped.append(r)
-            results = deduped
-            print(f"  Checkpoint: {len(done)} sections validated, "
-                  f"{len(errors_to_retry)} to retry")
-
-    # Track which (ticker, fy, section) pairs are done
-    done_sections = {(str(r["ticker"]), int(r["fiscal_year"]), str(r["section"]))
-                     for r in results if (str(r["ticker"]), int(r["fiscal_year"])) in done}
+                    results.append(r)
+            done_sections = seen
+            print(f"  Checkpoint: {len(done_sections)} sections already processed")
 
     remaining = [(i, row) for i, row in sample.iterrows()
-                 if (str(row["ticker"]), int(row["fiscal_year"]), str(row["section"])) not in done_sections]
+                 if (str(row["ticker"]), int(row["fiscal_year"]), str(row["section"])) not in done_sections
+                 and (section_filter is None or str(row["section"]) == section_filter)]
 
     if not remaining:
         print("\nAll sections validated!")
@@ -532,11 +498,10 @@ def main():
             ex = extract_filing_text(cik, accn, doc_maps.get(cik))
         except Exception as e:
             print(f"  [{seq}] {ticker} FY{fy} {target_section}: extraction error -- {e}")
-            for s in ("item_1a", "item_7"):
-                results.append({"ticker": ticker, "fiscal_year": fy,
-                                "section": s, "word_count": 0,
-                                **{c: "EXTRACT_ERR" for c in CRITERIA},
-                                "notes": str(e)})
+            results.append({"ticker": ticker, "fiscal_year": fy,
+                            "section": target_section, "word_count": 0,
+                            **{c: "EXTRACT_ERR" for c in CRITERIA},
+                            "notes": str(e)})
             _save(results)
             continue
 
@@ -571,18 +536,17 @@ def main():
             response_format=rfmt,
         )
 
-        # call Gemini
+        # call LLM
         try:
-            raw = _call_gemini(client, prompt)
+            raw = _call_llm(client, prompt)
             parsed = _parse_response(raw)
             calls += 1
         except Exception as e:
             print(f"  [{seq}] {ticker} FY{fy}: API error -- {e}")
-            for s, wc in [("item_1a", wc1a), ("item_7", wc7)]:
-                results.append({"ticker": ticker, "fiscal_year": fy,
-                                "section": s, "word_count": wc,
-                                **{c: "API_ERROR" for c in CRITERIA},
-                                "notes": str(e)})
+            results.append({"ticker": ticker, "fiscal_year": fy,
+                            "section": target_section, "word_count": wc,
+                            **{c: "API_ERROR" for c in CRITERIA},
+                            "notes": str(e)})
             _save(results)
             if _is_rate_limited(e):
                 print("  Rate-limit hit -- stopping. "
@@ -607,84 +571,6 @@ def main():
         _save(results)
         if calls < args.max_calls:
             time.sleep(REQUEST_GAP_S)
-
-    # ── retry errors at end of session ───────────────────────────────────
-    if errors_to_retry and calls < args.max_calls:
-        print(f"\n--- Retrying {len(errors_to_retry)} filings with prior errors "
-              f"(API_ERROR/EXTRACT_ERR) ---\n")
-        for ticker, fy in sorted(errors_to_retry):
-            if calls >= args.max_calls:
-                print(f"Reached call limit before retrying all errors.")
-                break
-
-            # Find this filing in sample
-            try:
-                row = sample[(sample["ticker"] == ticker)
-                            & (sample["fiscal_year"] == fy)].iloc[0]
-            except IndexError:
-                continue
-
-            accn = str(row["accession_number"])
-            cik = cik_map.get(ticker)
-            if not cik:
-                continue
-
-            # extract
-            try:
-                if cik not in doc_maps:
-                    doc_maps[cik] = _fetch_doc_map_safe(cik)
-                ex = extract_filing_text(cik, accn, doc_maps.get(cik))
-            except Exception as e:
-                print(f"  [RETRY] {ticker} FY{fy}: extraction still failing -- {e}")
-                continue
-
-            t1a = ex.get("item_1a") or ""
-            t7  = ex.get("item_7")  or ""
-            wc1a = len(t1a.split()) if t1a else 0
-            wc7  = len(t7.split())  if t7  else 0
-
-            if not t1a and not t7:
-                print(f"  [RETRY] {ticker} FY{fy}: still empty")
-                continue
-
-            # build prompt
-            sblock = (_section_block("ITEM 1A", "Risk Factors", t1a, wc1a)
-                      + "\n"
-                      + _section_block("ITEM 7", "MD&A", t7, wc7))
-            rfmt = _response_format(bool(t1a), bool(t7))
-            prompt = PROMPT_TEMPLATE.format(
-                ticker=ticker, fy=fy,
-                sections_block=sblock,
-                response_format=rfmt,
-            )
-
-            # call Gemini
-            try:
-                raw = _call_gemini(client, prompt)
-                parsed = _parse_response(raw)
-                calls += 1
-                key_calls += 1
-
-                # Remove old API_ERROR rows for this filing
-                results = [r for r in results
-                          if not (str(r.get("ticker")) == ticker
-                                  and int(r.get("fiscal_year")) == fy)]
-
-                # Add new results
-                for s, wc, has in [("item_1a", wc1a, bool(t1a)),
-                                   ("item_7",  wc7,  bool(t7))]:
-                    results.append(_section_rows(parsed, s, ticker, fy, wc, has))
-
-                print(f"  [RETRY] {ticker} FY{fy}: SUCCESS")
-                _save(results)
-            except Exception as e:
-                print(f"  [RETRY] {ticker} FY{fy}: still API error -- {e}")
-                if _is_rate_limited(e):
-                    print("  Rate-limited; stopping retry loop.")
-                    break
-
-            if calls < args.max_calls:
-                time.sleep(REQUEST_GAP_S)
 
     # final (deduplicate before saving)
     seen = set()
