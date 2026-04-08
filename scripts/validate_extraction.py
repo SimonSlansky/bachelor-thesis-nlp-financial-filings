@@ -4,25 +4,27 @@ Uses Gemini 2.5 Flash (via OpenAI-compatible endpoint) as an independent
 judge to evaluate extraction quality on five criteria with a three-level
 rubric (Pass / Minor / Fail).
 
-Design for thesis-quality results:
-  - One API call per filing (one section judged per call)
-  - Full text sent to model (no truncation -- 1M token context)
-  - Stratified random sampling across fiscal-year eras
-  - Checkpoint / resume: stops after --max-calls; re-run to continue
+Two-phase workflow
+------------------
+Phase 1 -- Build sample (extract texts from SEC, no API key needed):
+    python validate_extraction.py --build-sample
+
+Phase 2 -- Validate with AI (auto-cycles through keys, 20 requests each):
+    python validate_extraction.py --keys-file keys.txt
+    python validate_extraction.py --keys-file keys.txt --section item_1a
+
+keys.txt = one Gemini API key per line (minimum 10, recommend 12).
+
+Design:
+  - 100 randomly sampled sections per section type (Item 1A / Item 7)
+  - Stratified by fiscal-year era
+  - Full extracted text saved in sample -> SEC only hit once
+  - On API error -> retry (never writes errors to results)
   - Wilson 95 % confidence intervals for all reported proportions
-  - Three-level scoring  →  strict *and* lenient pass rates
-
-Usage:
-    # All 100 Item 1A sections with key #1:
-    python validate_extraction.py --section item_1a --api-key KEY_1
-
-    # All 100 Item 7 sections with key #2:
-    python validate_extraction.py --section item_7 --api-key KEY_2
 """
 
 import argparse
 import math
-import shutil
 import sys
 import time
 
@@ -47,10 +49,13 @@ except Exception:
 MODEL = "gemini-2.5-flash"
 GEMINI_ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/openai/"
 
-TEMPERATURE = 0.0                   # deterministic for reproducibility
-MAX_API_RETRIES = 3
-RETRY_BACKOFF_S = 15
-REQUEST_GAP_S = 4                 # seconds between API calls
+TEMPERATURE = 0.0
+MAX_RETRIES_PER_CALL = 5        # retries for a single API call
+RETRY_BACKOFF_S = 20            # base backoff on rate-limit
+REQUEST_GAP_S = 20              # 60s / 4 RPM = 15s; use 16s for safety
+REQUESTS_PER_KEY = 20           # switch key after this many raw API calls
+
+KEYS_PATH = DATA_DIR / "keys.txt"
 
 _ERA_BINS = [(2010, 2012), (2013, 2015), (2016, 2018), (2019, 2021), (2022, 2024)]
 
@@ -122,25 +127,14 @@ Respond in **exactly** this format:
 
 # ── helpers ───────────────────────────────────────────────────────────────
 
-def _section_block(label, name, text, wc):
-    """Build the text block for one section in the prompt."""
-    if not text:
-        return f"=== {label} ({name}) ===\n[EMPTY -- extraction returned no text]\n"
-    return f"=== {label} ({name}) ===\nWord count: {wc:,}\n\n{text}\n"
-
-
-def _response_format(has_1a, has_7):
-    """Build the expected response format string."""
+def _response_format(section):
+    """Build the expected response format string for one section."""
     lines = []
-    for key, present in [("item_1a", has_1a), ("item_7", has_7)]:
-        if present:
-            for c in CRITERIA:
-                lines.append(f"{key}_{c}: Pass/Minor/Fail")
-            lines.append(f"{key}_notes: <one-line explanation or 'OK'>")
+    for c in CRITERIA:
+        lines.append(f"{section}_{c}: Pass/Minor/Fail")
+    lines.append(f"{section}_notes: <one-line explanation or 'OK'>")
     return "\n".join(lines)
 
-
-# ── response parsing ─────────────────────────────────────────────────────
 
 def _parse_response(text):
     out = {}
@@ -156,22 +150,6 @@ def _parse_response(text):
                 break
         out[key] = val
     return out
-
-
-def _section_rows(parsed, prefix, ticker, fy, wc, has_text):
-    """Build a result dict for one section."""
-    row = {"ticker": ticker, "fiscal_year": fy, "section": prefix,
-           "word_count": wc}
-    if not has_text:
-        for c in CRITERIA:
-            row[c] = "EMPTY"
-        row["notes"] = "No text extracted"
-        return row
-    for c in CRITERIA:
-        v = parsed.get(f"{prefix}_{c}", "PARSE_ERR")
-        row[c] = v if v in VALID_SCORES else "PARSE_ERR"
-    row["notes"] = parsed.get(f"{prefix}_notes", "")
-    return row
 
 
 # ── API ───────────────────────────────────────────────────────────────────
@@ -199,26 +177,13 @@ def _fetch_doc_map_safe(cik, max_retries=3):
 
 
 def _call_llm(client, prompt):
-    """Call Gemini via OpenAI-compatible endpoint."""
-    last = None
-    for attempt in range(1, MAX_API_RETRIES + 1):
-        try:
-            resp = client.chat.completions.create(
-                model=MODEL,
-                messages=[{"role": "user", "content": prompt}],
-                temperature=TEMPERATURE,
-            )
-            return resp.choices[0].message.content or ""
-        except Exception as e:
-            last = e
-            if _is_rate_limited(e) and attempt < MAX_API_RETRIES:
-                wait = RETRY_BACKOFF_S * attempt
-                print(f"    rate-limited (try {attempt}/{MAX_API_RETRIES}), "
-                      f"sleeping {wait}s ...")
-                time.sleep(wait)
-                continue
-            raise
-    raise last
+    """Call Gemini once (no retry). Returns response text or raises."""
+    resp = client.chat.completions.create(
+        model=MODEL,
+        messages=[{"role": "user", "content": prompt}],
+        temperature=TEMPERATURE,
+    )
+    return resp.choices[0].message.content or ""
 
 
 # ── statistics ────────────────────────────────────────────────────────────
@@ -234,14 +199,7 @@ def wilson_ci(k, n, z=1.96):
     return (max(0.0, centre - spread), min(1.0, centre + spread))
 
 
-# ── checkpoint / summary ─────────────────────────────────────────────────
-
-_SKIP = frozenset({"EMPTY", "EXTRACT_ERR", "API_ERROR", "PARSE_ERR"})
-
-
-def _save(results):
-    pd.DataFrame(results).to_csv(RESULTS_PATH, index=False)
-
+# ── summary ───────────────────────────────────────────────────────────────
 
 def _print_summary():
     if not RESULTS_PATH.exists():
@@ -255,25 +213,21 @@ def _print_summary():
     if df.empty:
         print("\n  No results yet.")
         return
-    judged = df[~df["correct_section"].isin(_SKIP)].copy()
 
-    n_filings = judged[["ticker", "fiscal_year"]].drop_duplicates().shape[0]
+    n_total = len(df)
+    n_filings = df[["ticker", "fiscal_year"]].drop_duplicates().shape[0]
     print(f"\n{'=' * 70}")
-    print(f"VALIDATION SUMMARY   {len(judged)} sections  |  {n_filings} filings")
+    print(f"VALIDATION SUMMARY   {n_total} sections  |  {n_filings} filings")
     print(f"{'=' * 70}")
-
-    if judged.empty:
-        print("  (no sections judged yet)")
-        return
 
     print(f"\n  {'Criterion':<22}{'Strict':>10}{'Lenient':>10}"
           f"{'Fail':>8}  {'95% CI (lenient)'}")
     print(f"  {'-' * 66}")
     for c in CRITERIA:
-        n = len(judged)
-        n_p = int((judged[c] == "Pass").sum())
-        n_m = int((judged[c] == "Minor").sum())
-        n_f = int((judged[c] == "Fail").sum())
+        n = n_total
+        n_p = int((df[c] == "Pass").sum())
+        n_m = int((df[c] == "Minor").sum())
+        n_f = int((df[c] == "Fail").sum())
         n_err = n - n_p - n_m - n_f
         lenient = n_p + n_m
         lo, hi = wilson_ci(lenient, n)
@@ -284,12 +238,12 @@ def _print_summary():
               f"   [{lo:.1%} - {hi:.1%}]{err_note}")
 
     # overall
-    strict_all = int(judged.apply(
+    strict_all = int(df.apply(
         lambda r: all(r[c] == "Pass" for c in CRITERIA), axis=1).sum())
-    lenient_all = int(judged.apply(
+    lenient_all = int(df.apply(
         lambda r: all(r[c] in ("Pass", "Minor") for c in CRITERIA),
         axis=1).sum())
-    n = len(judged)
+    n = n_total
     lo_s, hi_s = wilson_ci(strict_all, n)
     lo_l, hi_l = wilson_ci(lenient_all, n)
     print(f"\n  {'Overall strict':<22}{strict_all:>3}/{n} ({strict_all/n:.1%})"
@@ -298,10 +252,9 @@ def _print_summary():
           f"                 [{lo_l:.1%} - {hi_l:.1%}]")
 
     # by era
-    print(f"\n  Lenient pass rate by era:")
+    print("\n  Lenient pass rate by era:")
     for lo_yr, hi_yr in _ERA_BINS:
-        era = judged[(judged["fiscal_year"] >= lo_yr)
-                     & (judged["fiscal_year"] <= hi_yr)]
+        era = df[(df["fiscal_year"] >= lo_yr) & (df["fiscal_year"] <= hi_yr)]
         if era.empty:
             continue
         ok = int(era.apply(
@@ -310,9 +263,9 @@ def _print_summary():
         print(f"    {lo_yr}-{hi_yr}: {ok}/{len(era)} ({ok/len(era):.1%})")
 
     # by section type
-    print(f"\n  Lenient pass rate by section:")
+    print("\n  Lenient pass rate by section:")
     for sec in ("item_1a", "item_7"):
-        sub = judged[judged["section"] == sec]
+        sub = df[df["section"] == sec]
         if sub.empty:
             continue
         ok = int(sub.apply(
@@ -323,7 +276,7 @@ def _print_summary():
               f"  [{lo:.1%} - {hi:.1%}]")
 
     # failures
-    failed = judged[judged.apply(
+    failed = df[df.apply(
         lambda r: any(r[c] == "Fail" for c in CRITERIA), axis=1)]
     if len(failed):
         print(f"\n  Failures ({len(failed)}):")
@@ -332,47 +285,15 @@ def _print_summary():
             print(f"    {r['ticker']} FY{int(r['fiscal_year'])} {r['section']}"
                   f": {', '.join(fails)} -- {r.get('notes', '')}")
 
-    # excluded
-    empties = df[df["correct_section"] == "EMPTY"]
-    errors = df[df["correct_section"].isin({"EXTRACT_ERR", "API_ERROR"})]
-    if len(empties) or len(errors):
-        print(f"\n  Excluded from scoring:")
-        if len(empties):
-            print(f"    Empty extractions: {len(empties)}")
-        if len(errors):
-            print(f"    Errors (extract/API): {len(errors)}")
-
     print(f"\n  Results: {RESULTS_PATH}")
 
 
-# ── main ──────────────────────────────────────────────────────────────────
+# ══════════════════════════════════════════════════════════════════════════
+# PHASE 1: BUILD SAMPLE
+# ══════════════════════════════════════════════════════════════════════════
 
-MAX_CALLS_DEFAULT = 200     # Gemini free tier: 500 RPD
-
-
-def main():
-    ap = argparse.ArgumentParser(
-        description="AI-based extraction validation (Gemini 2.5 Flash)")
-    ap.add_argument("--api-key", required=True,
-                    help="Gemini API key (from aistudio.google.com)")
-    ap.add_argument("--section", choices=["item_1a", "item_7"],
-                    default=None,
-                    help="Validate only this section (default: both)")
-    ap.add_argument("--max-calls", type=int, default=MAX_CALLS_DEFAULT,
-                    help=f"Max API calls this run (default {MAX_CALLS_DEFAULT})")
-    ap.add_argument("--n", type=int, default=100,
-                    help="Total filings to validate (default 100)")
-    ap.add_argument("--seed", type=int, default=42,
-                    help="Sampling seed (default 42)")
-    args = ap.parse_args()
-
-    if _OpenAI is None:
-        sys.exit("ERROR: pip install openai")
-
-    client = _OpenAI(base_url=GEMINI_ENDPOINT, api_key=args.api_key)
-    section_filter = args.section
-    print(f"Model: {MODEL}"
-          + (f"  Section: {section_filter}" if section_filter else ""))
+def build_sample(n_per_section, seed):
+    """Sample filings, extract texts from SEC, save to CSV."""
 
     # ── load panel ────────────────────────────────────────────────────────
     df = pd.read_csv(DATA_DIR / "annual_panel.csv")
@@ -382,209 +303,326 @@ def main():
             .dropna(subset=["accession_number"])
             .drop_duplicates())
 
-    # ── create or load sample ─────────────────────────────────────────────
-    fresh = not SAMPLE_PATH.exists()
-    if fresh:
-        per_era = max(1, args.n // len(_ERA_BINS))
+    per_era = max(1, n_per_section // len(_ERA_BINS))
 
-        # Sample Item 1A independently
-        parts_1a = []
+    # ── stratified sample for each section ────────────────────────────────
+    rows = []
+    for section, sec_seed in [("item_1a", seed), ("item_7", seed + 1000)]:
+        parts = []
         for lo, hi in _ERA_BINS:
             era = pool[(pool["fiscal_year"] >= lo) & (pool["fiscal_year"] <= hi)]
             n_draw = min(per_era, len(era))
             if n_draw:
-                parts_1a.append(era.sample(n=n_draw, random_state=args.seed))
-        sample_1a = pd.concat(parts_1a, ignore_index=True).reset_index(drop=True)
-        sample_1a["section"] = "item_1a"
+                parts.append(era.sample(n=n_draw, random_state=sec_seed))
+        sec_sample = pd.concat(parts, ignore_index=True)
+        sec_sample["section"] = section
+        rows.append(sec_sample)
 
-        # Sample Item 7 independently (different firms)
-        parts_7 = []
-        for lo, hi in _ERA_BINS:
-            era = pool[(pool["fiscal_year"] >= lo) & (pool["fiscal_year"] <= hi)]
-            n_draw = min(per_era, len(era))
-            if n_draw:
-                parts_7.append(era.sample(n=n_draw, random_state=args.seed + 1000))
-        sample_7 = pd.concat(parts_7, ignore_index=True).reset_index(drop=True)
-        sample_7["section"] = "item_7"
-
-        # Combine both samples
-        sample = (pd.concat([sample_1a, sample_7], ignore_index=True)
-                  .sample(frac=1, random_state=args.seed)
-                  .reset_index(drop=True))
-        sample.to_csv(SAMPLE_PATH, index=False)
-        # archive any stale results from a previous run
-        if RESULTS_PATH.exists():
-            bak = RESULTS_PATH.with_suffix(".csv.bak")
-            shutil.copy2(RESULTS_PATH, bak)
-            RESULTS_PATH.unlink()
-            print(f"Backed up old results -> {bak.name}")
-        print(f"Created sample: {len(sample)} filings -> {SAMPLE_PATH.name}")
-    else:
-        sample = pd.read_csv(SAMPLE_PATH)
-        print(f"Loaded sample: {len(sample)} filings from {SAMPLE_PATH.name}")
+    sample = (pd.concat(rows, ignore_index=True)
+              .sample(frac=1, random_state=seed)
+              .reset_index(drop=True))
+    print(f"Sampled {len(sample)} filings ({n_per_section} per section)")
 
     era_c = {f"{lo}-{hi}": int(((sample["fiscal_year"] >= lo)
                                  & (sample["fiscal_year"] <= hi)).sum())
              for lo, hi in _ERA_BINS}
     print(f"  Eras: {era_c}")
 
-    # ── checkpoint ────────────────────────────────────────────────────────
+    # ── extract texts from SEC ────────────────────────────────────────────
+    cik_map = load_cik_map()
+    doc_maps = {}
+
+    # prefetch doc maps
+    needed_ciks = set()
+    for _, row in sample.iterrows():
+        cik = cik_map.get(str(row["ticker"]))
+        if cik:
+            needed_ciks.add(cik)
+    print(f"Prefetching doc indices for {len(needed_ciks)} firms ...")
+    for cik in sorted(needed_ciks):
+        doc_maps[cik] = _fetch_doc_map_safe(cik)
+        time.sleep(REQUEST_SLEEP)
+
+    # extract each section
+    texts = []
+    word_counts = []
+    extract_errors = []
+    for i, row in sample.iterrows():
+        ticker = str(row["ticker"])
+        fy = int(row["fiscal_year"])
+        accn = str(row["accession_number"])
+        section = str(row["section"])
+        cik = cik_map.get(ticker)
+
+        if not cik:
+            print(f"  [{i+1}/{len(sample)}] {ticker} FY{fy} {section}: "
+                  f"no CIK -- empty")
+            texts.append("")
+            word_counts.append(0)
+            extract_errors.append("no CIK")
+            continue
+
+        try:
+            if cik not in doc_maps:
+                doc_maps[cik] = _fetch_doc_map_safe(cik)
+            ex = extract_filing_text(cik, accn, doc_maps.get(cik))
+            text = ex.get(section) or ""
+            wc = len(text.split()) if text else 0
+            texts.append(text)
+            word_counts.append(wc)
+            extract_errors.append("")
+            status = f"{wc:,} words" if text else "EMPTY"
+            print(f"  [{i+1}/{len(sample)}] {ticker} FY{fy} {section}: "
+                  f"{status}")
+        except Exception as e:
+            print(f"  [{i+1}/{len(sample)}] {ticker} FY{fy} {section}: "
+                  f"ERROR -- {e}")
+            texts.append("")
+            word_counts.append(0)
+            extract_errors.append(str(e))
+
+        time.sleep(REQUEST_SLEEP)
+
+    sample["text"] = texts
+    sample["word_count"] = word_counts
+    sample["extract_error"] = extract_errors
+
+    # save
+    sample.to_csv(SAMPLE_PATH, index=False)
+
+    n_ok = int((sample["word_count"] > 0).sum())
+    n_empty = int((sample["word_count"] == 0).sum())
+    print(f"\nSample saved: {SAMPLE_PATH}")
+    print(f"  {n_ok} with text, {n_empty} empty/error")
+
+    # clear old results
+    if RESULTS_PATH.exists():
+        RESULTS_PATH.unlink()
+        print(f"  Cleared old results: {RESULTS_PATH.name}")
+
+
+# ══════════════════════════════════════════════════════════════════════════
+# PHASE 2: VALIDATE WITH AI
+# ══════════════════════════════════════════════════════════════════════════
+
+def _load_keys(keys_file):
+    """Load API keys from a text file (one per line)."""
+    path = Path(keys_file)
+    if not path.exists():
+        sys.exit(f"ERROR: keys file not found: {path}")
+    keys = [line.strip() for line in path.read_text().splitlines()
+            if line.strip() and not line.strip().startswith("#")]
+    if not keys:
+        sys.exit(f"ERROR: no keys found in {path}")
+    return keys
+
+
+def validate(keys_file, section_filter):
+    """Validate pre-extracted texts with Gemini, auto-cycling keys."""
+
+    if _OpenAI is None:
+        sys.exit("ERROR: pip install openai")
+
+    if not SAMPLE_PATH.exists():
+        sys.exit("ERROR: run --build-sample first")
+
+    api_keys = _load_keys(keys_file)
+    print(f"Model: {MODEL}  Keys: {len(api_keys)}  "
+          f"{REQUESTS_PER_KEY} requests/key")
+    if section_filter:
+        print(f"Section filter: {section_filter}")
+
+    # load sample
+    sample = pd.read_csv(SAMPLE_PATH)
+    print(f"Loaded sample: {len(sample)} total rows")
+
+    # filter to target section(s)
+    if section_filter:
+        sample = sample[sample["section"] == section_filter].reset_index(
+            drop=True)
+        print(f"  {len(sample)} rows for {section_filter}")
+
+    # load existing results (checkpoint)
     results = []
-    done_sections = set()
+    done_keys = set()
     if RESULTS_PATH.exists():
         try:
             prev = pd.read_csv(RESULTS_PATH)
+            if not prev.empty:
+                results = prev.to_dict("records")
+                done_keys = {
+                    (str(r["ticker"]), int(r["fiscal_year"]),
+                     str(r["section"]))
+                    for r in results}
+                print(f"  Checkpoint: {len(done_keys)} already done")
         except Exception:
-            prev = pd.DataFrame()
-        if not prev.empty:
-            # deduplicate (ticker, fy, section)
-            seen = set()
-            for r in prev.to_dict("records"):
-                key = (str(r["ticker"]), int(r["fiscal_year"]),
-                       str(r["section"]))
-                if key not in seen:
-                    seen.add(key)
-                    results.append(r)
-            done_sections = seen
-            print(f"  Checkpoint: {len(done_sections)} sections already processed")
+            pass
 
-    remaining = [(i, row) for i, row in sample.iterrows()
-                 if (str(row["ticker"]), int(row["fiscal_year"]), str(row["section"])) not in done_sections
-                 and (section_filter is None or str(row["section"]) == section_filter)]
+    # find remaining
+    remaining = []
+    for _, row in sample.iterrows():
+        key = (str(row["ticker"]), int(row["fiscal_year"]),
+               str(row["section"]))
+        if key not in done_keys:
+            remaining.append(row)
 
     if not remaining:
         print("\nAll sections validated!")
         _print_summary()
         return
 
-    to_process = min(len(remaining), args.max_calls)
-    print(f"  Remaining: {len(remaining)} filings"
-          f"  (will process up to {to_process} this run)\n")
+    print(f"  Remaining: {len(remaining)} sections\n")
 
-    # ── CIK map + doc maps ───────────────────────────────────────────────
-    cik_map = load_cik_map()
-    doc_maps = {}
-    batch = remaining[:to_process]
-    needed = {cik_map[str(row["ticker"])]
-              for _, row in batch if str(row["ticker"]) in cik_map}
-    print(f"Prefetching doc indices for {len(needed)} firms ...")
-    for cik in sorted(needed):
-        doc_maps[cik] = _build_primary_doc_map(cik)
-        time.sleep(REQUEST_SLEEP)
-    print()
+    # ── validation loop with key cycling ──────────────────────────────────
+    key_idx = 0
+    key_calls = 0
+    total_calls = 0
+    client = _OpenAI(base_url=GEMINI_ENDPOINT, api_key=api_keys[key_idx])
+    print(f"  Using key {key_idx + 1}/{len(api_keys)}")
 
-    # ── validation loop ──────────────────────────────────────────────────
-    calls = 0
-    for seq, (_, row) in enumerate(remaining, 1):
-        if calls >= args.max_calls:
-            print(f"\nReached {args.max_calls}-call limit. "
-                  f"Re-run with a new --api-key to continue.")
-            break
-
+    for seq, row in enumerate(remaining, 1):
         ticker = str(row["ticker"])
         fy = int(row["fiscal_year"])
-        accn = str(row["accession_number"])
-        target_section = str(row["section"])  # item_1a or item_7
-        cik = cik_map.get(ticker)
-        if not cik:
-            print(f"  [{seq}] {ticker} FY{fy} {target_section}: no CIK -- skipped")
+        section = str(row["section"])
+        text = str(row["text"]) if pd.notna(row["text"]) else ""
+        wc = int(row["word_count"])
+
+        # record empty / extraction-error rows as Fail (no API call)
+        if not text or wc == 0:
+            err = str(row.get("extract_error", "")) if pd.notna(
+                row.get("extract_error")) else ""
+            reason = err if err else "empty extraction"
+            result = {"ticker": ticker, "fiscal_year": fy,
+                      "section": section, "word_count": 0}
+            for c in CRITERIA:
+                result[c] = "Fail"
+            result["notes"] = f"extraction failure: {reason}"
+            results.append(result)
+            pd.DataFrame(results).to_csv(RESULTS_PATH, index=False)
+            print(f"  [{seq}] {ticker} FY{fy} {section}=FAIL "
+                  f"(extraction: {reason})")
             continue
 
-        # extract
-        try:
-            # fetch doc map if not already cached
-            if cik not in doc_maps:
-                doc_maps[cik] = _fetch_doc_map_safe(cik)
-            ex = extract_filing_text(cik, accn, doc_maps.get(cik))
-        except Exception as e:
-            print(f"  [{seq}] {ticker} FY{fy} {target_section}: extraction error -- {e}")
-            results.append({"ticker": ticker, "fiscal_year": fy,
-                            "section": target_section, "word_count": 0,
-                            **{c: "EXTRACT_ERR" for c in CRITERIA},
-                            "notes": str(e)})
-            _save(results)
-            continue
+        # determine label
+        if section == "item_1a":
+            label, name = "ITEM 1A", "Risk Factors"
+        else:
+            label, name = "ITEM 7", "MD&A"
 
-        # Extract only the target section
-        if target_section == "item_1a":
-            text = ex.get("item_1a") or ""
-            label = "ITEM 1A"
-            name = "Risk Factors"
-        else:  # item_7
-            text = ex.get("item_7") or ""
-            label = "ITEM 7"
-            name = "MD&A"
-
-        wc = len(text.split()) if text else 0
-
-        if not text:
-            print(f"  [{seq}] {ticker} FY{fy} {target_section}: empty -- no API call")
-            results.append({"ticker": ticker, "fiscal_year": fy,
-                            "section": target_section, "word_count": wc,
-                            **{c: "EMPTY" for c in CRITERIA},
-                            "notes": "No text extracted"})
-            _save(results)
-            continue
-
-        # build prompt (single section only)
-        sblock = _section_block(label, name, text, wc)
-        rfmt = _response_format(target_section == "item_1a", target_section == "item_7")
-
+        # build prompt
+        sblock = (f"=== {label} ({name}) ===\n"
+                  f"Word count: {wc:,}\n\n{text}\n")
+        rfmt = _response_format(section)
         prompt = PROMPT_TEMPLATE.format(
             ticker=ticker, fy=fy,
             sections_block=sblock,
             response_format=rfmt,
         )
 
-        # call LLM
-        try:
-            raw = _call_llm(client, prompt)
-            parsed = _parse_response(raw)
-            calls += 1
-        except Exception as e:
-            print(f"  [{seq}] {ticker} FY{fy}: API error -- {e}")
-            results.append({"ticker": ticker, "fiscal_year": fy,
-                            "section": target_section, "word_count": wc,
-                            **{c: "API_ERROR" for c in CRITERIA},
-                            "notes": str(e)})
-            _save(results)
-            if _is_rate_limited(e):
-                print("  Rate-limit hit -- stopping. "
-                      "Re-run with a new --api-key.")
+        # call LLM -- retry on failure, switch key if exhausted
+        success = False
+        for attempt in range(1, MAX_RETRIES_PER_CALL + 1):
+            # switch key if current one is exhausted
+            if key_calls >= REQUESTS_PER_KEY:
+                key_idx += 1
+                if key_idx >= len(api_keys):
+                    print(f"\nAll {len(api_keys)} keys exhausted after "
+                          f"{total_calls} total calls.")
+                    print(f"  Add more keys to {keys_file} and re-run.")
+                    _print_summary()
+                    return
+                client = _OpenAI(base_url=GEMINI_ENDPOINT,
+                                 api_key=api_keys[key_idx])
+                key_calls = 0
+                print(f"\n  Switched to key {key_idx + 1}/"
+                      f"{len(api_keys)}")
+
+            try:
+                raw = _call_llm(client, prompt)
+                key_calls += 1
+                total_calls += 1
+                success = True
                 break
+            except Exception as e:
+                key_calls += 1
+                total_calls += 1
+                if _is_rate_limited(e):
+                    print(f"    [{seq}] Rate-limited on key "
+                          f"{key_idx + 1} -- forcing switch")
+                    key_calls = REQUESTS_PER_KEY  # force switch
+                else:
+                    wait = RETRY_BACKOFF_S * attempt
+                    print(f"    [{seq}] API error (try "
+                          f"{attempt}/{MAX_RETRIES_PER_CALL}): "
+                          f"{e} -- sleeping {wait}s")
+                    time.sleep(wait)
+
+        if not success:
+            print(f"  [{seq}] {ticker} FY{fy} {section}: "
+                  f"failed all retries -- will retry on next run")
             continue
 
-        # record single-section results
-        results.append(_section_rows(parsed, target_section, ticker, fy, wc, True))
+        # parse response
+        parsed = _parse_response(raw)
+
+        # build result row
+        result = {"ticker": ticker, "fiscal_year": fy,
+                  "section": section, "word_count": wc}
+        all_valid = True
+        for c in CRITERIA:
+            v = parsed.get(f"{section}_{c}", "PARSE_ERR")
+            if v not in VALID_SCORES:
+                v = "PARSE_ERR"
+                all_valid = False
+            result[c] = v
+        result["notes"] = parsed.get(f"{section}_notes", "")
+
+        results.append(result)
+        pd.DataFrame(results).to_csv(RESULTS_PATH, index=False)
 
         # console status
-        scores = [parsed.get(f"{target_section}_{c}", "?") for c in CRITERIA]
-        if all(v == "Pass" for v in scores):
+        if all(result[c] == "Pass" for c in CRITERIA):
             tag = "PASS"
-        elif all(v in ("Pass", "Minor") for v in scores):
+        elif all(result[c] in ("Pass", "Minor") for c in CRITERIA):
             tag = "MINOR"
+        elif not all_valid:
+            tag = "PARSE_ERR"
         else:
             tag = "FAIL"
-        print(f"  [{seq}] {ticker} FY{fy} {target_section}={tag}"
-              f"   ({calls}/{args.max_calls} calls)")
+        print(f"  [{seq}] {ticker} FY{fy} {section}={tag}"
+              f"   (key {key_idx+1}, call {key_calls}/{REQUESTS_PER_KEY},"
+              f" total {total_calls})")
 
-        _save(results)
-        if calls < args.max_calls:
-            time.sleep(REQUEST_GAP_S)
+        time.sleep(REQUEST_GAP_S)
 
-    # final (deduplicate before saving)
-    seen = set()
-    deduped_final = []
-    for r in results:
-        key = (str(r.get("ticker")), int(r.get("fiscal_year")),
-               str(r.get("section")))
-        if key not in seen:
-            seen.add(key)
-            deduped_final.append(r)
-
-    pd.DataFrame(deduped_final).to_csv(RESULTS_PATH, index=False)
-    print(f"\nThis run: {calls} API calls")
+    print(f"\nDone. Total API calls: {total_calls}  "
+          f"Keys used: {key_idx + 1}/{len(api_keys)}")
     _print_summary()
+
+
+# ── main ──────────────────────────────────────────────────────────────────
+
+def main():
+    ap = argparse.ArgumentParser(
+        description="AI-based extraction validation (Gemini 2.5 Flash)")
+    ap.add_argument("--build-sample", action="store_true",
+                    help="Phase 1: sample filings & extract texts from SEC")
+    ap.add_argument("--keys-file", default=str(KEYS_PATH),
+                    help=f"Path to file with API keys, one per line "
+                         f"(default {KEYS_PATH})")
+    ap.add_argument("--section", choices=["item_1a", "item_7"],
+                    default=None,
+                    help="Which section to validate (default: both)")
+    ap.add_argument("--n", type=int, default=100,
+                    help="Sections per type to sample (default 100)")
+    ap.add_argument("--seed", type=int, default=42,
+                    help="Sampling seed (default 42)")
+    args = ap.parse_args()
+
+    if args.build_sample:
+        build_sample(args.n, args.seed)
+    else:
+        validate(args.keys_file, args.section)
 
 
 if __name__ == "__main__":
