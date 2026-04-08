@@ -50,7 +50,7 @@ GEMINI_ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/openai/"
 TEMPERATURE = 0.0
 MAX_RETRIES_PER_CALL = 5        # retries for a single API call
 RETRY_BACKOFF_S = 20            # base backoff on rate-limit
-REQUEST_GAP_S = 4               # paid tier: 2000 RPM, 4s is polite
+REQUEST_GAP_S = 10               # paid tier: 2000 RPM, 4s is polite
 
 _ERA_BINS = [(2010, 2012), (2013, 2015), (2016, 2018), (2019, 2021), (2022, 2024)]
 
