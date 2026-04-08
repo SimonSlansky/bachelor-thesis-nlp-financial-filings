@@ -9,11 +9,9 @@ Two-phase workflow
 Phase 1 -- Build sample (extract texts from SEC, no API key needed):
     python validate_extraction.py --build-sample
 
-Phase 2 -- Validate with AI (auto-cycles through keys, 20 requests each):
-    python validate_extraction.py --keys-file keys.txt
-    python validate_extraction.py --keys-file keys.txt --section item_1a
-
-keys.txt = one Gemini API key per line (minimum 10, recommend 12).
+Phase 2 -- Validate with AI (single paid key, runs all 200 in one go):
+    python validate_extraction.py --api-key YOUR_KEY
+    python validate_extraction.py --api-key YOUR_KEY --section item_1a
 
 Design:
   - 100 randomly sampled sections per section type (Item 1A / Item 7)
@@ -52,10 +50,7 @@ GEMINI_ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/openai/"
 TEMPERATURE = 0.0
 MAX_RETRIES_PER_CALL = 5        # retries for a single API call
 RETRY_BACKOFF_S = 20            # base backoff on rate-limit
-REQUEST_GAP_S = 20              # 60s / 4 RPM = 15s; use 16s for safety
-REQUESTS_PER_KEY = 20           # switch key after this many raw API calls
-
-KEYS_PATH = DATA_DIR / "keys.txt"
+REQUEST_GAP_S = 4               # paid tier: 2000 RPM, 4s is polite
 
 _ERA_BINS = [(2010, 2012), (2013, 2015), (2016, 2018), (2019, 2021), (2022, 2024)]
 
@@ -153,12 +148,6 @@ def _parse_response(text):
 
 
 # ── API ───────────────────────────────────────────────────────────────────
-
-def _is_rate_limited(exc):
-    msg = str(exc).upper()
-    return ("429" in msg or "RESOURCE_EXHAUSTED" in msg
-            or ("RATE" in msg and "LIMIT" in msg))
-
 
 def _fetch_doc_map_safe(cik, max_retries=3):
     """Fetch doc map with retry for SEC timeouts."""
@@ -405,20 +394,8 @@ def build_sample(n_per_section, seed):
 # PHASE 2: VALIDATE WITH AI
 # ══════════════════════════════════════════════════════════════════════════
 
-def _load_keys(keys_file):
-    """Load API keys from a text file (one per line)."""
-    path = Path(keys_file)
-    if not path.exists():
-        sys.exit(f"ERROR: keys file not found: {path}")
-    keys = [line.strip() for line in path.read_text().splitlines()
-            if line.strip() and not line.strip().startswith("#")]
-    if not keys:
-        sys.exit(f"ERROR: no keys found in {path}")
-    return keys
-
-
-def validate(keys_file, section_filter):
-    """Validate pre-extracted texts with Gemini, auto-cycling keys."""
+def validate(api_key, section_filter):
+    """Validate pre-extracted texts with Gemini (paid key)."""
 
     if _OpenAI is None:
         sys.exit("ERROR: pip install openai")
@@ -426,9 +403,8 @@ def validate(keys_file, section_filter):
     if not SAMPLE_PATH.exists():
         sys.exit("ERROR: run --build-sample first")
 
-    api_keys = _load_keys(keys_file)
-    print(f"Model: {MODEL}  Keys: {len(api_keys)}  "
-          f"{REQUESTS_PER_KEY} requests/key")
+    client = _OpenAI(base_url=GEMINI_ENDPOINT, api_key=api_key)
+    print(f"Model: {MODEL}")
     if section_filter:
         print(f"Section filter: {section_filter}")
 
@@ -473,12 +449,8 @@ def validate(keys_file, section_filter):
 
     print(f"  Remaining: {len(remaining)} sections\n")
 
-    # ── validation loop with key cycling ──────────────────────────────────
-    key_idx = 0
-    key_calls = 0
+    # ── validation loop ──────────────────────────────────────────────────
     total_calls = 0
-    client = _OpenAI(base_url=GEMINI_ENDPOINT, api_key=api_keys[key_idx])
-    print(f"  Using key {key_idx + 1}/{len(api_keys)}")
 
     for seq, row in enumerate(remaining, 1):
         ticker = str(row["ticker"])
@@ -519,43 +491,21 @@ def validate(keys_file, section_filter):
             response_format=rfmt,
         )
 
-        # call LLM -- retry on failure, switch key if exhausted
+        # call LLM with retry
         success = False
         for attempt in range(1, MAX_RETRIES_PER_CALL + 1):
-            # switch key if current one is exhausted
-            if key_calls >= REQUESTS_PER_KEY:
-                key_idx += 1
-                if key_idx >= len(api_keys):
-                    print(f"\nAll {len(api_keys)} keys exhausted after "
-                          f"{total_calls} total calls.")
-                    print(f"  Add more keys to {keys_file} and re-run.")
-                    _print_summary()
-                    return
-                client = _OpenAI(base_url=GEMINI_ENDPOINT,
-                                 api_key=api_keys[key_idx])
-                key_calls = 0
-                print(f"\n  Switched to key {key_idx + 1}/"
-                      f"{len(api_keys)}")
-
             try:
                 raw = _call_llm(client, prompt)
-                key_calls += 1
                 total_calls += 1
                 success = True
                 break
             except Exception as e:
-                key_calls += 1
                 total_calls += 1
-                if _is_rate_limited(e):
-                    print(f"    [{seq}] Rate-limited on key "
-                          f"{key_idx + 1} -- forcing switch")
-                    key_calls = REQUESTS_PER_KEY  # force switch
-                else:
-                    wait = RETRY_BACKOFF_S * attempt
-                    print(f"    [{seq}] API error (try "
-                          f"{attempt}/{MAX_RETRIES_PER_CALL}): "
-                          f"{e} -- sleeping {wait}s")
-                    time.sleep(wait)
+                wait = RETRY_BACKOFF_S * attempt
+                print(f"    [{seq}] API error (try "
+                      f"{attempt}/{MAX_RETRIES_PER_CALL}): "
+                      f"{e} -- sleeping {wait}s")
+                time.sleep(wait)
 
         if not success:
             print(f"  [{seq}] {ticker} FY{fy} {section}: "
@@ -590,13 +540,11 @@ def validate(keys_file, section_filter):
         else:
             tag = "FAIL"
         print(f"  [{seq}] {ticker} FY{fy} {section}={tag}"
-              f"   (key {key_idx+1}, call {key_calls}/{REQUESTS_PER_KEY},"
-              f" total {total_calls})")
+              f"   ({total_calls} calls)")
 
         time.sleep(REQUEST_GAP_S)
 
-    print(f"\nDone. Total API calls: {total_calls}  "
-          f"Keys used: {key_idx + 1}/{len(api_keys)}")
+    print(f"\nDone. Total API calls: {total_calls}")
     _print_summary()
 
 
@@ -607,9 +555,8 @@ def main():
         description="AI-based extraction validation (Gemini 2.5 Flash)")
     ap.add_argument("--build-sample", action="store_true",
                     help="Phase 1: sample filings & extract texts from SEC")
-    ap.add_argument("--keys-file", default=str(KEYS_PATH),
-                    help=f"Path to file with API keys, one per line "
-                         f"(default {KEYS_PATH})")
+    ap.add_argument("--api-key",
+                    help="Gemini API key (paid, from aistudio.google.com)")
     ap.add_argument("--section", choices=["item_1a", "item_7"],
                     default=None,
                     help="Which section to validate (default: both)")
@@ -622,7 +569,9 @@ def main():
     if args.build_sample:
         build_sample(args.n, args.seed)
     else:
-        validate(args.keys_file, args.section)
+        if not args.api_key:
+            sys.exit("ERROR: --api-key required for validation")
+        validate(args.api_key, args.section)
 
 
 if __name__ == "__main__":
