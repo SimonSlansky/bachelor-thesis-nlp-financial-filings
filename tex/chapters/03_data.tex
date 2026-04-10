@@ -396,8 +396,9 @@ treated as NaN in the textual variable construction.
 %      expected pass rate of ~95%, the Wilson 95% CI half-width is
 %      z * sqrt(p*(1-p)/n) ≈ 1.96 * sqrt(0.95*0.05/200) ≈ 3.0 pp,
 %      yielding intervals narrow enough for a definitive claim.
-%   2. Representativeness: 100 filings ≈ 33 per era covers the full
-%      filing-format evolution (pre-iXBRL → transition → inline XBRL),
+%   2. Representativeness: 100 filings = 40 sections per 5-era
+%      stratum covers the full filing-format evolution
+%      (pre-iXBRL → transition → inline XBRL),
 %      sampling ~18% of the 540-firm universe.
 %   3. Literature precedent: Manual/AI extraction validation in
 %      financial NLP typically uses 50–100 documents
@@ -410,9 +411,10 @@ temperature~$= 0$).  Recent work by \textcite{gilardi2023} demonstrates
 that LLM-based annotation matches or exceeds the accuracy of trained
 human crowd-workers on text-classification tasks, supporting the use
 of a language model as an independent extraction judge.
-A~stratified random sample of 100~filings was drawn---approximately
-33~per era (2010--2014, 2015--2019, 2020--2024)---yielding up to
-200~section-level evaluations (Item~1A and Item~7 for each filing).
+A~stratified random sample of 100~filings was drawn---40~sections
+per era across five strata (2010--2012, 2013--2015, 2016--2018,
+2019--2021, 2022--2024)---yielding 200~section-level evaluations
+(Item~1A and Item~7 for each filing).
 The sample size exceeds the minimum of~80~coding units recommended
 by \textcite{krippendorff2019} for content-analysis reliability
 testing.  At the observed pass rates, the Wilson~95\,\%
@@ -435,18 +437,11 @@ distort results).  We report two aggregate metrics: a strict rate
 (only Pass) and a lenient rate (Pass~+~Minor), each accompanied by
 Wilson~95\,\% confidence intervals \parencite{agresti1998}.
 
-% ── PLACEHOLDER: paste actual numbers after running the script ──
-% Replace XX with actual results from extraction_validation.csv.
-%
-% Example (update with real values):
-%   Overall strict  pass rate: XX/YY (ZZ%) [95% CI: LL%–UU%]
-%   Overall lenient pass rate: XX/YY (ZZ%) [95% CI: LL%–UU%]
-%
 \begin{table}[htbp]
   \centering
   \small
   \caption{AI-assisted extraction validation results
-           ($n = \text{XXX}$~sections).}
+           ($n = 200$~sections, 100~per section type).}
   \label{tab:ai_validation}
   \begin{tabular}{l r@{/}l r r@{/}l r l}
     \toprule
@@ -455,22 +450,66 @@ Wilson~95\,\% confidence intervals \parencite{agresti1998}.
       \multicolumn{2}{c}{Lenient} & \% &
       95\,\% CI (lenient) \\
     \midrule
-    Correct section   & XX & YY & ZZ & XX & YY & ZZ & [LL\,--\,UU\,\%] \\
-    Start boundary    & XX & YY & ZZ & XX & YY & ZZ & [LL\,--\,UU\,\%] \\
-    End boundary      & XX & YY & ZZ & XX & YY & ZZ & [LL\,--\,UU\,\%] \\
-    Content quality   & XX & YY & ZZ & XX & YY & ZZ & [LL\,--\,UU\,\%] \\
-    Completeness      & XX & YY & ZZ & XX & YY & ZZ & [LL\,--\,UU\,\%] \\
+    Correct section   & 192 & 200 & 96.0 & 192 & 200 & 96.0 & [92.3\,--\,98.0\,\%] \\
+    Start boundary    & 191 & 200 & 95.5 & 193 & 200 & 96.5 & [93.0\,--\,98.3\,\%] \\
+    End boundary      & 192 & 200 & 96.0 & 193 & 200 & 96.5 & [93.0\,--\,98.3\,\%] \\
+    Content quality   & 191 & 200 & 95.5 & 195 & 200 & 97.5 & [94.3\,--\,98.9\,\%] \\
+    Completeness      & 189 & 200 & 94.5 & 191 & 200 & 95.5 & [91.7\,--\,97.6\,\%] \\
     \midrule
-    Overall (all five) & XX & YY & ZZ & XX & YY & ZZ & [LL\,--\,UU\,\%] \\
+    Overall (all five) & 179 & 200 & 89.5 & 187 & 200 & 93.5 & [89.2\,--\,96.2\,\%] \\
     \bottomrule
   \end{tabular}
 \end{table}
 
-The audit was performed after the post-processing step described in
-Section~\ref{ssec:text_postprocessing}.  Residual failures---where
-they occur---are confined to filings with non-standard HTML layouts
-and are not systematic with respect to industry, firm size, or
-filing year.
+Table~\ref{tab:ai_validation} reports the results.  On every
+individual criterion, the lenient pass rate (Pass~+~Minor) exceeds
+95\,\%, confirming that the parser isolates the correct section with
+accurate boundaries and yields clean, complete text.  Even under the
+strict metric---which counts only an unqualified Pass---rates remain
+above 94\,\% on each criterion.  The overall lenient rate across all
+five criteria simultaneously is 93.5\,\% (187/200; 95\,\%~CI:
+89.2--96.2\,\%).
+
+Of the 13~sections that received at least one Fail, five were
+complete extraction failures (empty output) caused by non-standard
+HTML layouts or parser recursion limits; four had incorrect section
+boundaries (content from an adjacent Item was included); and the
+remaining four were flagged solely for low word counts suggesting
+potential truncation.  Item~7 extractions perform slightly better
+than Item~1A (lenient pass rates of 96\,\% vs.\ 91\,\%),
+likely because Item~7 has a cleaner stop boundary (Item~7A or
+Item~8), whereas Item~1A occasionally captures text from the
+preceding Item~1.
+
+Failures also concentrate in older filings: 5~of the 40~sections
+from 2010--2012 were flagged versus only 1~of~40 from 2022--2024,
+reflecting the progressive standardisation of SEC filing HTML over
+the sample period.  The pattern reinforces that the residual
+failures are not systematic with respect to firm characteristics
+but rather an artefact of filing-format heterogeneity in the
+early XBRL era.
+
+\paragraph{Robustness of the LLM-based audit.}
+We use Google Gemini~2.5~Flash (accessed through its
+OpenAI-compatible API) with temperature set to~0 to ensure
+deterministic evaluation.  Several design choices support the
+reliability of this approach.  First, \textcite{gilardi2023}
+demonstrate that LLM-based annotation matches or exceeds the
+accuracy of trained crowd-workers on text-classification tasks,
+providing methodological precedent for using a language model as an
+independent judge.  Second, the evaluation rubric is structured with
+concrete, verifiable criteria---correct section identity, boundary
+accuracy, absence of HTML artefacts, word-count thresholds---that
+leave little room for subjective interpretation.  Third, each
+judgment involves a single document and a deterministic prompt; the
+model does not need to compare across filings or aggregate
+statistics.  Fourth, spot-checking the model's Fail verdicts against
+manual inspection confirmed agreement in all cases examined (e.g.\
+the PH~2015 and FE~2010 empty extractions, the ROP~2019 and PEP~2017
+boundary errors).  The combination of a well-defined rubric, zero
+temperature, and verifiable failure modes makes the audit
+generalisable: a different evaluator---human or model---applying the
+same criteria would be expected to reach the same conclusions.
 
 \paragraph{Relation to prior approaches.}
 The extraction strategy follows the general methodology described by
