@@ -43,17 +43,17 @@
 
 %%% Abstract in Czech (required even for English theses)
 \def\Abstrakt{%
-Výroční zprávy podávané americkými firmami formou formuláře 10-K obsahují
-jak auditovaná finanční data, tak rozsáhlé narativní části psané vedením
-společnosti, přesto většina empirických modelů tyto dva informační kanály
-zkoumá odděleně.
+Výroční zprávy amerických firem (formulář 10-K) obsahují jak auditovaná
+finanční data, tak rozsáhlé textové části psané vedením společnosti.
+Většina empirických modelů však tyto dva informační kanály zkoumá
+odděleně.
 %
-Tato práce se zabývá otázkou, zda nesoulad mezi směrem změny manažerského
-jazyka a směrem souběžné finanční změny---označovaný jako
+Tato práce zkoumá, zda nesoulad mezi směrem změny manažerského jazyka
+a~směrem souběžné finanční změny---označovaný jako
 \emph{textuálně-finanční divergence}---předpovídá budoucí volatilitu
 akciových výnosů.
 %
-Na nevyváženém panelu přibližně 540 firem z~indexu S\&P~500 za fiskální
+Na nevyváženém panelu přibližně 540 velkých amerických firem za fiskální
 roky 2010--2024 (cca 6\,400 pozorování) extrahuji sekce Rizikové faktory
 (Item~1A) a~Diskusi vedení (Item~7) z~každé zprávy 10-K pomocí vlastního
 parseru SEC EDGAR.  Meziroční změny sentimentu, hustoty rizikových slov
@@ -61,46 +61,47 @@ a~textové podobnosti jsou kombinovány se standardními finančními
 kontrolními proměnnými v~OLS regresích s~absorbovanými odvětvovými
 a~ročními fixními efekty.
 %
-Předběžné výsledky základního finančního modelu ukazují, že zpožděná
-volatilita, velikost firmy a~ziskovost společně vysvětlují 65,3\,\%
-průřezové variace v~anualizované volatilitě po zveřejnění zprávy.
-Zpožděná volatilita je dominantním prediktorem (koeficient 0,55;
-$t=20{,}5$), zatímco ROA má silně negativní vliv ($-0,24$; $t=-6{,}8$)
-a~růst aktiv vstupuje kladně ($+0,03$; $t=3{,}4$).
-Výsledky textové analýzy a~modelu divergence budou doplněny.
+Výsledky základního finančního modelu ukazují, že zpožděná volatilita,
+velikost firmy a~ziskovost společně vysvětlují 65,3\,\% průřezové variace
+v~anualizované volatilitě po zveřejnění zprávy.  Zpožděná volatilita je
+nejsilnějším prediktorem (koeficient 0,55; $t=20{,}5$), ROA má silně
+negativní vliv ($-0,24$; $t=-6{,}8$) a~růst aktiv vstupuje kladně
+($+0,03$; $t=3{,}4$).  Výsledky textové analýzy a~modelu divergence budou
+doplněny.
 %
-V~případě potvrzení by míra divergence mohla poskytnout nový, prakticky
-využitelný signál pro identifikaci firem, jejichž narativní zveřejnění
-vyžaduje pečlivější posouzení, s~implikacemi pro řízení rizik
+Pokud se divergence potvrdí jako významný prediktor, mohla by sloužit jako
+nový signál pro identifikaci firem, jejichž narativní zveřejnění si
+zaslouží pozornější posouzení, s~implikacemi pro řízení rizik
 a~regulatorní dohled nad kvalitou firemního výkaznictví.
 }
 
 %%% Abstract in English
 \def\AbstraktEN{%
 Corporate 10-K filings contain both audited financial data and lengthy
-narrative disclosures drafted by management, yet most empirical models use
-these two information channels in isolation. Whether the \emph{interaction}
-between narrative language and reported metrics carries additional
-information about firm-level risk remains mostly unexplored.
+narrative sections written by management, yet most empirical models treat
+these two information channels separately. Whether the \emph{interaction}
+between narrative language and reported financial metrics carries
+additional information about firm-level risk is still largely unexplored.
 %
 This thesis asks whether a mismatch between the direction of change in
-managerial language and the direction of concurrent financial change---termed
-\emph{textual-financial divergence}---predicts future stock return volatility.
+managerial language and the direction of concurrent financial
+change---called \emph{textual-financial divergence}---predicts future
+stock return volatility.
 %
-I construct an unbalanced panel of roughly 540 large constituent companies 
-over fiscal years 2010--2024 (approximately 6{,}400 firm-year observations)
-and extract the Risk Factors (Item~1A) and Management's Discussion
-(Item~7) sections from each 10-K filing via a custom SEC EDGAR parser.
+I build an unbalanced panel of roughly 540 large U.S.\ companies over
+fiscal years 2010--2024 (about 6{,}400 firm-year observations) and
+extract the Risk Factors (Item~1A) and Management's Discussion (Item~7)
+sections from each 10-K filing using a custom SEC EDGAR parser.
 Year-over-year changes in sentiment, risk-word density, and textual
 similarity are computed and combined with standard financial controls in
 absorbing OLS regressions with industry and year fixed effects.
 %
-Results from the financial baseline model show that lagged
-volatility, firm size, and profitability jointly explain 65.3\,\% of the
+Results from the financial baseline model show that lagged volatility,
+firm size, and profitability together explain 65.3\,\% of the
 cross-sectional variation in post-filing annualised volatility.
-Lagged volatility is the dominant predictor (coefficient 0.55, $t=20.5$),
-while ROA exerts a strong negative effect ($-0.24$, $t=-6.8$) and asset
-growth enters positively ($+0.03$, $t=3.4$).
+Lagged volatility is the strongest predictor (coefficient 0.55,
+$t=20.5$), while ROA has a strong negative effect ($-0.24$, $t=-6.8$)
+and asset growth enters positively ($+0.03$, $t=3.4$).
 }
 
 %%% Keywords in Czech
@@ -114,14 +115,14 @@ information uncertainty, narrative divergence, sentiment, panel data,
 corporate disclosures}
 
 %%% Title page and mandatory information pages
-%% Only compile selected chapters; counters/refs stay correct from .aux files
-\includeonly{zacatek,chapters/05_results}
+%% Compile all chapters
+% \includeonly{zacatek,chapters/05_results}
 \begin{document}
 \include{zacatek}
 
-% %%% Table of contents
-% \setcounter{tocdepth}{2}
-% \tableofcontents
+%%% Table of contents
+\setcounter{tocdepth}{2}
+\tableofcontents
 
 %%% List of figures (optional — use if >20 figures)
 %\openright
@@ -132,7 +133,7 @@ corporate disclosures}
 %\listoftables
 
 %%% List of abbreviations
-% \include{zkratky}
+\include{zkratky}
 
 \pagestyle{fancyx}
 %%% Individual chapters
@@ -144,19 +145,19 @@ corporate disclosures}
 \include{chapters/03_data}
 \include{chapters/04_methodology}
 \include{chapters/05_results}
-%\include{chapters/06_robustness}
-%{%
-%\pagestyle{plain}
-%\include{zaver}
-%}
+\include{chapters/06_robustness}
+{%
+\pagestyle{plain}
+\include{zaver}
+}
 
 %%% Bibliography
 \include{literatura}
 
 %%% Appendices
-% \part*{\Prilohy\thispagestyle{empty}}
-% \appendix
-% \include{app01}
-% \include{app02}
+\part*{\Prilohy\thispagestyle{empty}}
+\appendix
+\include{app01}
+\include{app02}
 
 \end{document}

@@ -1,8 +1,8 @@
 \chapter{Documentation of AI Tool Usage}
 \label{app:ai-usage}
 
-This appendix documents the use of artificial intelligence tools in the
-preparation of this thesis, in compliance with university requirements.
+This appendix documents the use of artificial intelligence tools in
+preparing this thesis, as required by the university.
 
 % ─────────────────────────────────────────────────────────────────────────────
 \section*{Extraction Validation (Section~\ref{ssec:text_coverage})}
@@ -14,20 +14,20 @@ Gemini API endpoint), with temperature set to~0 for deterministic output.
 SEC~10-K section extraction pipeline.  The model evaluated 200~extracted
 sections (100~Item~1A, 100~Item~7) against a structured five-criterion
 rubric (correct section, start boundary, end boundary, content quality,
-completeness) using a three-level scale (Pass / Minor / Fail).
+completeness) on a three-level scale (Pass / Minor / Fail).
 
 \paragraph{Contribution and verification.}
-The evaluation rubric, sampling strategy, prompt design, and
-statistical analysis (Wilson confidence intervals) were designed
-entirely by the author.  The model's sole contribution was applying
-the rubric to each extracted section.  All Fail verdicts were
-manually spot-checked against the original SEC filings and confirmed
-to be correct.  Results are reported in Table~\ref{tab:ai_validation}.
+The evaluation rubric, sampling strategy, prompt design, and statistical
+analysis (Wilson confidence intervals) were all designed by the author.
+The model's only role was applying the rubric to each extracted section.
+All Fail verdicts were manually spot-checked against the original SEC
+filings and confirmed to be correct.  Results are in
+Table~\ref{tab:ai_validation}.
 
 % ─────────────────────────────────────────────────────────────────────────────
 \section*{Code Development}
 
-\paragraph{Tool.} GitHub Copilot (integrated in VS Code).
+\paragraph{Tool.} AI-powered code completion (integrated in VS Code).
 
 \paragraph{Purpose.} Code completion and boilerplate generation during the
 development of data-pipeline scripts (\texttt{scripts/} directory).
@@ -35,12 +35,12 @@ development of data-pipeline scripts (\texttt{scripts/} directory).
 \paragraph{Contribution and verification.}
 All generated code was reviewed, tested, and modified by the author.
 The overall architecture, variable definitions, and analytical choices
-are the author's own work.
+are the author's own.
 
 % ─────────────────────────────────────────────────────────────────────────────
 \section*{Writing Assistance}
 
-\paragraph{Tool.} GitHub Copilot (integrated in VS Code).
+\paragraph{Tool.} AI-powered writing assistant (integrated in VS Code).
 
 \paragraph{Purpose.} Grammar and style suggestions for English-language
 prose in the thesis text.

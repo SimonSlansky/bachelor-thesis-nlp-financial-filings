@@ -57,48 +57,44 @@
 \label{sec:sample_selection}
 % ─────────────────────────────────────────────────────────────────────────────
 
-The starting universe consists of the 1{,}000 largest U.S.\ public
-companies by market capitalisation as listed in the SEC EDGAR
-company-tickers file.  We apply three filters.  First, we retain only
-entities classified as ``operating'' by the SEC, which removes
-exchange-traded funds, closed-end funds, blank-cheque companies, and
-shell entities.  Second, we exclude firms in SIC codes~6000--6999
-(finance, insurance, and real estate), whose financial-statement
-structure is incomparable with that of industrial firms---a standard
-restriction in the accruals and earnings-quality literature
-\parencite{sloan1996,francis2005}.  Third, we require at least five
-years of machine-readable XBRL data from 10-K filings and 90\% valid
-stock-return coverage, which ensures sufficient within-firm variation
-for fixed-effects estimation.  The resulting sample comprises
-approximately 540 non-financial firms observed over fiscal years
-2010--2024, yielding roughly 6{,}400 firm-year observations.
+We start from the 1{,}000 largest U.S.\ public companies by market
+capitalisation, taken from the SEC EDGAR company-tickers file, and
+apply three filters.  First, we keep only entities the SEC classifies
+as ``operating,'' which drops exchange-traded funds, closed-end funds,
+blank-cheque companies, and shell entities.  Second, we remove firms
+in SIC codes~6000--6999 (finance, insurance, and real estate), whose
+financial statements are structured differently from those of
+industrial firms---a standard restriction in the accruals and
+earnings-quality literature \parencite{sloan1996,francis2005}.  Third,
+we require at least five years of machine-readable XBRL data from
+10-K filings and 90\% valid stock-return coverage, so that there is
+enough within-firm variation for fixed-effects estimation.  After
+these filters, the sample contains roughly 540 non-financial firms
+observed over fiscal years 2010--2024, giving about 6{,}400 firm-year
+observations.
 
 \paragraph{Sample size.}
-The panel is deliberately restricted to large, liquid firms rather
-than the full EDGAR universe.  Three considerations motivate this
-choice.  First, our identification relies on firm fixed effects with
-standard errors clustered at the firm level.  As
-\textcite{petersen2009} demonstrates, the precision of cluster-robust
-inference depends on the number of clusters---here approximately
-540---not on the total number of observations; 540~clusters are well
-above the thresholds at which cluster-robust standard errors perform
-reliably.  Second, the textual-analysis component of the study
-requires downloading, parsing, and scoring the full text of every 10-K
-filing in the sample.  Extending the universe to several thousand
-firms would multiply this computational burden without proportional
-gains in statistical power.  Third, smaller firms tend to have shorter
-XBRL histories (mandatory electronic filing was phased in by size),
-higher rates of tagging errors, and thinner stock-market trading,
-all of which would increase measurement noise in financial ratios and
-return-based outcome variables.
+We deliberately focus on large, liquid firms rather than the full
+EDGAR universe for three reasons.  First, our regressions use firm
+fixed effects with standard errors clustered by firm.  As
+\textcite{petersen2009} shows, the reliability of cluster-robust
+standard errors depends on the number of clusters---here about
+540---not on total observations, and 540~clusters are well above the
+threshold for reliable inference.  Second, the textual-analysis part
+of the study requires downloading, parsing, and scoring every 10-K in
+the sample.  Expanding to several thousand firms would greatly
+increase computation time without a proportional gain in statistical
+power.  Third, smaller firms tend to have shorter XBRL histories
+(mandatory electronic filing was phased in by firm size), more tagging
+errors, and thinner trading, all of which add noise to financial
+ratios and return-based variables.
 
-The resulting sample size is comparable to prior work that combines
-textual and financial analysis of annual filings.
-\textcite{campbell2014} analyse approximately 7{,}000 firm-years of
-risk-factor disclosures drawn from large U.S.\ firms;
-\textcite{loughran2011} use a broader universe of roughly
-50{,}000 firm-years, but their research question---validating a
-sentiment dictionary---requires maximal cross-sectional coverage,
+The sample size is in line with prior work combining textual and
+financial analysis of annual filings.
+\textcite{campbell2014} study about 7{,}000 firm-years of risk-factor
+disclosures from large U.S.\ firms; \textcite{loughran2011} use a
+broader set of roughly 50{,}000 firm-years, but their goal---validating
+a sentiment dictionary---calls for maximal cross-sectional coverage,
 whereas our divergence measure is estimated within firms over time.
 
 
@@ -107,44 +103,47 @@ whereas our divergence measure is estimated within firms over time.
 \label{sec:annual_vs_quarterly}
 % ─────────────────────────────────────────────────────────────────────────────
 
-Before proceeding to variable construction, a brief note on why this study
-works with annual 10-K filings rather than quarterly 10-Q reports is in order.
-Although quarterly data would roughly triple the sample, three practical
-obstacles---documented in Tables~\ref{tab:xbrl_coverage}--\ref{tab:text_availability}---ruled
-out that path.
+Before moving to variable construction, it is worth explaining why this
+study uses annual 10-K filings instead of quarterly 10-Q reports.
+Quarterly data would roughly triple the sample, but three practical
+problems---shown in Tables~\ref{tab:xbrl_coverage}--\ref{tab:text_availability}---ruled
+out that approach.
 
 \paragraph{Financial data gaps in Q4.}
-10-Q filings cover only Q1 through Q3; the fourth quarter must therefore be
-backed out as the residual between the annual figure and the three preceding
-quarters. Table~\ref{tab:q4_reliability} shows that complete Q1--Q3 XBRL
-data exist for roughly 80\% of firm-years in net income and operating income,
-but for only 7\% in operating cash flow---because most firms report
-cumulative year-to-date cash flows rather than standalone quarterly amounts.
-Where both an explicit Q4 fact and the implied residual can be compared,
-about 11\% of observations diverge by more than 1\% of the annual total.
-Because accruals depend directly on operating cash flow, the quarterly route
-would have made hypothesis~H3 untestable.
+10-Q filings cover only Q1 through Q3; the fourth quarter has to be
+backed out as the difference between the annual figure and the sum of
+the three preceding quarters. Table~\ref{tab:q4_reliability} shows
+that complete Q1--Q3 XBRL data exist for about 80\% of firm-years in
+net income and operating income, but for only 7\% in operating cash
+flow---because most firms report cumulative year-to-date cash flows
+rather than standalone quarterly amounts.  When both an explicit Q4
+fact and the implied residual are available, about 11\% of observations
+differ by more than 1\% of the annual total.  Since accruals depend
+directly on operating cash flow, using quarterly data would have made
+hypothesis~H3 untestable.
 
 \input{tables/q4_reliability}
 
 \paragraph{Missing risk-factor text in 10-Q.}
-SEC Regulation S-K requires firms to update risk factors in quarterly filings
-only when ``material changes'' have occurred since the last 10-K.  Practically
-speaking, just over half the 10-Q filings we sampled (15 firms, 90 filings)
-contained a substantive risk-factor section; the rest reduced to a one-sentence
-reference back to the annual report (Table~\ref{tab:text_availability}).
-This pattern held across sectors---technology, healthcare, consumer goods,
-energy---with only occasional exceptions.  Constructing $\Delta$Risk, which
-enters both H1 and H2, is therefore not feasible at a quarterly frequency.
+SEC Regulation S-K only requires firms to update risk factors in
+quarterly filings when ``material changes'' have occurred since the
+last 10-K.  In practice, just over half the 10-Q filings in our pilot
+sample (15~firms, 90~filings) contained a real risk-factor section;
+the rest had only a one-sentence reference back to the annual report
+(Table~\ref{tab:text_availability}).  This held across sectors---technology,
+healthcare, consumer goods, energy---with few exceptions.  Building
+$\Delta$Risk, which enters both H1 and H2, is therefore not feasible
+at a quarterly frequency.
 
 \input{tables/text_availability}
 
 \paragraph{Chosen frequency.}
-On these grounds---and in line with prior textual-analysis work based on
-10-K filings \parencite{loughran2011,li2008,blankespoor2020}---we adopt an
-annual panel. The XBRL coverage comparison (Table~\ref{tab:xbrl_coverage})
-and a consolidated summary (Table~\ref{tab:annual_vs_quarterly}) are
-included in Appendix~\ref{app:diagnostics} for completeness.
+For these reasons---and following prior textual-analysis work based on
+10-K filings \parencite{loughran2011,li2008,blankespoor2020}---we use
+an annual panel. The XBRL coverage comparison
+(Table~\ref{tab:xbrl_coverage}) and a consolidated summary
+(Table~\ref{tab:annual_vs_quarterly}) are in
+Appendix~\ref{app:diagnostics}.
 
 % Full diagnostic tables deferred to appendix:
 % \input{tables/xbrl_coverage}       → Appendix
@@ -156,73 +155,71 @@ included in Appendix~\ref{app:diagnostics} for completeness.
 \label{sec:xbrl_tags}
 % ─────────────────────────────────────────────────────────────────────────────
 
-A practical challenge of the XBRL Company Facts API is that a single
-accounting concept may be reported under alternative US-GAAP taxonomy tags.
-For instance, operating cash flow appears as either
+A practical problem with the XBRL Company Facts API is that a single
+accounting concept can appear under different US-GAAP taxonomy tags.
+For example, operating cash flow may be reported as either
 \texttt{NetCashProvided\-ByUsed\-InOperating\-Activities} (total, including
 discontinued operations) or
 \texttt{...ContinuingOperations} (continuing operations only).
 Net income may be tagged as \texttt{NetIncomeLoss}, \texttt{ProfitLoss},
 or \texttt{IncomeLossFrom\-ContinuingOperations}.
-Stockholders' equity can include or exclude the non-controlling interest.
-Although the concepts overlap substantially, they are not identical:
-combining them within a single firm's time series could introduce
-artificial breaks, while selecting one tag globally would discard firms
-that consistently report under the alternative.
+Stockholders' equity can include or exclude the non-controlling
+interest.  These tags overlap a lot but are not identical: mixing them
+within a single firm's time series could create artificial breaks,
+while picking one tag globally would lose firms that consistently
+report under the other.
 
-We resolve this with a two-tier \emph{tag-harmonisation} procedure.
+We handle this with a two-tier \emph{tag-harmonisation} procedure.
 
 \paragraph{Equivalence groups.}
-For tag pairs that differ only in taxonomy version---not in economic
-content---we allow both tags to coexist within a firm's time series.
+When two tags differ only in taxonomy version---not in economic
+meaning---we let both coexist within a firm's time series.
 Specifically, the two operating-cash-flow tags and the pair
-\texttt{NetIncomeLoss}/\texttt{ProfitLoss} are each treated as
+\texttt{NetIncomeLoss}/\texttt{ProfitLoss} are treated as
 interchangeable.  The third net-income variant,
 \texttt{IncomeLossFromContinuingOperations}, is \emph{not} included
-because it deliberately excludes discontinued operations and can differ
-materially.
+because it deliberately excludes discontinued operations and can
+differ materially.
 
-To verify this classification empirically, we queried the SEC EDGAR
-Company~Facts API for all 550 sample firms and identified 6{,}113
-firm-year periods in which both tags of a pair were reported
-simultaneously.  For operating cash flow, 53.5\% of these 1{,}352 overlap
-observations were numerically identical and the median difference
+To check this classification empirically, we queried the SEC EDGAR
+Company~Facts API for all 550 sample firms and found 6{,}113
+firm-year periods where both tags of a pair were reported at the same
+time.  For operating cash flow, 53.5\% of the 1{,}352 overlap
+observations were numerically identical, and the median difference
 scaled by total assets was 0.000~pp; even at the 90th~percentile the
-bias reached only 1.5~pp of total assets.  For net income, 25.5\% of
-the 4{,}761 overlaps were exact matches; the median bias on ROA was
-0.033~pp, with 92.5\% of observations below 1.0~pp.  Cases with
-non-trivial differences correspond almost exclusively to firms with
-material non-controlling interests (e.g.\ master limited partnerships),
-which our priority rule already resolves by preferring the
-parent-company tag when both are available.
+bias was only 1.5~pp.  For net income, 25.5\% of the 4{,}761 overlaps
+were exact matches; the median ROA bias was 0.033~pp, with 92.5\% of
+observations below 1.0~pp.  The cases with meaningful differences
+almost always involve firms with material non-controlling interests
+(e.g.\ master limited partnerships), which our priority rule already
+handles by preferring the parent-company tag when both are available.
 
 \paragraph{Per-firm tag locking.}
-For metrics whose alternative tags \emph{are} economically distinct
+For metrics where the alternative tags \emph{are} economically distinct
 (stockholders' equity with vs.\ without NCI; \texttt{IncomeLoss\-From\-%
 ContinuingOperations} vs.\ \texttt{NetIncomeLoss}), we apply strict
-per-firm tag locking:\ the tag each firm uses in the most fiscal years
-is retained, and values from non-dominant tags are set to missing.
-This ensures within-firm time-series consistency---the critical
-requirement for panel regressions that identify effects from within-firm
-variation.
+per-firm tag locking: we keep the tag each firm uses in the most fiscal
+years and set values from other tags to missing.  This ensures
+within-firm time-series consistency, which is the key requirement for
+panel regressions that identify effects from within-firm variation.
 
-The combination of equivalence groups and per-firm locking raises the
+Combining equivalence groups and per-firm locking raises the
 complete-case rate for the six regression controls (\textit{roa},
 \textit{accruals}, \textit{leverage}, \textit{asset\_growth},
 \textit{current\_ratio}, \textit{log\_total\_assets}) from 78.9\% to
-92.7\% of firm-year observations, recovering 988 accruals values,
+92.7\% of firm-year observations.  This recovers 988 accruals values,
 828 operating-cash-flow values, and 292 net-income values that would
-otherwise be discarded.
+otherwise be lost.
 
 \paragraph{Residual limitation.}
-The accruals ratio $(\text{NI} - \text{OCF}) / \text{TA}$ requires
-that NI and OCF measure income and cash flow at the \emph{same}
-scope.  Our procedure enforces consistency within each metric but not
-across metrics: approximately 4\% of firms lock to the
-continuing-operations OCF tag while using total net income.  We
-consider this acceptable:\ the affected share is small, winsorisation
-at the 1st and 99th percentiles clips extreme values, and the same
-cross-tag mismatch is present in comparable large-scale XBRL studies
+The accruals ratio $(\text{NI} - \text{OCF}) / \text{TA}$ needs NI
+and OCF to measure income and cash flow at the \emph{same} scope.
+Our procedure enforces consistency within each metric but not across
+metrics: about 4\% of firms lock to the continuing-operations OCF tag
+while using total net income.  We consider this acceptable because
+the affected share is small, winsorisation at the 1st and 99th
+percentiles clips extreme values, and the same kind of cross-tag
+mismatch appears in comparable large-scale XBRL studies
 \parencite{chen2019}.
 
 Per-firm tag choices and the overlap diagnostic are reported in
@@ -235,109 +232,103 @@ Appendix~\ref{app:variables}
 \label{sec:text_extraction}
 % ─────────────────────────────────────────────────────────────────────────────
 
-Several hypotheses of this study rely on the narrative content of 10-K
-filings---specifically Item~1A \emph{Risk Factors} and Item~7
+Several hypotheses in this study depend on the narrative content of
+10-K filings---specifically Item~1A \emph{Risk Factors} and Item~7
 \emph{Management's Discussion and Analysis of Financial Condition and
-Results of Operations} (MD\&A).  This section describes how those
-sections are identified and extracted from the raw HTML filings
-available on SEC EDGAR.
+Results of Operations} (MD\&A).  This section describes how we find
+and extract those sections from the raw HTML filings on SEC EDGAR.
 
 \subsection{Data Source and Filing Population}
 \label{ssec:text_source}
 
-All filings are retrieved directly from the SEC EDGAR Archives using
-the Submissions~API, which maps each company's Central Index Key (CIK)
-to the set of primary documents associated with its 10-K filings.
-From the panel of approximately 6{,}700 firm-year observations, we
-exclude 10-K/A amendment filings.  Amendments typically consist of a
-cover page and a single restated exhibit; they do not contain the full
-narrative sections of the original 10-K.  The financial data for
-amended fiscal years are retained, as the XBRL extraction pipeline
-already selects the amended figures when available
-(Section~\ref{sec:xbrl_tags}).  Our extraction thus targets exclusively
-original 10-K filings.
+All filings come directly from the SEC EDGAR Archives via the
+Submissions~API, which links each company's Central Index Key (CIK)
+to the primary documents of its 10-K filings.  From the panel of
+about 6{,}700 firm-year observations, we drop 10-K/A amendments.
+Amendments typically consist of a cover page and a single restated
+exhibit and do not contain the full narrative sections of the
+original 10-K.  Financial data for amended fiscal years are kept,
+since the XBRL pipeline already picks up the amended figures when
+available (Section~\ref{sec:xbrl_tags}).  Our extraction thus
+targets only original 10-K filings.
 
 \subsection{Section Identification}
 \label{ssec:section_id}
 
-Unlike structured XBRL data, the narrative portions of 10-K filings
-are embedded in HTML with no standardised tagging.  The raw filing
-may span tens of thousands of lines of HTML, with section headers
-rendered through a variety of styling conventions---CSS bold, explicit
-\texttt{<font>} tags, inline uppercase text, or table-based layouts---and
-interleaved with a table of contents (TOC), running headers, and
-inline cross-references (e.g.\ ``see Item~1A'').  These
-characteristics make na{\"i}ve keyword search on plain text unreliable,
-as it conflates TOC entries, page headers, and inline mentions with
-the actual section boundary \parencite{dyer2017}.
+Unlike structured XBRL data, the narrative parts of 10-K filings sit
+inside HTML with no standardised tagging.  A raw filing can span tens
+of thousands of lines, with section headers rendered in many different
+ways---CSS bold, explicit \texttt{<font>} tags, inline uppercase text,
+or table-based layouts---and mixed in with a table of contents (TOC),
+running headers, and inline cross-references (e.g.\ ``see Item~1A'').
+These features make simple keyword search on plain text unreliable,
+because it confuses TOC entries, page headers, and inline mentions
+with actual section boundaries \parencite{dyer2017}.
 
-We implement an HTML-aware extraction procedure that operates in
-four stages:
+We use an HTML-aware extraction procedure with four stages:
 
 \begin{enumerate}
-  \item \textbf{Header detection.}  The HTML DOM is traversed at the
-    block level (\texttt{<p>}, \texttt{<div>}, \texttt{<td>},
-    \texttt{<h1>}--\texttt{<h6>}) and each element is tested against
-    a set of regex patterns corresponding to the target sections
-    (e.g.\ \texttt{Item\textbackslash s+1[\textbackslash s.]*A} for
-    Item~1A).  A candidate is accepted only if it satisfies at least
-    one formatting criterion: bold styling (CSS \texttt{font-weight:
+  \item \textbf{Header detection.}  We walk through the HTML DOM at
+    the block level (\texttt{<p>}, \texttt{<div>}, \texttt{<td>},
+    \texttt{<h1>}--\texttt{<h6>}) and test each element against a
+    set of regex patterns for the target sections (e.g.\
+    \texttt{Item\textbackslash s+1[\textbackslash s.]*A} for
+    Item~1A).  A candidate counts only if it meets at least one
+    formatting rule: bold styling (CSS \texttt{font-weight:
     bold} or \texttt{700}), ALL-CAPS text, or large font size
-    ($\geq$12\,pt via CSS or legacy \texttt{<font size$\geq$3>}
-    attribute).  This requirement filters out inline cross-references,
-    which appear in body-text paragraphs with no special formatting.
-    Additionally, elements containing visible hyperlinks (an
-    \texttt{<a>} tag with an \texttt{href} attribute) are rejected, as
-    these correspond to TOC entries linking to the real section.
+    ($\geq$12\,pt via CSS or legacy \texttt{<font size$\geq$3>}).
+    This filters out inline cross-references, which sit in normal
+    body-text paragraphs with no special formatting.  Elements
+    containing a visible hyperlink (an \texttt{<a>} tag with an
+    \texttt{href}) are also rejected, as these are TOC entries
+    pointing to the real section.
 
-  \item \textbf{Position marking.}  Each detected header is annotated
-    with a unique marker character inserted into the DOM before the
-    document is flattened to plain text.  The markers record the
-    character offset of every confirmed header in the resulting text
-    stream.
+  \item \textbf{Position marking.}  Each detected header gets a
+    unique marker character inserted into the DOM before the document
+    is flattened to plain text.  The markers record the character
+    offset of every confirmed header in the resulting text stream.
 
-  \item \textbf{Candidate selection.}  For each target section, all
-    marker positions are filtered by a subtitle keyword check (e.g.\
+  \item \textbf{Candidate selection.}  For each target section, we
+    filter all marker positions by a subtitle keyword check (e.g.\
     ``risk'' for Item~1A, ``management'' or ``discussion'' for
     Item~7) within 150~characters of the marker.  A TOC-cluster
-    heuristic then rejects any candidate whose position lies within
-    300~characters of two or more headers belonging to different
-    items---a pattern characteristic of tables of contents.  Among
-    the remaining candidates, the one followed by the longest text
-    span before the next section header is selected.
+    rule then drops any candidate whose position is within
+    300~characters of two or more headers from different items---a
+    pattern typical of tables of contents.  From the remaining
+    candidates, we pick the one followed by the longest text span
+    before the next section header.
 
-  \item \textbf{Section boundary.}  The section text is defined as
-    the content between the selected header and the first occurrence
-    of the next expected Item header (Item~1B, 1C, or~2 for
-    Item~1A; Item~7A or~8 for Item~7).  Sections shorter than
-    200~words are classified as stubs and trigger a fallback
-    procedure.
+  \item \textbf{Section boundary.}  The section text runs from the
+    selected header to the first occurrence of the next expected Item
+    header (Item~1B, 1C, or~2 for Item~1A; Item~7A or~8 for Item~7).
+    Sections shorter than 200~words are treated as stubs and trigger
+    a fallback procedure.
 \end{enumerate}
 
 \subsection{Exhibit Fallback}
 \label{ssec:exhibit_fallback}
 
-A common practice in 10-K filings---particularly among older filings
-and firms that publish a standalone annual report---is to reduce an
-Item to a short stub such as ``This information is incorporated by
-reference from Exhibit~13.''  When the extracted section contains
-fewer than 200~words and the text matches an incorporation-by-reference
-pattern, the parser identifies the referenced exhibit number
-(defaulting to Exhibit~13, the annual report to shareholders) and
-downloads the corresponding HTML document from the filing index.  The
-section identification procedure is then reapplied to the exhibit.
-Because exhibits frequently omit the formal ``Item~X'' prefix, the
-parser also matches title-only patterns (e.g.\ ``Risk Factors'',
-``Management's Discussion and Analysis'') as a secondary detection
-layer for both the main document and exhibits.
+A common practice in 10-K filings---especially older ones and firms
+that publish a standalone annual report---is to replace an Item with
+a short stub such as ``This information is incorporated by reference
+from Exhibit~13.''  When the extracted section has fewer than
+200~words and the text matches an incorporation-by-reference pattern,
+the parser finds the referenced exhibit number (defaulting to
+Exhibit~13, the annual report to shareholders) and downloads the
+matching HTML document from the filing index.  The section
+identification procedure is then rerun on the exhibit.  Because
+exhibits often skip the formal ``Item~X'' prefix, the parser also
+matches title-only patterns (e.g.\ ``Risk Factors'', ``Management's
+Discussion and Analysis'') as a backup detection layer for both the
+main document and exhibits.
 
 \subsection{Post-Processing}
 \label{ssec:text_postprocessing}
 
-The raw text produced by the HTML-to-plain-text conversion retains
-several artefacts of the original filing's page layout.  Before any
-textual feature is computed, each extracted section passes through a
-cleaning step that removes three classes of noise:
+The raw text from the HTML-to-plain-text conversion keeps several
+layout artefacts from the original filing.  Before computing any
+textual features, each extracted section goes through a cleaning step
+that removes three types of noise:
 
 \begin{enumerate}
   \item \textbf{Running page headers.}  Many filings embed
@@ -358,20 +349,20 @@ cleaning step that removes three classes of noise:
 
 \noindent
 The cleaning rules are intentionally conservative: they target only
-patterns that cannot plausibly form part of meaningful sentence text
-and are applied after section boundaries have already been
-resolved---so they do not interfere with header detection.
+patterns that cannot realistically be part of meaningful text and are
+applied after section boundaries have already been set, so they do
+not interfere with header detection.
 
 \subsection{Coverage and Limitations}
 \label{ssec:text_coverage}
 
 We validated the extraction pipeline on two samples: the 50~most
 recent filings in the panel (fiscal year 2024) and a stratified
-random sample of 100~filings spanning all fiscal years 2010--2024
+random sample of 100~filings covering all fiscal years 2010--2024
 (20~per era).  On the recent sample, the parser successfully
 extracted both sections for all 50~filings (100\%).  On the
-cross-era sample, 94~of 100~filings yielded both sections.  The
-six failures were classified as follows:
+cross-era sample, 94~of~100 filings yielded both sections.  The
+six failures break down as follows:
 
 \begin{itemize}
   \item Three 10-K/A amendments that passed the initial filter because
@@ -384,9 +375,9 @@ six failures were classified as follows:
 \end{itemize}
 
 \noindent
-None of these failures is systematic with respect to firm
-characteristics.  On the full panel---after excluding amendments---we
-expect a coverage rate of approximately 96--97\%, with missing values
+None of these failures is related to firm characteristics in any
+systematic way.  On the full panel---after dropping amendments---we
+expect a coverage rate of roughly 96--97\%, with missing values
 treated as NaN in the textual variable construction.
 
 \paragraph{AI-assisted quality audit.}
@@ -405,37 +396,36 @@ treated as NaN in the textual variable construction.
 %      (cf. Loughran & McDonald spot checks; Krippendorff recommends
 %      ≥ 80 units for reliability testing).
 %
-To verify not only coverage but also content quality, we conducted an
+To check not just coverage but also content quality, we ran an
 independent audit using a large language model (Gemini~2.5 Flash,
-temperature~$= 0$).  Recent work by \textcite{gilardi2023} demonstrates
-that LLM-based annotation matches or exceeds the accuracy of trained
-human crowd-workers on text-classification tasks, supporting the use
-of a language model as an independent extraction judge.
+temperature~$= 0$).  Recent work by \textcite{gilardi2023} shows
+that LLM-based annotation matches or beats the accuracy of trained
+human crowd-workers on text-classification tasks, which supports
+using a language model as an independent extraction judge.
 A~stratified random sample of 100~filings was drawn---40~sections
 per era across five strata (2010--2012, 2013--2015, 2016--2018,
-2019--2021, 2022--2024)---yielding 200~section-level evaluations
+2019--2021, 2022--2024)---giving 200~section-level evaluations
 (Item~1A and Item~7 for each filing).
-The sample size exceeds the minimum of~80~coding units recommended
+The sample size is above the minimum of~80~coding units recommended
 by \textcite{krippendorff2019} for content-analysis reliability
 testing.  At the observed pass rates, the Wilson~95\,\%
-confidence interval half-width does not exceed approximately
-3~percentage points \parencite{agresti1998}, providing sufficient
-precision for a definitive quality claim.  The 100~filings cover
-roughly~18\,\% of the 540-firm panel and span the full evolution of
-SEC filing formats.
+confidence interval half-width stays below about 3~percentage points
+\parencite{agresti1998}, which is precise enough for a clear quality
+claim.  The 100~filings cover roughly~18\,\% of the 540-firm panel
+and span the full history of SEC filing formats.
 
-For each filing, both extracted sections were submitted to the model
-in a single prompt together with a structured evaluation rubric.
-The model judged each section on five criteria---correct section
-identity, start-boundary accuracy, end-boundary accuracy, content
-quality (absence of residual HTML tags, page headers, or garbled
-data), and completeness (full narrative, not a stub or truncated
-fragment)---using a three-level scale: \emph{Pass} (criterion
-clearly satisfied), \emph{Minor} (small issue that would not
-materially affect NLP analysis), and \emph{Fail} (issue that would
-distort results).  We report two aggregate metrics: a strict rate
-(only Pass) and a lenient rate (Pass~+~Minor), each accompanied by
-Wilson~95\,\% confidence intervals \parencite{agresti1998}.
+For each filing, both extracted sections were sent to the model in a
+single prompt along with a structured evaluation rubric.  The model
+judged each section on five criteria---correct section identity,
+start-boundary accuracy, end-boundary accuracy, content quality
+(no residual HTML tags, page headers, or garbled data), and
+completeness (full narrative, not a stub or truncated fragment)---using
+a three-level scale: \emph{Pass} (criterion clearly met),
+\emph{Minor} (small issue that would not meaningfully affect NLP
+analysis), and \emph{Fail} (issue that would distort results).  We
+report two aggregate metrics: a strict rate (only Pass) and a lenient
+rate (Pass~+~Minor), each with Wilson~95\,\% confidence intervals
+\parencite{agresti1998}.
 
 \begin{table}[htbp]
   \centering
@@ -461,68 +451,63 @@ Wilson~95\,\% confidence intervals \parencite{agresti1998}.
   \end{tabular}
 \end{table}
 
-Table~\ref{tab:ai_validation} reports the results.  On every
-individual criterion, the lenient pass rate (Pass~+~Minor) exceeds
-95\,\%, confirming that the parser isolates the correct section with
-accurate boundaries and yields clean, complete text.  Even under the
-strict metric---which counts only an unqualified Pass---rates remain
-above 94\,\% on each criterion.  The overall lenient rate across all
-five criteria simultaneously is 93.5\,\% (187/200; 95\,\%~CI:
-89.2--96.2\,\%).
+Table~\ref{tab:ai_validation} shows the results.  On every individual
+criterion, the lenient pass rate (Pass~+~Minor) is above 95\%,
+confirming that the parser finds the right section with accurate
+boundaries and produces clean, complete text.  Even under the strict
+metric---counting only an unqualified Pass---rates stay above 94\% on
+each criterion.  The overall lenient rate across all five criteria at
+once is 93.5\% (187/200; 95\,\%~CI: 89.2--96.2\,\%).
 
-Of the 13~sections that received at least one Fail, five were
-complete extraction failures (empty output) caused by non-standard
-HTML layouts or parser recursion limits; four had incorrect section
-boundaries (content from an adjacent Item was included); and the
-remaining four were flagged solely for low word counts suggesting
-potential truncation.  Item~7 extractions perform slightly better
-than Item~1A (lenient pass rates of 96\,\% vs.\ 91\,\%),
-likely because Item~7 has a cleaner stop boundary (Item~7A or
-Item~8), whereas Item~1A occasionally captures text from the
-preceding Item~1.
+Of the 13~sections with at least one Fail, five were complete
+extraction failures (empty output) caused by non-standard HTML layouts
+or parser recursion limits; four had wrong section boundaries (content
+from an adjacent Item was included); and the remaining four were
+flagged only for low word counts suggesting possible truncation.
+Item~7 extractions do slightly better than Item~1A (lenient pass rates
+of 96\% vs.\ 91\%), most likely because Item~7 has a cleaner stop
+boundary (Item~7A or Item~8), while Item~1A sometimes picks up text
+from the preceding Item~1.
 
-Failures also concentrate in older filings: 5~of the 40~sections
-from 2010--2012 were flagged versus only 1~of~40 from 2022--2024,
-reflecting the progressive standardisation of SEC filing HTML over
-the sample period.  The pattern reinforces that the residual
-failures are not systematic with respect to firm characteristics
-but rather an artefact of filing-format heterogeneity in the
-early XBRL era.
+Failures also cluster in older filings: 5~of the 40~sections from
+2010--2012 were flagged versus only 1~of~40 from 2022--2024.  This
+reflects the gradual standardisation of SEC filing HTML over the
+sample period and confirms that the remaining failures are not tied
+to firm characteristics but are instead an artefact of filing-format
+variation in the early XBRL era.
 
 \paragraph{Robustness of the LLM-based audit.}
 We use Google Gemini~2.5~Flash (accessed through its
-OpenAI-compatible API) with temperature set to~0 to ensure
-deterministic evaluation.  Several design choices support the
-reliability of this approach.  First, \textcite{gilardi2023}
-demonstrate that LLM-based annotation matches or exceeds the
-accuracy of trained crowd-workers on text-classification tasks,
-providing methodological precedent for using a language model as an
-independent judge.  Second, the evaluation rubric is structured with
-concrete, verifiable criteria---correct section identity, boundary
-accuracy, absence of HTML artefacts, word-count thresholds---that
-leave little room for subjective interpretation.  Third, each
-judgment involves a single document and a deterministic prompt; the
-model does not need to compare across filings or aggregate
-statistics.  Fourth, spot-checking the model's Fail verdicts against
-manual inspection confirmed agreement in all cases examined (e.g.\
-the PH~2015 and FE~2010 empty extractions, the ROP~2019 and PEP~2017
-boundary errors).  The combination of a well-defined rubric, zero
-temperature, and verifiable failure modes makes the audit
-generalisable: a different evaluator---human or model---applying the
-same criteria would be expected to reach the same conclusions.
+OpenAI-compatible API) with temperature set to~0 for deterministic
+results.  Several design choices support the reliability of this
+approach.  First, \textcite{gilardi2023} show that LLM-based
+annotation matches or beats trained crowd-workers on
+text-classification tasks, giving methodological backing for using a
+language model as an independent judge.  Second, the rubric is
+built around concrete, verifiable criteria---correct section identity,
+boundary accuracy, absence of HTML artefacts, word-count
+thresholds---that leave little room for subjective interpretation.
+Third, each judgment covers a single document with a deterministic
+prompt; the model does not need to compare across filings or
+aggregate statistics.  Fourth, spot-checking the model's Fail
+verdicts against manual inspection confirmed agreement in every case
+examined (e.g.\ the PH~2015 and FE~2010 empty extractions, the
+ROP~2019 and PEP~2017 boundary errors).  Together, a well-defined
+rubric, zero temperature, and verifiable failure modes make the
+audit reproducible: a different evaluator---human or model---applying
+the same criteria should reach the same conclusions.
 
 \paragraph{Relation to prior approaches.}
-The extraction strategy follows the general methodology described by
-\textcite{dyer2017}, who document substantial variation in the HTML
-structure of SEC filings and recommend DOM-based parsing over regular
-expressions applied to raw text.  Relative to keyword-on-plain-text
-approaches used in earlier work
+Our extraction strategy follows the general approach of
+\textcite{dyer2017}, who document large variation in the HTML
+structure of SEC filings and recommend DOM-based parsing instead of
+regular expressions on raw text.  Compared with keyword-on-plain-text
+methods used in earlier work
 \parencite{li2008,loughran2011,campbell2014}, our procedure avoids
 false positives from TOC entries and inline mentions, which
-\textcite{dyer2017} identify as a significant source of measurement
-error in automated section extraction.  When compared with the
-XBRL-tagged textual blocks (e.g.\
-\texttt{us-gaap:RiskFactorsTextBlock}), which became available with
-Inline XBRL adoption, our method offers broader temporal coverage:
-structured textual tags are inconsistently populated before 2018,
-whereas the HTML-based approach covers the full 2010--2024 window.
+\textcite{dyer2017} flag as a major source of measurement error in
+automated section extraction.  Compared with XBRL-tagged textual
+blocks (e.g.\ \texttt{us-gaap:RiskFactorsTextBlock}), which became
+available with Inline XBRL adoption, our method covers a wider time
+span: structured textual tags are inconsistently filled before 2018,
+while the HTML-based approach works across the full 2010--2024 window.

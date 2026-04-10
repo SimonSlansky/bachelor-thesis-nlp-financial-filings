@@ -2,20 +2,13 @@
 \label{app:variables}
 \label{app:diagnostics}
 
-% TODO: Possible contents
-%
-% \section{Full Sample of Companies}
-% - Table with ticker, CIK, company name, SIC industry, fiscal year-end
-%
-% \section{Variable Definitions}
-% - Complete variable dictionary with XBRL tags and derivation formulae
-% - Textual variable construction details
-% - Divergence measure formal definition
-%
-% \section{Data Pipeline Documentation}
-% - Description of SEC EDGAR extraction steps
-% - Validation and cleaning procedures
-% - Volatility and return computation methodology
+This appendix collects supplementary tables referenced in the main
+text.  Section~\ref{sec:freq_diagnostics} presents the diagnostics
+behind the choice of annual filing frequency
+(Section~\ref{sec:annual_vs_quarterly}).
+Section~\ref{sec:tag_provenance} reports the per-firm XBRL tag
+assignments from the tag-harmonisation procedure
+(Section~\ref{sec:xbrl_tags}).
 
 \section{Filing Frequency Diagnostics}
 \label{sec:freq_diagnostics}
@@ -36,8 +29,7 @@ candidate XBRL tags, the number and share of firms locked to each tag
 by the per-firm tag-locking procedure described in
 Section~\ref{sec:xbrl_tags}.
 
-% TODO: Generate this table from data/diagnostics/tag_provenance.csv
-% after re-running the pipeline.
+% Generated from data/tag_provenance.csv (539 firms after coverage filter).
 \begin{table}[htbp]
   \centering
   \caption{Per-firm XBRL tag distribution}
@@ -47,12 +39,22 @@ Section~\ref{sec:xbrl_tags}.
     \toprule
     Metric & Locked XBRL tag & Firms & \% \\
     \midrule
-    \multicolumn{4}{c}{\emph{To be populated after pipeline re-run}} \\
+    Net income
+      & \texttt{NetIncomeLoss}                             & 502 & 91.6 \\
+      & \texttt{ProfitLoss}                                &  45 &  8.2 \\
+      & \texttt{IncomeLossFromContinuingOperations}        &   1 &  0.2 \\[4pt]
+    Operating cash flow
+      & \texttt{NetCashProvidedByUsedInOperatingActivities}          & 530 & 96.7 \\
+      & \texttt{...OperatingActivitiesContinuingOperations} &  18 &  3.3 \\[4pt]
+    Stockholders' equity
+      & \texttt{StockholdersEquityIncl...NoncontrollingInterest} & 318 & 58.6 \\
+      & \texttt{StockholdersEquity}                        & 225 & 41.4 \\
     \bottomrule
   \end{tabular}
   \begin{minipage}{0.9\linewidth}\vspace{4pt}\footnotesize
   \emph{Notes.} For each (firm, metric) pair, the tag with the highest
   within-firm year-count is selected; values from other tags are set to
-  missing. See Section~\ref{sec:xbrl_tags} for the rationale.
+  missing. Firm counts are based on 548~firms in the tag-locking stage.
+  See Section~\ref{sec:xbrl_tags} for the rationale.
   \end{minipage}
 \end{table}
