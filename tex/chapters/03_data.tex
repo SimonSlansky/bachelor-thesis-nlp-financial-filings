@@ -8,7 +8,7 @@
 % \section{Sample Selection}
 % - Universe: top ~1,000 U.S. companies by market cap from SEC EDGAR
 % - Filters: operating entities only, exclude SIC 6000--6999 (financials)
-% - Final sample: ~600 non-financial firms, 2010--2025
+% - Final sample: ~540 non-financial firms, 2010--2024
 % - Table~\ref{tab:sample}: industry distribution, FYE month distribution
 %
 % \section{Data Sources}
@@ -44,7 +44,7 @@
 % - Robustness: post-filing log stock return
 %
 % \section{Panel Data Construction}
-% - Annual panel: ~9,000 firm-years
+% - Annual panel: ~6,400 firm-years
 % - Unbalanced panel, fiscal year-end alignment
 %
 % \section{Descriptive Statistics}
@@ -57,7 +57,7 @@
 \label{sec:sample_selection}
 % ─────────────────────────────────────────────────────────────────────────────
 
-We start from the 1{,}000 largest U.S.\ public companies by market
+We start with the sample of 1{,}000 largest U.S.\ public companies by market
 capitalisation, taken from the SEC EDGAR company-tickers file, and
 apply three filters.  First, we keep only entities the SEC classifies
 as ``operating,'' which drops exchange-traded funds, closed-end funds,
@@ -291,9 +291,9 @@ We use an HTML-aware extraction procedure with four stages:
   \item \textbf{Candidate selection.}  For each target section, we
     filter all marker positions by a subtitle keyword check (e.g.\
     ``risk'' for Item~1A, ``management'' or ``discussion'' for
-    Item~7) within 150~characters of the marker.  A TOC-cluster
+    Item~7) within 300~characters of the marker.  A TOC-cluster
     rule then drops any candidate whose position is within
-    300~characters of two or more headers from different items---a
+    300~characters of three or more headers from different items---a
     pattern typical of tables of contents.  From the remaining
     candidates, we pick the one followed by the longest text span
     before the next section header.
