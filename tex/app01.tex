@@ -10,6 +10,15 @@ Section~\ref{sec:tag_provenance} reports the per-firm XBRL tag
 assignments from the tag-harmonisation procedure
 (Section~\ref{sec:xbrl_tags}).
 
+\paragraph{Industry fixed effects.}
+The two-digit SIC code (\texttt{sic2}) used to absorb industry fixed
+effects is derived in \texttt{scripts/regressions.py:load\_regression\_panel}
+as \texttt{floor(sic\,/\,100)} from the firm-level four-digit SIC stored in
+\texttt{data/annual\_panel.csv}, rather than persisted as a separate
+column.  Reproducing the regressions therefore requires the helper
+loader; loading the CSV directly is sufficient for descriptive work
+but does not include the industry classifier.
+
 \section{Filing Frequency Diagnostics}
 \label{sec:freq_diagnostics}
 
@@ -29,7 +38,9 @@ candidate XBRL tags, the number and share of firms locked to each tag
 by the per-firm tag-locking procedure described in
 Section~\ref{sec:xbrl_tags}.
 
-% Generated from data/tag_provenance.csv (539 firms after coverage filter).
+% Generated from data/tag_provenance.csv (539 firms after coverage filter;
+% the regression sample further drops one firm to 538 / 6{,}322 obs once
+% all model variables are required non-missing).
 \begin{table}[htbp]
   \centering
   \caption{Per-firm XBRL tag distribution}

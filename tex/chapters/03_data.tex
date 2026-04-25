@@ -68,18 +68,22 @@ industrial firms---a standard restriction in the accruals and
 earnings-quality literature \parencite{sloan1996,francis2005}.  Third,
 we require at least five years of machine-readable XBRL data from
 10-K filings and 90\% valid stock-return coverage, so that there is
-enough within-firm variation for fixed-effects estimation.  After
-these filters, the sample contains roughly 540 non-financial firms
-observed over fiscal years 2010--2024, giving about 6{,}400 firm-year
-observations.
+enough within-firm variation for fixed-effects estimation.
+
+The construction funnel is therefore: 1{,}000 top firms by market
+capitalisation $\to$ 550 firms with at least one annual XBRL filing
+$\to$ 548 firms after per-firm tag locking $\to$ 539 firms after the
+90\,\% return-coverage filter $\to$ 538 firms (6{,}322 firm-year
+observations) in the regression sample once all model variables are
+required non-missing.  The fiscal-year coverage is 2010--2024.
 
 \paragraph{Sample size.}
 We deliberately focus on large, liquid firms rather than the full
 EDGAR universe for three reasons.  First, our regressions use firm
 fixed effects with standard errors clustered by firm.  As
 \textcite{petersen2009} shows, the reliability of cluster-robust
-standard errors depends on the number of clusters---here about
-540---not on total observations, and 540~clusters are well above the
+standard errors depends on the number of clusters---here 538---not on
+total observations, and 538~clusters are well above the
 threshold for reliable inference.  Second, the textual-analysis part
 of the study requires downloading, parsing, and scoring every 10-K in
 the sample.  Expanding to several thousand firms would greatly
@@ -411,7 +415,7 @@ by \textcite{krippendorff2019} for content-analysis reliability
 testing.  At the observed pass rates, the Wilson~95\,\%
 confidence interval half-width stays below about 3~percentage points
 \parencite{agresti1998}, which is precise enough for a clear quality
-claim.  The 100~filings cover roughly~18\,\% of the 540-firm panel
+claim.  The 100~filings cover roughly~19\,\% of the 538-firm panel
 and span the full history of SEC filing formats.
 
 For each filing, both extracted sections were sent to the model in a
