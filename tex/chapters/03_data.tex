@@ -24,7 +24,7 @@
 % - Raw XBRL metrics: total\_assets, net\_income, operating\_income,
 %   operating\_cash\_flow, eps\_diluted, etc.
 % - Derived ratios: log\_total\_assets, leverage, ROA, asset\_growth,
-%   current\_ratio, accruals, ocf\_to\_assets, operating\_roa
+%   current\_ratio, ocf\_to\_assets, operating\_roa
 % - Winsorisation at 1\%/99\%
 %
 % \section{Textual Variables}
@@ -64,8 +64,8 @@ as ``operating,'' which drops exchange-traded funds, closed-end funds,
 blank-cheque companies, and shell entities.  Second, we remove firms
 in SIC codes~6000--6999 (finance, insurance, and real estate), whose
 financial statements are structured differently from those of
-industrial firms---a standard restriction in the accruals and
-earnings-quality literature \parencite{sloan1996,francis2005}.  Third,
+industrial firms---a standard restriction in the empirical accounting
+literature \parencite{sloan1996,francis2005}.  Third,
 we require at least five years of machine-readable XBRL data from
 10-K filings and 90\% valid stock-return coverage, so that there is
 enough within-firm variation for fixed-effects estimation.
@@ -73,7 +73,7 @@ enough within-firm variation for fixed-effects estimation.
 The construction funnel is therefore: 1{,}000 top firms by market
 capitalisation $\to$ 550 firms with at least one annual XBRL filing
 $\to$ 548 firms after per-firm tag locking $\to$ 539 firms after the
-90\,\% return-coverage filter $\to$ 538 firms (6{,}322 firm-year
+90\,\% return-coverage filter $\to$ 537 firms (6{,}299 firm-year
 observations) in the regression sample once all model variables are
 required non-missing.  The fiscal-year coverage is 2010--2024.
 
@@ -82,8 +82,8 @@ We deliberately focus on large, liquid firms rather than the full
 EDGAR universe for three reasons.  First, our regressions use firm
 fixed effects with standard errors clustered by firm.  As
 \textcite{petersen2009} shows, the reliability of cluster-robust
-standard errors depends on the number of clusters---here 538---not on
-total observations, and 538~clusters are well above the
+standard errors depends on the number of clusters---here 537---not on
+total observations, and 537~clusters are well above the
 threshold for reliable inference.  Second, the textual-analysis part
 of the study requires downloading, parsing, and scoring every 10-K in
 the sample.  Expanding to several thousand firms would greatly
@@ -122,9 +122,10 @@ net income and operating income, but for only 7\% in operating cash
 flow---because most firms report cumulative year-to-date cash flows
 rather than standalone quarterly amounts.  When both an explicit Q4
 fact and the implied residual are available, about 11\% of observations
-differ by more than 1\% of the annual total.  Since accruals depend
-directly on operating cash flow, using quarterly data would have made
-hypothesis~H3 untestable.
+differ by more than 1\% of the annual total.  Operating cash flow is
+also a primary input into our auxiliary OCF-to-assets ratio, so the Q4
+residual approach would substantially weaken any cash-flow-based
+robustness check.
 
 \input{tables/q4_reliability}
 
@@ -208,21 +209,20 @@ within-firm time-series consistency, which is the key requirement for
 panel regressions that identify effects from within-firm variation.
 
 Combining equivalence groups and per-firm locking raises the
-complete-case rate for the six regression controls (\textit{roa},
-\textit{accruals}, \textit{leverage}, \textit{asset\_growth},
+complete-case rate for the five regression controls (\textit{roa},
+\textit{leverage}, \textit{asset\_growth},
 \textit{current\_ratio}, \textit{log\_total\_assets}) from 78.9\% to
-92.7\% of firm-year observations.  This recovers 988 accruals values,
-828 operating-cash-flow values, and 292 net-income values that would
-otherwise be lost.
+92.7\% of firm-year observations.  This recovers 988~operating-cash-flow
+values and 292~net-income values that would otherwise be lost.
 
 \paragraph{Residual limitation.}
-The accruals ratio $(\text{NI} - \text{OCF}) / \text{TA}$ needs NI
-and OCF to measure income and cash flow at the \emph{same} scope.
-Our procedure enforces consistency within each metric but not across
-metrics: about 4\% of firms lock to the continuing-operations OCF tag
-while using total net income.  We consider this acceptable because
-the affected share is small, winsorisation at the 1st and 99th
-percentiles clips extreme values, and the same kind of cross-tag
+The ratios constructed from a single XBRL flow tag (ROA, OCF-to-assets)
+rely on tag stability over time.  Our procedure enforces consistency
+within each metric.  About 4\% of firms lock to the
+continuing-operations OCF tag while using total net income; for
+ratios that mix the two (such as the auxiliary OCF-to-assets variable
+used in robustness), winsorisation at the 1st and 99th percentiles
+clips the resulting extreme values, and the same kind of cross-tag
 mismatch appears in comparable large-scale XBRL studies
 \parencite{chen2019}.
 
@@ -415,7 +415,7 @@ by \textcite{krippendorff2019} for content-analysis reliability
 testing.  At the observed pass rates, the Wilson~95\,\%
 confidence interval half-width stays below about 3~percentage points
 \parencite{agresti1998}, which is precise enough for a clear quality
-claim.  The 100~filings cover roughly~19\,\% of the 538-firm panel
+claim.  The 100~filings cover roughly~19\,\% of the 537-firm panel
 and span the full history of SEC filing formats.
 
 For each filing, both extracted sections were sent to the model in a

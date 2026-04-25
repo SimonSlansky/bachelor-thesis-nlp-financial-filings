@@ -23,7 +23,6 @@
 | 4 | Baseline regression (financial + lagged vol) | Done |
 | 4 | **Text model regression (H1)** | **Pending** |
 | 4 | **Divergence model regression (H2)** | **Pending** |
-| 4 | **Accruals interaction (H3)** | **Pending** |
 | 5 | **Robustness battery** | **Pending** |
 | 6 | Data chapter prose | Done |
 | 6 | Results chapter (descriptives + baseline only) | Partial |
@@ -43,7 +42,7 @@
 - Per-firm tag locking on multi-tag metrics; equivalence groups for tax-version variants of OCF and net income
 - Component imputation (`total_liabilities = total_assets − stockholders_equity`); ±1-period ffill/bfill on balance-sheet items
 - Asset growth guarded against multi-year FYE-transition gaps
-- Winsorization (1/99) on `leverage, roa, asset_growth, current_ratio, accruals, ocf_to_assets`
+- Winsorization (1/99) on `leverage, roa, asset_growth, current_ratio, ocf_to_assets`
 
 ### 1.3 Returns and volatility (`scripts/returns.py`)
 - 365-day calendar window starting 2 calendar days after `filing_date` (`POST_FILING_LAG_DAYS = 2` in `config.py`); on weekends this typically yields a one-trading-day lag, which we accept rather than depending on a market-calendar dependency
@@ -186,18 +185,16 @@ All models share: AbsorbingLS with two-digit SIC + fiscal-year FE, firm-clustere
 
 - **H1:** Δtext predicts vol beyond financials and lagged vol
 - **H2:** Divergence predicts vol beyond text + financials
-- **H3:** Divergence × HighAccrual interaction is positive
 
 ### 3.2 Model ladder
 
 | Model | Specification | Tests |
 |---|---|---|
 | (1) Baseline-min | σ_{t+1} = α + φ·σ_t + FE | reference |
-| (2) Baseline-financial | + size, leverage, ROA, asset_growth, accruals | done |
+| (2) Baseline-financial | + size, leverage, ROA, asset_growth | done |
 | (3) Text-dictionary | + Δlm_net_tone, Δlm_uncertainty, Δlm_risk_density, delta_text_1a, delta_text_7, rf_turnover | **H1a** |
 | (4) Text-FinBERT | model (3) + Δfinbert_net | **H1b** |
 | (5) Divergence | model (4) + Divergence | **H2** |
-| (6) Accruals interaction | model (5) + Divergence × HighAccrual | **H3** |
 
 ### 3.3 Output tables
 
@@ -205,8 +202,7 @@ Generated to `tex/tables/`:
 - `text_dictionary_regression.tex` — model (3)
 - `text_finbert_regression.tex` — model (4)
 - `divergence_regression.tex` — model (5)
-- `accruals_interaction.tex` — model (6)
-- `model_comparison.tex` — incremental adj-R², F-tests, AIC/BIC across (1)–(6)
+- `model_comparison.tex` — incremental adj-R², F-tests, AIC/BIC across (1)–(5)
 
 ### 3.4 Economic magnitude
 
@@ -221,7 +217,7 @@ Generated to `tex/tables/`:
 |---|---|
 | Vol window | 63-day, 180-day in addition to 365-day |
 | Alt DV | Post-filing log return |
-| Divergence variant | Binary `div_dummy`; OCF-based ΔROA; operating-ROA-based ΔROA |
+| Divergence variant | Binary `div_dummy`; OCF-based ΔROA |
 | Sentiment source | LM only / FinBERT only / both |
 | Subsample | Pre-2020 vs post-2020; tech (SIC 7370–7379, 3674) vs rest |
 | Sample filter | Drop firms with <8 years of data |
@@ -237,7 +233,7 @@ Each writes a row to `tex/tables/robustness_summary.tex` showing the divergence 
 Order chosen so each chapter can cite the next:
 
 1. **Methodology chapter** — equations, estimator, FE rationale, fold in volatility-window-overlap and FYE-transition notes (already drafted in TODO comments).
-2. **Results chapter** — sub-sections H1, H2, H3, economic magnitude. Reuse generated `.tex` tables.
+2. **Results chapter** — sub-sections H1, H2, economic magnitude. Reuse generated `.tex` tables.
 3. **Robustness chapter** — narrate `robustness_summary.tex`.
 4. **Literature review** — write last so each citation is justified by an actually-used method.
 5. **Introduction** — finalise after results are known.
@@ -262,7 +258,7 @@ scripts/
 ├── text_features_finbert.py      # NEW
 ├── build_text_features.py        # NEW
 ├── build_annual_panel.py         # extended with text-merge step
-├── regressions.py                # extended with H1/H2/H3 runners
+├── regressions.py                # extended with H1/H2 runners
 └── robustness.py                 # NEW
 
 data/
@@ -280,7 +276,6 @@ tex/tables/
 ├── text_dictionary_regression.tex   # NEW
 ├── text_finbert_regression.tex      # NEW
 ├── divergence_regression.tex        # NEW
-├── accruals_interaction.tex         # NEW
 ├── model_comparison.tex             # NEW
 └── robustness_summary.tex           # NEW
 ```
@@ -314,10 +309,9 @@ tqdm                   # progress bars for long FinBERT runs
 | 8 | scripts/regressions.py | `FEAT: H1 text-dictionary regression and table` |
 | 9 | scripts/regressions.py | `FEAT: H1b FinBERT regression and table` |
 | 10 | scripts/regressions.py | `FEAT: H2 divergence regression and table` |
-| 11 | scripts/regressions.py | `FEAT: H3 accruals interaction and table` |
 | 12 | scripts/robustness.py | `FEAT: robustness battery (windows, subsamples, alt divergence)` |
 | 13 | tex/chapters/04_methodology.tex | `DOCS: write methodology chapter` |
-| 14 | tex/chapters/05_results.tex | `DOCS: write H1/H2/H3 results sections` |
+| 14 | tex/chapters/05_results.tex | `DOCS: write H1/H2 results sections` |
 | 15 | tex/chapters/06_robustness.tex | `DOCS: write robustness chapter` |
 | 16 | tex/chapters/02_literature_review.tex | `DOCS: write literature review` |
 | 17 | tex/uvod.tex, tex/zaver.tex | `DOCS: finalise introduction and conclusion` |

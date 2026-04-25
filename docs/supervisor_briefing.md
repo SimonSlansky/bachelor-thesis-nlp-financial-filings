@@ -12,7 +12,7 @@
 - Začal jsem s top 1 000 amerických firem podle tržní kapitalizace ze SEC EDGAR.
 - Filtry:
   1. Jen *operating* entity → vyřazení ETF, fondů, shell companies.
-  2. Vyloučení finančního sektoru SIC 6000–6999 (banky, pojišťovny, REIT) — jejich účetní výkazy nejsou srovnatelné s průmyslovými firmami, standardní omezení v accruals/earnings-quality literatuře (Sloan 1996, Francis et al. 2005).
+  2. Vyloučení finančního sektoru SIC 6000–6999 (banky, pojišťovny, REIT) — jejich účetní výkazy nejsou srovnatelné s průmyslovými firmami, standardní omezení v empirické účetní literatuře (Sloan 1996, Francis et al. 2005).
   3. Minimum 5 let strojově čitelných XBRL dat z 10-K.
   4. ≥90 % pokrytí akciových výnosů (trading days v měřicím okně).
 - Výsledný vzorek: **539 firem, 6 322 pozorování, FY 2010–2024**.
@@ -43,9 +43,8 @@
   - **ROA** = net income / total assets.
   - **asset growth** = (TA_t − TA_{t-1}) / TA_{t-1}, s ochranou proti mezerám způsobeným změnou FYE (validní jen pro 300–400denní gap).
   - **current ratio** = current assets / current liabilities.
-  - **accruals** = (NI − OCF) / total assets.
   - **OCF-to-assets** = OCF / total assets.
-- Winzorizace na 1./99. percentilu u: leverage, ROA, asset growth, current ratio, accruals, OCF-to-assets.
+- Winzorizace na 1./99. percentilu u: leverage, ROA, asset growth, current ratio, OCF-to-assets.
 - Nejstarší rok firmy odstraněn (spotřebován lag pro asset growth).
 
 ### Extrakce textu z 10-K
@@ -68,7 +67,7 @@
 ### Proč roční a ne kvartální data
 Kvartální data by ztrojnásobila vzorek, ale tři problémy to znemožnily:
 1. **Chybějící risk faktory v 10-Q** — SEC vyžaduje aktualizaci jen při „material changes"; v pilotním vzorku (15 firem, 90 filingů) mělo substantivní risk-factor sekci jen 52 % 10-Q. Nemožnost konstruovat ΔRisk.
-2. **Nespolehlivá Q4 finanční data** — 10-Q pokrývá jen Q1–Q3; Q4 se musí dopočítat jako Annual − Q1 − Q2 − Q3. OCF pokrytí jen 7 % firm-years, ~11 % mismatch kde oba údaje existují. Accruals (NI − OCF) by byly nepoužitelné → H3 netestovatelná.
+2. **Nespolehlivá Q4 finanční data** — 10-Q pokrývá jen Q1–Q3; Q4 se musí dopočítat jako Annual − Q1 − Q2 − Q3. OCF pokrytí jen 7 % firm-years, ~11 % mismatch kde oba údaje existují → cash-flow odvozené ratios na kvartálních datech nepoužitelné.
 3. **Konsistence s literaturou** — Loughran & McDonald (2011), Li (2008), Campbell et al. (2014) pracují s 10-K.
 - Zdokumentováno diagnostickými tabulkami v příloze (XBRL coverage, Q4 reliability, text availability).
 
@@ -86,11 +85,9 @@ Kvartální data by ztrojnásobila vzorek, ale tři problémy to znemožnily:
 | Leverage | 0.61 | 0.22 | 0.61 |
 | ROA | 0.062 | 0.087 | 0.061 |
 | Asset Growth | 0.119 | 0.254 | 0.060 |
-| Accruals | −0.048 | 0.054 | −0.042 |
 
-- **538 firem, 6 322 pozorování.**
+- **537 firem, 6\,299 pozorování.**
 - Volatilita má pravostranné rozdělení (IQR 0.22–0.39), konzistentní s občasnými výkyvy (covid 2020).
-- Accruals záporné → OCF > net income (typické kvůli odpisům).
 
 ### 2. Korelační matice (Table 5)
 
@@ -98,37 +95,35 @@ Klíčové poznatky:
 - **Volatilita vs. zpožděná vol: r = 0.61** → silná persistence.
 - **Velikost vs. vol: r = −0.32** → větší firmy nižší vol (klasický vztah).
 - **ROA vs. vol: r = −0.32** → ziskovější firmy nižší vol.
-- **Accruals vs. ROA: r = 0.44** → mechanický link přes NI; proto obě v regresi (separace cash-based a accrual-based efektu).
-- Žádná korelace mezi explanačními proměnnými nepřekračuje |0.45| → VIF < 1.4, nízké riziko multikolinearity.
+- Žádná korelace mezi explanačními proměnnými nepřekračuje |0.40| → VIF < 1.4, nízké riziko multikolinearity.
 
 ### 3. Baseline regrese – finanční model (Table 6)
 
 Tři nested specifikace, všechny s odvětvovými (SIC-2, 49 skupin) a ročními FE, SE clusterované po firmě:
 
 **Model (1): Jen zpožděná volatilita**
-- Koef. 0.67, t = 32.5 → silná persistence.
-- Adj. R² = 0.629.
+- Koef. 0.67, t = 33.5 → silná persistence.
+- Adj. R² = 0.630.
 - Interpretace: jeden procentní bod nárůst loňské vol → ~0.67 pp nárůst letošní vol.
 
 **Model (2): + velikost a leverage**
-- Velikost: −0.016, t = −7.3 → větší firmy = nižší budoucí vol.
-- Leverage: ~0, nesignifikantní (t = 0.08) → industry FE už absorbují průřezovou variaci v kapitálové struktuře.
-- Adj. R² = 0.642 (+1.3 pp).
+- Velikost: −0.017, t = −7.4 → větší firmy = nižší budoucí vol.
+- Leverage: ~0, nesignifikantní (t = 0.17) → industry FE už absorbují průřezovou variaci v kapitálové struktuře.
+- Adj. R² = 0.643 (+1.3 pp).
 
-**Model (3): + ROA, asset growth, accruals (plný baseline)**
-- **ROA: −0.240, t = −6.8** → silný negativní efekt, ziskovější firmy mají nižší budoucí vol.
-- **Asset growth: +0.027, t = 3.4** → rychlý růst = vyšší nejistota.
-- **Accruals: +0.057, t = 1.2** → kladný ale nesignifikantní; overlap s ROA absorbuje většinu efektu. Zůstává v modelu kvůli pozdější interakci s divergencí (H3).
-- **Adj. R² = 0.653** (+1.1 pp oproti modelu 2).
+**Model (3): + ROA, asset growth (plný baseline)**
+- **ROA: −0.224, t = −7.9** → silný negativní efekt, ziskovější firmy mají nižší budoucí vol.
+- **Asset growth: +0.026, t = 3.1** → rychlý růst = vyšší nejistota.
+- **Adj. R² = 0.654** (+1.1 pp oproti modelu 2).
 
 ### Co to znamená
 
-Finanční baseline vysvětluje **65,3 %** variace v budoucí volatilitě. To je vysoký benchmark. Hlavní drivery jsou:
+Finanční baseline vysvětluje **65,4 %** variace v budoucí volatilitě. To je vysoký benchmark. Hlavní drivery jsou:
 1. **Persistence** (zpožděná vol) – suverénně nejsilnější prediktor; koef. klesá z 0.67 na 0.55 jak přidáváme kontroly, ale zůstává dominantní.
-2. **Velikost** – menší firmy volatilnější; koef. stabilní napříč modely (−0.016).
-3. **Ziskovost (ROA)** – neziskové firmy volatilnější; ekonomicky velký efekt (−0.24).
+2. **Velikost** – menší firmy volatilnější; koef. stabilní napříč modely (−0.017).
+3. **Ziskovost (ROA)** – neziskové firmy volatilnější; ekonomicky velký efekt (−0.22).
 4. **Růst aktiv** – expanze = vyšší nejistota; menší efekt ale jasně signifikantní.
-5. **Leverage a accruals** – nesignifikantní po zahrnutí FE a ostatních kontrol.
+5. **Leverage** – nesignifikantní po zahrnutí FE a ostatních kontrol.
 
 Jakékoliv textové proměnné musí přinést inkrementální vysvětlující sílu nad tímto už poměrně silným modelem. I malý nárůst adj. R² (řádově 0.5–2 pp) je ekonomicky významný, protože baseline je už nasycený persistence + FE.
 
@@ -157,9 +152,6 @@ Všechny modely: OLS s absorbovanými SIC-2 + fiscal-year FE, SE clusterované p
 - **H2 (divergence je nový signál):** Divergence model = text model + Divergence.
   - Testováno: t-test na koeficient divergence; inkrementální adj. R² nad text model.
   - Toto je klíčový výsledek celé práce.
-- **H3 (efekt silnější u firem s nízkou kvalitou výdělků):** Interakce divergence × HighAccrual (median-split dummy).
-  - Testováno: t-test na interakční člen.
-  - Ekonomická intuice: u firem kde jsou accruals vysoké (nízká earnings quality), je nesoulad text vs. čísla obzvlášť informativní o budoucí nejistotě.
 
 ### Robustnost (fáze 5)
 - Alternativní vol okna (63d, 180d místo 365d).
@@ -171,7 +163,7 @@ Všechny modely: OLS s absorbovanými SIC-2 + fiscal-year FE, SE clusterované p
 - Winzorizace 2.5/97.5 místo 1/99.
 
 ### Psaní (fáze 6)
-- Metodologie → Zbylé Results (H1/H2/H3) → Robustnost → Literature review → Úvod → Závěr.
+- Metodologie → Zbylé Results (H1/H2) → Robustnost → Literature review → Úvod → Závěr.
 
 ---
 
@@ -182,6 +174,5 @@ Všechny modely: OLS s absorbovanými SIC-2 + fiscal-year FE, SE clusterované p
 3. FinBERT scoring (~3.8M vět, ideálně na GPU).
 4. Merge textových features do panelu → `annual_panel_full.csv`.
 5. Zkonstruovat divergenci (residuál ΔSent ~ ΔROA) a binární variantu.
-6. Odhadnout text model (H1) a divergenční model (H2) → porovnat adj. R² s baseline (0.653).
-7. Interakce s accruals (H3).
-8. Dopsat Metodologii a Results.
+6. Odhadnout text model (H1) a divergenční model (H2) → porovnat adj. R² s baseline (0.654).
+7. Dopsat Metodologii a Results.

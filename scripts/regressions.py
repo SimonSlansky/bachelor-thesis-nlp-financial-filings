@@ -24,13 +24,12 @@ LABELS = {
     "leverage": "Leverage",
     "roa": "ROA",
     "asset_growth": "Asset Growth",
-    "accruals": "Accruals",
 }
 
 # Variable order for summary / correlation tables
 PANEL_VARS = [
     "vol_next_year", "lagged_vol", "log_total_assets",
-    "leverage", "roa", "asset_growth", "accruals",
+    "leverage", "roa", "asset_growth",
 ]
 
 
@@ -43,7 +42,7 @@ def load_regression_panel() -> pd.DataFrame:
 
     needed = [
         "vol_next_year", "lagged_vol", "log_total_assets",
-        "leverage", "roa", "asset_growth", "accruals",
+        "leverage", "roa", "asset_growth",
         "sic2", "fiscal_year", "ticker",
     ]
     df = df[needed].dropna().copy()
@@ -57,7 +56,7 @@ def run_baseline(df: pd.DataFrame | None = None):
 
     (1) Lagged vol only  + Industry FE + Year FE
     (2) + Size, Leverage
-    (3) + ROA, Asset Growth, Accruals  (full baseline)
+    (3) + ROA, Asset Growth  (full baseline)
 
     Returns (results, df, specs).
     """
@@ -71,7 +70,7 @@ def run_baseline(df: pd.DataFrame | None = None):
     specs = [
         ["lagged_vol"],
         ["lagged_vol", "log_total_assets", "leverage"],
-        ["lagged_vol", "log_total_assets", "leverage", "roa", "asset_growth", "accruals"],
+        ["lagged_vol", "log_total_assets", "leverage", "roa", "asset_growth"],
     ]
 
     results = []

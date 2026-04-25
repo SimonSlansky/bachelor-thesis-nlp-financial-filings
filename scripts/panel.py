@@ -159,7 +159,7 @@ def add_financial_ratios(df: pd.DataFrame, date_col: str) -> pd.DataFrame:
     """Compute financial ratios from raw metrics.
 
     Ratios: log_total_assets, leverage, roa, asset_growth,
-            current_ratio, accruals, ocf_to_assets.
+            current_ratio, ocf_to_assets.
     Winsorization is NOT done here — call ``winsorize_ratios`` on the
     final sample after all filtering.
     """
@@ -186,11 +186,6 @@ def add_financial_ratios(df: pd.DataFrame, date_col: str) -> pd.DataFrame:
     )
 
     if "operating_cash_flow" in df.columns:
-        df["accruals"] = np.where(
-            df["total_assets"] > 0,
-            (df["net_income"] - df["operating_cash_flow"]) / df["total_assets"],
-            np.nan,
-        )
         df["ocf_to_assets"] = np.where(
             df["total_assets"] > 0,
             df["operating_cash_flow"] / df["total_assets"],
@@ -201,7 +196,7 @@ def add_financial_ratios(df: pd.DataFrame, date_col: str) -> pd.DataFrame:
 
 
 WINSORIZE_COLS = ("leverage", "roa", "asset_growth", "current_ratio",
-                  "accruals", "ocf_to_assets")
+                  "ocf_to_assets")
 
 
 def winsorize_ratios(df: pd.DataFrame) -> pd.DataFrame:
@@ -308,7 +303,7 @@ ANNUAL_COLS = [
     "operating_income", "operating_cash_flow",
     "return_next_year", "vol_next_year", "lagged_vol",
     "log_total_assets", "leverage", "roa", "asset_growth",
-    "current_ratio", "accruals", "ocf_to_assets",
+    "current_ratio", "ocf_to_assets",
 ]
 
 

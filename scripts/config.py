@@ -115,7 +115,7 @@ METRICS_WITH_PRIORITY: list[tuple[str, str, int]] = [
                                         "net_income",            3),
     # Operating Income (flow) — EBIT proxy for operating ROA
     ("OperatingIncomeLoss",             "operating_income",      1),
-    # Operating Cash Flow (flow) — for accruals ratio
+    # Operating Cash Flow (flow) — for OCF-to-assets ratio (robustness)
     ("NetCashProvidedByUsedInOperatingActivities",
                                         "operating_cash_flow",   1),
     ("NetCashProvidedByUsedInOperatingActivitiesContinuingOperations",
@@ -130,8 +130,8 @@ FLOW_METRICS = {"net_income", "operating_income", "operating_cash_flow"}
 #   later XBRL taxonomies; for firms without material discontinued operations
 #   (the vast majority) both tags report the identical figure.
 # Net income: ProfitLoss includes NCI, NetIncomeLoss excludes it.  For large
-#   US firms NCI is typically <0.5 % of total assets, making the accruals and
-#   ROA impact negligible (Hribar & Collins 2002 treat OCF the same way).
+#   US firms NCI is typically <0.5 % of total assets, making the ROA impact
+#   negligible (Hribar & Collins 2002 treat OCF the same way).
 # IncomeLossFromContinuingOperations is NOT included — it deliberately
 #   excludes discontinued operations, which can be material.
 # ---------------------------------------------------------------------------
