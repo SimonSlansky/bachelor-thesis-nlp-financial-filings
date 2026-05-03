@@ -36,29 +36,47 @@
 \label{sec:robustness_horizons}
 % ─────────────────────────────────────────────────────────────────────────────
 
-The main specifications use the annualised standard deviation of
-daily log returns over a 365-calendar-day window starting two trading
-days after the filing date.  Choosing one year matches the annual
-frequency of the panel, but it has two costs that bear directly on
-hypothesis testing.  First, the window is long enough that the next
-10-K is filed before it closes, so the back half of the window
-overlaps with information from the subsequent disclosure.  Second,
-the prior literature on textual signals in 10-Ks consistently finds
-that any incremental predictive power is concentrated in the first
-few weeks or months after the filing and decays thereafter
-\parencite{loughran2011}.  An annual measure averages this
-short-lived signal against several months of unrelated noise.
+The main specifications measure post-filing volatility over a
+365-day window. One year matches the annual frequency of the panel,
+but it has two drawbacks. First, the window is long enough that the
+next 10-K is filed before it ends, so the second half of the window
+already contains information from the next disclosure. Second, prior
+work on text in 10-Ks consistently finds that any predictive power
+shows up in the first weeks or months after the filing and fades
+afterwards \parencite{loughran2011}. A one-year window
+mixes the short signal with many months of unrelated noise.
 
-To assess the robustness of the main results to this choice, the
-divergence specification (equation~\ref{eq:divergence_model}) is
-re-estimated with the dependent variable replaced by the annualised
-volatility computed over windows of 30, 90, and 180~calendar days
-following the filing.  The lagged dependent variable is correspondingly
-the same firm's volatility measured over the prior filing year's
-window of the same length.  All other regressors, fixed effects, and
-the firm-clustered standard-error structure are unchanged.
-Table~\ref{tab:horizons} reports the four horizons side by side; the
-365-day column reproduces the headline divergence model from
-Chapter~\ref{ch:results} and serves as the long-horizon benchmark.
+To check whether the main results depend on this choice, the
+divergence model (equation~\ref{eq:divergence_model}) is re-estimated
+with the dependent variable replaced by volatility measured over
+30, 90, and 180~days after the filing. The lagged dependent variable
+is the same firm's volatility computed over the previous filing
+year's window of the same length. All other controls, fixed effects,
+and the firm-clustered standard errors are kept the same.
+Table~\ref{tab:horizons} shows all four horizons side by side; the
+365-day column reproduces the divergence model from
+Chapter~\ref{ch:results}.
 
 \input{tables/horizons_regression}
+
+The pattern is clear and goes in one direction. The divergence
+coefficient is largest at 30~days ($\delta = -14.62$, $t = -3.03$,
+$p = 0.002$), shrinks to $-11.08$ at 90~days, falls further to
+$-8.00$ at 180~days, and reaches $-4.85$ at one year, where it
+becomes only marginally significant. The size of the effect drops
+roughly by a factor of three from the shortest to the longest window,
+and the $t$-statistic moves in the same direction. The same
+monotonic decay is visible for $\Delta$Sentiment, while
+$\Delta$Risk and TextSim remain small at every horizon.
+
+Two conclusions follow. First, the headline divergence result is not
+an artefact of the one-year window: the effect is in fact stronger
+at shorter horizons and is highly significant at every sub-annual
+window. The marginal $p$-value in the annual specification reported
+in Chapter~\ref{ch:results} reflects dilution by months of unrelated
+post-filing noise, not the absence of a signal. H2 is therefore
+supported once the dependent variable is matched to the horizon over
+which the textual signal actually operates. Second, the decay
+matches the timing patterns documented for textual measures in
+10-Ks by \textcite{loughran2011}, which adds external validity to
+the divergence construction used here.
