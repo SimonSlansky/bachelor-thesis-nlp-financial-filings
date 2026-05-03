@@ -24,6 +24,10 @@ LABELS = {
     "leverage": "Leverage",
     "roa": "ROA",
     "asset_growth": "Asset Growth",
+    "delta_sentiment": r"$\Delta$Sentiment",
+    "delta_risk": r"$\Delta$Risk",
+    "textsim": "TextSim",
+    "divergence": "Divergence",
 }
 
 # Variable order for summary / correlation tables
@@ -31,6 +35,10 @@ PANEL_VARS = [
     "vol_next_year", "lagged_vol", "log_total_assets",
     "leverage", "roa", "asset_growth",
 ]
+
+# Financial-control block reused across baseline / text / divergence models.
+FIN_VARS = ["lagged_vol", "log_total_assets", "leverage", "roa", "asset_growth"]
+TEXT_VARS = ["delta_sentiment", "delta_risk", "textsim"]
 
 
 # ── Data loading ──────────────────────────────────────────────────────────
@@ -43,6 +51,20 @@ def load_regression_panel() -> pd.DataFrame:
     needed = [
         "vol_next_year", "lagged_vol", "log_total_assets",
         "leverage", "roa", "asset_growth",
+        "sic2", "fiscal_year", "ticker",
+    ]
+    df = df[needed].dropna().copy()
+    return df
+
+
+def load_text_panel() -> pd.DataFrame:
+    """Load the text-extended panel and drop rows missing any text feature."""
+    df = pd.read_csv(DATA_DIR / "annual_panel_text.csv")
+    df["sic2"] = (df["sic"] // 100).astype(int)
+    needed = [
+        "vol_next_year", "lagged_vol", "log_total_assets",
+        "leverage", "roa", "asset_growth",
+        "delta_sentiment", "delta_risk", "textsim", "divergence",
         "sic2", "fiscal_year", "ticker",
     ]
     df = df[needed].dropna().copy()
@@ -83,6 +105,67 @@ def run_baseline(df: pd.DataFrame | None = None):
     return results, df, specs
 
 
+def _fit(df: pd.DataFrame, xvars: list[str]):
+    """Fit one absorbing-LS model with industry+year FE and firm clusters."""
+    y = df["vol_next_year"]
+    X = df[xvars].copy()
+    absorb = df[["sic2", "fiscal_year"]].astype("category")
+    clusters = df["ticker"]
+    return AbsorbingLS(y, X, absorb=absorb).fit(
+        cov_type="clustered", clusters=clusters,
+    )
+
+
+def run_text(df: pd.DataFrame | None = None):
+    """Estimate three nested specifications culminating in the text model.
+
+    (1) Baseline      : financial controls only.
+    (2) +Sentiment+Risk
+    (3) Full text model: + TextSim.
+    """
+    if df is None:
+        df = load_text_panel()
+    specs = [
+        list(FIN_VARS),
+        list(FIN_VARS) + ["delta_sentiment", "delta_risk"],
+        list(FIN_VARS) + list(TEXT_VARS),
+    ]
+    results = [_fit(df, x) for x in specs]
+    return results, df, specs
+
+
+def run_divergence(df: pd.DataFrame | None = None):
+    """Estimate three nested specifications culminating in the divergence model.
+
+    (1) Baseline.
+    (2) Full text model.
+    (3) Text model + Divergence.
+    """
+    if df is None:
+        df = load_text_panel()
+    specs = [
+        list(FIN_VARS),
+        list(FIN_VARS) + list(TEXT_VARS),
+        list(FIN_VARS) + list(TEXT_VARS) + ["divergence"],
+    ]
+    results = [_fit(df, x) for x in specs]
+    return results, df, specs
+
+
+def wald_joint_zero(res, vars_to_test: list[str]) -> tuple[float, float]:
+    """Joint Wald test that the coefficients in *vars_to_test* are all zero.
+
+    Returns (statistic, p-value).  Uses the clustered covariance matrix
+    already estimated in *res*.
+    """
+    params = res.params.loc[vars_to_test].values
+    cov = res.cov.loc[vars_to_test, vars_to_test].values
+    stat = float(params @ np.linalg.solve(cov, params))
+    from scipy.stats import chi2
+    p = float(chi2.sf(stat, df=len(vars_to_test)))
+    return stat, p
+
+
 # ── LaTeX table formatting ────────────────────────────────────────────────
 
 def _stars(pval: float) -> str:
@@ -95,8 +178,9 @@ def _stars(pval: float) -> str:
     return ""
 
 
-def baseline_to_latex(results, df, specs, path: Path | None = None) -> str:
-    """Format baseline results as a publication-quality LaTeX table."""
+def _regression_to_latex(results, df, specs, caption: str, label: str,
+                         note: str, path: Path | None = None) -> str:
+    """Generic three-column nested-regression table writer."""
     n_cols = len(results)
     all_vars = specs[-1]  # full variable set from the widest model
     n_firms = df["ticker"].nunique()
@@ -105,8 +189,8 @@ def baseline_to_latex(results, df, specs, path: Path | None = None) -> str:
     lines = []
     lines.append(r"\begin{table}[htbp]")
     lines.append(r"\centering")
-    lines.append(r"\caption{Baseline Volatility Determinants}")
-    lines.append(r"\label{tab:baseline}")
+    lines.append(rf"\caption{{{caption}}}")
+    lines.append(rf"\label{{{label}}}")
     lines.append(r"\begin{tabular}{l" + "c" * n_cols + "}")
     lines.append(r"\toprule")
 
@@ -149,11 +233,7 @@ def baseline_to_latex(results, df, specs, path: Path | None = None) -> str:
     # Table note
     lines.append(r"\begin{tablenotes}")
     lines.append(
-        r"\item \textit{Note:} "
-        r"This table reports OLS estimates of post-filing annualised "
-        r"volatility on financial determinants. The dependent variable is "
-        r"the annualised standard deviation of daily log returns over the "
-        r"365-day window following each 10-K filing date. "
+        r"\item \textit{Note:} " + note + " "
         f"All specifications include two-digit SIC industry "
         f"({n_industries} groups) and fiscal-year fixed effects. "
         r"$t$-statistics, reported in parentheses, are based on standard "
@@ -171,6 +251,65 @@ def baseline_to_latex(results, df, specs, path: Path | None = None) -> str:
         print(f"  Table saved → {path.name}")
 
     return tex
+
+
+_BASELINE_NOTE = (
+    r"This table reports OLS estimates of post-filing annualised "
+    r"volatility on financial determinants. The dependent variable is "
+    r"the annualised standard deviation of daily log returns over the "
+    r"365-day window following each 10-K filing date."
+)
+
+_TEXT_NOTE = (
+    r"This table reports OLS estimates of post-filing annualised "
+    r"volatility on financial controls and textual features extracted "
+    r"from the 10-K narrative. $\Delta$Sentiment and $\Delta$Risk are "
+    r"within-firm year-on-year changes in MD\&A net tone and Item~1A "
+    r"risk-word share, respectively, computed with the Loughran--McDonald "
+    r"dictionary. TextSim is the cosine similarity of the firm's TF--IDF "
+    r"vector with its prior-year filing."
+)
+
+_DIVERGENCE_NOTE = (
+    r"This table reports OLS estimates of post-filing annualised "
+    r"volatility on financial controls, textual features, and the "
+    r"Divergence variable defined as $\Delta$Sentiment minus "
+    r"$\lambda \cdot \Delta$ROA, where $\lambda$ is calibrated by a "
+    r"within-firm OLS of $\Delta$Sentiment on $\Delta$ROA."
+)
+
+
+def baseline_to_latex(results, df, specs, path: Path | None = None) -> str:
+    """Baseline volatility-determinants table."""
+    return _regression_to_latex(
+        results, df, specs,
+        caption="Baseline Volatility Determinants",
+        label="tab:baseline",
+        note=_BASELINE_NOTE,
+        path=path,
+    )
+
+
+def text_to_latex(results, df, specs, path: Path | None = None) -> str:
+    """Text-model regression table (H1)."""
+    return _regression_to_latex(
+        results, df, specs,
+        caption="Textual Features and Post-Filing Volatility",
+        label="tab:text_regression",
+        note=_TEXT_NOTE,
+        path=path,
+    )
+
+
+def divergence_to_latex(results, df, specs, path: Path | None = None) -> str:
+    """Divergence-model regression table (H2)."""
+    return _regression_to_latex(
+        results, df, specs,
+        caption="Divergence and Post-Filing Volatility",
+        label="tab:divergence_regression",
+        note=_DIVERGENCE_NOTE,
+        path=path,
+    )
 
 
 # ── Descriptive statistics ─────────────────────────────────────────────────
@@ -326,7 +465,42 @@ def main():
 
     tex_path = TEX_TABLE_DIR / "baseline_regression.tex"
     baseline_to_latex(results, df, specs, path=tex_path)
-    print(f"\nDone.")
+
+    # ── Text + divergence models ────────────────────────────────────────
+    text_panel_path = DATA_DIR / "annual_panel_text.csv"
+    if not text_panel_path.exists():
+        print(f"\n[skip] {text_panel_path.name} not found — "
+              "run build_text_features.py to enable text/divergence models.")
+        print("\nDone.")
+        return
+
+    print("\nLoading text-extended panel …")
+    tdf = load_text_panel()
+    print(f"  {tdf['ticker'].nunique()} firms, {len(tdf):,} observations")
+
+    print("\nRunning text models (H1) …")
+    t_results, tdf, t_specs = run_text(tdf)
+    for i, res in enumerate(t_results):
+        print(f"  Model ({i+1}): N={res.nobs:,.0f}  Adj R²={res.rsquared_adj:.4f}")
+    text_to_latex(t_results, tdf, t_specs,
+                  path=TEX_TABLE_DIR / "text_regression.tex")
+
+    stat, pval = wald_joint_zero(t_results[-1], TEXT_VARS)
+    print(f"  H1 Wald χ²({len(TEXT_VARS)}) = {stat:.2f}, p = {pval:.4g}")
+
+    print("\nRunning divergence models (H2) …")
+    d_results, _, d_specs = run_divergence(tdf)
+    for i, res in enumerate(d_results):
+        print(f"  Model ({i+1}): N={res.nobs:,.0f}  Adj R²={res.rsquared_adj:.4f}")
+    divergence_to_latex(d_results, tdf, d_specs,
+                        path=TEX_TABLE_DIR / "divergence_regression.tex")
+    div_res = d_results[-1]
+    c = div_res.params["divergence"]
+    t = div_res.tstats["divergence"]
+    p = div_res.pvalues["divergence"]
+    print(f"  H2 δ_divergence = {c:+.4f}  t = {t:+.2f}  p = {p:.4g}")
+
+    print("\nDone.")
 
 
 if __name__ == "__main__":
