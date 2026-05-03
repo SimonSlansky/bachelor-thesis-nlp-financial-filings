@@ -105,9 +105,9 @@ def run_baseline(df: pd.DataFrame | None = None):
     return results, df, specs
 
 
-def _fit(df: pd.DataFrame, xvars: list[str]):
+def _fit(df: pd.DataFrame, xvars: list[str], dep: str = "vol_next_year"):
     """Fit one absorbing-LS model with industry+year FE and firm clusters."""
-    y = df["vol_next_year"]
+    y = df[dep]
     X = df[xvars].copy()
     absorb = df[["sic2", "fiscal_year"]].astype("category")
     clusters = df["ticker"]
@@ -164,6 +164,138 @@ def wald_joint_zero(res, vars_to_test: list[str]) -> tuple[float, float]:
     from scipy.stats import chi2
     p = float(chi2.sf(stat, df=len(vars_to_test)))
     return stat, p
+
+
+# ── Multi-horizon robustness sweep ────────────────────────────────────────
+
+# (label, dependent variable, lagged dependent variable)
+HORIZONS: list[tuple[str, str, str]] = [
+    ("30d",  "vol_30d",       "lagged_vol_30d"),
+    ("90d",  "vol_90d",       "lagged_vol_90d"),
+    ("180d", "vol_180d",      "lagged_vol_180d"),
+    ("365d", "vol_next_year", "lagged_vol"),
+]
+
+
+def load_horizon_panel(dep: str, lagged_dep: str) -> pd.DataFrame | None:
+    """Load the text panel and prune to rows usable for one horizon.
+
+    Substitutes ``lagged_dep`` for ``lagged_vol`` so each horizon uses
+    its own AR(1) control.  Returns ``None`` if the columns are missing
+    (the short-horizon volatilities are an optional add-on supplied by
+    ``build_volatility_horizons.py``).
+    """
+    df = pd.read_csv(DATA_DIR / "annual_panel_text.csv")
+    if dep not in df.columns or lagged_dep not in df.columns:
+        return None
+    df["sic2"] = (df["sic"] // 100).astype(int)
+    needed = [
+        dep, lagged_dep, "log_total_assets", "leverage", "roa", "asset_growth",
+        "delta_sentiment", "delta_risk", "textsim", "divergence",
+        "sic2", "fiscal_year", "ticker",
+    ]
+    df = df[needed].dropna().copy()
+    return df
+
+
+def run_horizons():
+    """Estimate the divergence specification on each horizon.
+
+    Yields ``(label, results, df, fin_vars)`` so the caller can reuse the
+    fitted models for printing and table formatting.  The financial-control
+    block substitutes the horizon-specific lag for ``lagged_vol``.
+    """
+    out = []
+    for label, dep, lagged_dep in HORIZONS:
+        df = load_horizon_panel(dep, lagged_dep)
+        if df is None or df.empty:
+            print(f"  [skip] horizon {label}: columns not in panel")
+            continue
+        fin_vars = [lagged_dep, "log_total_assets", "leverage",
+                    "roa", "asset_growth"]
+        xvars = fin_vars + list(TEXT_VARS) + ["divergence"]
+        res = _fit(df, xvars, dep=dep)
+        out.append((label, res, df, fin_vars))
+    return out
+
+
+def horizons_to_latex(runs, path: Path | None = None) -> str:
+    """Compact comparison table: one column per horizon.
+
+    Reports the lagged-DV AR(1) coefficient, each text variable, and the
+    divergence variable, plus N, firms, and Adj R² in the footer.
+    """
+    if not runs:
+        return ""
+
+    # Display variables (in this order); lagged-DV row uses a generic label.
+    display = [("LAGGED", "Lagged Volatility")] + [
+        (v, LABELS.get(v, v)) for v in list(TEXT_VARS) + ["divergence"]
+    ]
+    n_cols = len(runs)
+
+    lines = []
+    lines.append(r"\begin{table}[htbp]")
+    lines.append(r"\centering")
+    lines.append(r"\caption{Post-Filing Volatility at Alternative Horizons}")
+    lines.append(r"\label{tab:horizons}")
+    lines.append(r"\begin{tabular}{l" + "c" * n_cols + "}")
+    lines.append(r"\toprule")
+    header = " & ".join(f"({i+1}) {label}"
+                        for i, (label, _, _, _) in enumerate(runs))
+    lines.append(f" & {header} \\\\")
+    lines.append(r"\midrule")
+
+    for var, label in display:
+        coefs, tstats = [], []
+        for _, res, _, fin_vars in runs:
+            v = fin_vars[0] if var == "LAGGED" else var
+            if v not in res.params.index:
+                coefs.append("")
+                tstats.append("")
+                continue
+            c = res.params[v]
+            t = res.tstats[v]
+            p = res.pvalues[v]
+            coefs.append(f"${c:+.4f}${_stars(p)}")
+            tstats.append(f"$({t:+.2f})$")
+        lines.append(f"{label} & " + " & ".join(coefs) + r" \\")
+        lines.append(" & " + " & ".join(tstats) + r" \\[4pt]")
+
+    lines.append(r"\midrule")
+    lines.append("Industry FE & " + " & ".join(["Yes"] * n_cols) + r" \\")
+    lines.append("Year FE & " + " & ".join(["Yes"] * n_cols) + r" \\")
+    obs = " & ".join(f"{int(res.nobs):,}" for _, res, _, _ in runs)
+    firms = " & ".join(f"{df['ticker'].nunique()}" for _, _, df, _ in runs)
+    adj_r2 = " & ".join(f"{res.rsquared_adj:.3f}" for _, res, _, _ in runs)
+    lines.append("Observations & " + obs + r" \\")
+    lines.append("Firms & " + firms + r" \\")
+    lines.append(r"Adj.\ $R^2$ & " + adj_r2 + r" \\")
+    lines.append(r"\bottomrule")
+    lines.append(r"\end{tabular}")
+
+    lines.append(r"\begin{tablenotes}")
+    lines.append(
+        r"\item \textit{Note:} "
+        r"Each column re-estimates the divergence specification "
+        r"(equation~\ref{eq:divergence_model}) with the dependent variable "
+        r"replaced by the annualised standard deviation of daily log returns "
+        r"over a shorter post-filing window. The lagged dependent variable "
+        r"is correspondingly the same firm's volatility measured over the "
+        r"prior filing year's window of the same length. "
+        r"All specifications include two-digit SIC industry and fiscal-year "
+        r"fixed effects; $t$-statistics in parentheses use firm-clustered "
+        r"standard errors. ***, **, and * denote significance at the 1\%, "
+        r"5\%, and 10\% levels, respectively."
+    )
+    lines.append(r"\end{tablenotes}")
+    lines.append(r"\end{table}")
+
+    tex = "\n".join(lines)
+    if path is not None:
+        path.write_text(tex, encoding="utf-8")
+        print(f"  Table saved → {path.name}")
+    return tex
 
 
 # ── LaTeX table formatting ────────────────────────────────────────────────
@@ -499,6 +631,22 @@ def main():
     t = div_res.tstats["divergence"]
     p = div_res.pvalues["divergence"]
     print(f"  H2 δ_divergence = {c:+.4f}  t = {t:+.2f}  p = {p:.4g}")
+
+    # ── Robustness: alternative post-filing horizons ────────────────────
+    print("\nRunning multi-horizon robustness sweep …")
+    runs = run_horizons()
+    if runs:
+        for label, res, _df_h, _ in runs:
+            d = res.params["divergence"]
+            td = res.tstats["divergence"]
+            pd_ = res.pvalues["divergence"]
+            print(f"  {label:>5s}: N={int(res.nobs):,}  "
+                  f"Adj R²={res.rsquared_adj:.4f}  "
+                  f"δ_div={d:+.4f}  t={td:+.2f}  p={pd_:.4g}")
+        horizons_to_latex(runs, path=TEX_TABLE_DIR / "horizons_regression.tex")
+    else:
+        print("  [skip] no horizon columns in panel — "
+              "run build_volatility_horizons.py")
 
     print("\nDone.")
 
