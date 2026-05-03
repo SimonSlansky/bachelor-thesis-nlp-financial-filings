@@ -3,66 +3,305 @@
 \label{ch:methodology}
 % =============================================================================
 
-% TODO: Structure
-%
-% \section{Empirical Framework}
-% - Panel regression setting
-% - Primary DV: annualised post-filing volatility
-% - Three nested models: baseline → text → divergence
-%
-% \section{Baseline Model (Financial + Lagged Volatility)}
-% \begin{equation}
-%   \sigma_{i,t+1} = \alpha + \phi\,\sigma_{i,t}
-%              + \beta_1 \ln(\text{Assets}_{i,t})
-%              + \beta_2 \text{Leverage}_{i,t}
-%              + \beta_3 \text{ROA}_{i,t}
-%              + \beta_4 \text{AssetGrowth}_{i,t}
-%              + \varepsilon_{i,t}
-% \end{equation}
-% Note: lagged vol (\sigma_{i,t}) absorbs volatility persistence.
-%
-% \section{Text Model (Financial + Textual Features)}
-% \begin{equation}
-%   \sigma_{i,t+1} = \alpha + \phi\,\sigma_{i,t}
-%              + \boldsymbol{\beta}' \mathbf{X}^{\text{fin}}_{i,t}
-%              + \gamma_1 \Delta\text{Sent}_{i,t}
-%              + \gamma_2 \Delta\text{Risk}_{i,t}
-%              + \gamma_3 \text{TextSim}_{i,t}
-%              + \varepsilon_{i,t}
-% \end{equation}
-% Tests H1: textual change predicts vol beyond financials and past vol.
-%
-% \section{Divergence Model}
-% \begin{equation}
-%   \sigma_{i,t+1} = \alpha + \phi\,\sigma_{i,t}
-%              + \boldsymbol{\beta}' \mathbf{X}^{\text{fin}}_{i,t}
-%              + \boldsymbol{\gamma}' \mathbf{X}^{\text{text}}_{i,t}
-%              + \delta \cdot \text{Div}_{i,t}
-%              + \varepsilon_{i,t}
-% \end{equation}
-% Tests H2: divergence predicts vol beyond both text and financials.
-%
-% \section{Estimation}
-% - OLS with industry (SIC-2) and year fixed effects
-% - Standard errors clustered by firm
-%
-% NOTE (from pipeline audit): 60\% of consecutive (firm, year) return
-% windows overlap because the 365-day post-filing window often extends
-% past the next year's filing date.  This creates serial correlation in
-% both return\_next\_year and vol\_next\_year within firms.  Firm-clustered
-% standard errors (Petersen 2009) are robust to arbitrary within-firm
-% dependence, so no adjustment is needed---but the overlap should be
-% acknowledged here when writing this section.
-%
-% NOTE (from pipeline audit): 12~firms changed their fiscal year-end
-% during the sample period (e.g.~ADM from June to December, BBY from
-% March to January).  The transition year is removed by the pipeline,
-% leaving one multi-year gap in the firm's time series.  Asset growth is
-% set to NaN at the gap; lagged volatility and returns are unaffected
-% because they are anchored to filing dates.  Mention this in the
-% estimation or data-construction discussion.
-%
-% \section{Model Comparison}
-% - Incremental $R^2$ across the three nested models
-% - F-test for joint significance of textual / divergence terms
-% - Vuong (1989) test for non-nested model comparison
+This chapter explains how the data described in
+Chapter~\ref{ch:data} are turned into the regressions that test the
+two hypotheses set out in Chapter~\ref{ch:literature_review}.  Section
+\ref{sec:design} gives an overview of the empirical strategy.
+Sections~\ref{sec:variables}--\ref{sec:models} define the variables
+and write out the three nested regression equations.
+Section~\ref{sec:estimation} describes how the models are estimated
+and how their standard errors are computed, and
+Section~\ref{sec:hypothesis_tests} states the formal decision rules
+used to evaluate H1 and H2.  Section~\ref{sec:robustness_plan}
+previews the robustness checks reported in
+Chapter~\ref{ch:robustness}.
+
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Empirical strategy}
+\label{sec:design}
+% ─────────────────────────────────────────────────────────────────────────────
+
+The thesis estimates three nested panel regressions of post-filing
+stock-return volatility on increasingly rich sets of explanatory
+variables.  The \emph{baseline} model uses lagged volatility together
+with standard accounting controls.  The \emph{text} model adds three
+features extracted from the 10-K narrative.  The \emph{divergence}
+model further adds a single composite measure that captures the gap
+between the financial and the narrative trajectory of a firm from one
+year to the next.
+
+Hypothesis~H1 holds that the textual features explain volatility
+beyond what financial fundamentals already do.  It is supported if the
+text model improves on the baseline both in adjusted~$R^2$ and in a
+joint $F$-test on the textual coefficients.  Hypothesis~H2 holds that
+the divergence measure carries information beyond \emph{both}
+financials and the textual features taken individually.  It is
+supported if the divergence coefficient is positive and statistically
+significant, and if the divergence model improves on the text model.
+
+The three-step nesting is deliberate.  By first absorbing the
+predictable, mechanical part of volatility (persistence and firm
+fundamentals) and only then asking whether language adds further
+explanatory power, the design avoids attributing to text variation
+that any reasonable accounting model could already account for.
+
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Variables}
+\label{sec:variables}
+% ─────────────────────────────────────────────────────────────────────────────
+
+\subsection{Dependent variable: post-filing volatility}
+\label{ssec:dependent_variable}
+
+The dependent variable is the \emph{annualised standard deviation of
+daily log returns} computed over a 365-calendar-day window that begins
+two trading days after the 10-K filing date.  The two-day lag avoids
+any same-day price reaction to the filing itself, while the one-year
+window matches the annual frequency of the panel and reflects the
+horizon over which a 10-K is typically the most recent piece of
+public information.  Formally,
+\begin{equation}
+\sigma_{i,t+1} \;=\; \sqrt{252}\;\cdot\;
+\operatorname{sd}\!\bigl(r_{i,d}\bigr)_{d \in W_{i,t}},
+\label{eq:vol}
+\end{equation}
+where $r_{i,d} = \ln(P_{i,d}/P_{i,d-1})$ is the daily log return for
+firm~$i$ and $W_{i,t}$ is the post-filing window for filing year~$t$.
+The factor $\sqrt{252}$ rescales the daily standard deviation to an
+annual figure, which is the conventional unit in the volatility
+literature.  A firm-year is kept only if the window contains at least
+200~trading days, and a firm enters the panel only if at least 90\%
+of its expected windows meet this requirement.
+
+\subsection{Financial controls}
+\label{ssec:financial_controls}
+
+The baseline regressors are taken directly from the firm's annual
+XBRL filings (Section~\ref{sec:xbrl_tags}).  Five controls enter the
+full baseline:
+\emph{lagged volatility} (the same measure as the dependent variable
+but for the previous filing year), \emph{firm size} measured as the
+natural logarithm of total assets, \emph{leverage} (total liabilities
+over total assets), \emph{return on assets} (net income over total
+assets), and \emph{asset growth} (the year-on-year change in total
+assets divided by lagged total assets).  All ratios are winsorised at
+the 1st and 99th percentiles within the regression sample to reduce
+the influence of extreme observations and small-denominator artefacts.
+
+\subsection{Textual features}
+\label{ssec:textual_features}
+
+Three textual features summarise the narrative content of each 10-K:
+\begin{itemize}
+  \item $\Delta\text{Sentiment}_{i,t}$: the year-on-year change in
+        net tone of Item~7 (MD\&A), measured with the
+        \textcite{loughran2011} positive and negative word lists.
+        Net tone is the count of positive minus negative words,
+        scaled by the total word count of the section.
+  \item $\Delta\text{Risk}_{i,t}$: the year-on-year change in the
+        share of risk-related words in Item~1A (Risk Factors), using
+        the same dictionary's uncertainty and litigious lists.
+  \item $\text{TextSim}_{i,t}$: the cosine similarity between the
+        full 10-K text in year~$t$ and year~$t-1$, computed on
+        TF--IDF vectors built from the cleaned narrative
+        (Section~\ref{ssec:text_postprocessing}).  Higher values
+        mean the firm's disclosure is more similar to the previous
+        year; lower values indicate substantive changes in language.
+\end{itemize}
+All three features are by construction first differences (or
+similarity to the previous filing) and therefore capture changes in
+narrative content rather than cross-sectional levels, which would
+mostly reflect industry vocabulary.
+
+\subsection{Divergence}
+\label{ssec:divergence}
+
+The central novel variable is \emph{Divergence}, a one-dimensional
+measure of the gap between the financial and the narrative
+trajectory of a firm:
+\begin{equation}
+\text{Divergence}_{i,t} \;=\;
+\Delta\text{Sentiment}_{i,t} \;-\; \lambda \cdot \Delta\text{ROA}_{i,t},
+\label{eq:divergence}
+\end{equation}
+where $\Delta\text{ROA}_{i,t} = \text{ROA}_{i,t} - \text{ROA}_{i,t-1}$
+and $\lambda$ is the slope coefficient of a within-firm regression of
+$\Delta\text{Sentiment}$ on $\Delta\text{ROA}$ estimated on the
+training sample.  The construction has a simple interpretation:
+$\lambda \cdot \Delta\text{ROA}_{i,t}$ is the change in tone that
+would, on average, accompany a change in profitability of size
+$\Delta\text{ROA}_{i,t}$.  Subtracting it from the actual change in
+tone gives the part of the narrative shift that is \emph{not}
+explained by contemporaneous financial performance.  Large positive
+values flag firms whose tone improved more than their fundamentals
+warranted; large negative values flag the opposite.  As a robustness
+check we also use a binary dummy that equals one when
+$\operatorname{sign}(\Delta\text{Sentiment})$ differs from
+$\operatorname{sign}(\Delta\text{ROA})$.
+
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Model specifications}
+\label{sec:models}
+% ─────────────────────────────────────────────────────────────────────────────
+
+The three nested specifications are estimated on the same firm-year
+panel with the same fixed-effect structure.  Let
+$\mathbf{X}^{\text{fin}}_{i,t}$ collect the four financial controls
+(size, leverage, ROA, asset growth) and let
+$\mathbf{X}^{\text{text}}_{i,t}$ collect the three textual features.
+
+\paragraph{Baseline model.}
+\begin{equation}
+\sigma_{i,t+1} \;=\; \alpha + \phi \, \sigma_{i,t}
+   \;+\; \boldsymbol{\beta}' \mathbf{X}^{\text{fin}}_{i,t}
+   \;+\; \mu_j \;+\; \tau_t \;+\; \varepsilon_{i,t},
+\label{eq:baseline}
+\end{equation}
+where $\mu_j$ is a two-digit SIC industry fixed effect and $\tau_t$
+is a fiscal-year fixed effect.  The model isolates the share of
+volatility that is mechanically traceable to past volatility and
+balance-sheet fundamentals.
+
+\paragraph{Text model.}
+\begin{equation}
+\sigma_{i,t+1} \;=\; \alpha + \phi \, \sigma_{i,t}
+   \;+\; \boldsymbol{\beta}' \mathbf{X}^{\text{fin}}_{i,t}
+   \;+\; \boldsymbol{\gamma}' \mathbf{X}^{\text{text}}_{i,t}
+   \;+\; \mu_j \;+\; \tau_t \;+\; \varepsilon_{i,t}.
+\label{eq:text}
+\end{equation}
+Hypothesis~H1 corresponds to a joint test that
+$\boldsymbol{\gamma} \neq \mathbf{0}$.
+
+\paragraph{Divergence model.}
+\begin{equation}
+\sigma_{i,t+1} \;=\; \alpha + \phi \, \sigma_{i,t}
+   \;+\; \boldsymbol{\beta}' \mathbf{X}^{\text{fin}}_{i,t}
+   \;+\; \boldsymbol{\gamma}' \mathbf{X}^{\text{text}}_{i,t}
+   \;+\; \delta \cdot \text{Divergence}_{i,t}
+   \;+\; \mu_j \;+\; \tau_t \;+\; \varepsilon_{i,t}.
+\label{eq:divergence_model}
+\end{equation}
+Hypothesis~H2 corresponds to $\delta > 0$ together with a positive
+incremental adjusted~$R^2$ over the text model.
+
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Estimation and inference}
+\label{sec:estimation}
+% ─────────────────────────────────────────────────────────────────────────────
+
+All three models are estimated by ordinary least squares with
+two-digit SIC industry and fiscal-year fixed effects absorbed using
+the absorbing-regression routine of the
+\texttt{linearmodels} package.  Coefficients are therefore identified
+from \emph{within-industry, within-year} variation, which removes the
+risk that the results are driven by either time trends in
+volatility (e.g.\ the 2008 and 2020 crises) or by persistent
+industry-level differences in risk.
+
+\paragraph{Standard errors.}
+Standard errors are clustered at the firm level following
+\textcite{petersen2009}, which makes inference robust to arbitrary
+within-firm correlation.  Two features of the data make this
+particularly important.  First, the dependent variable is itself a
+volatility estimate computed on a 365-day window, so consecutive
+firm-year windows from a single firm overlap by roughly two-thirds of
+their length.  This induces strong serial correlation in
+$\sigma_{i,t+1}$ that ordinary heteroskedasticity-robust standard
+errors would understate.  Second, omitted firm-specific risk
+characteristics are likely to persist over time.  Firm clustering
+addresses both concerns simultaneously without imposing any
+particular correlation structure.
+
+\paragraph{Outliers.}
+The financial ratios used as regressors are winsorised at the 1st and
+99th percentiles of the regression sample
+(Section~\ref{ssec:financial_controls}).  Winsorisation is preferred
+to outright deletion because many of the extreme values are
+economically real (e.g.\ acquisition-driven asset growth) but would
+otherwise dominate OLS estimation through the squared-residual
+objective.
+
+\paragraph{Sample composition.}
+After applying all data filters described in Chapter~\ref{ch:data}
+and dropping firm-years with missing values for any regressor, the
+estimation sample consists of about 6{,}300 firm-years on 537~unique
+firms.  Twelve firms changed their fiscal year-end during the sample
+period; the transition year is dropped, leaving a multi-year gap in
+the time series of those firms.  Asset growth is set to missing at
+the gap, while lagged volatility and lagged returns are unaffected
+because they are anchored to filing dates rather than fiscal periods.
+
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Testing the hypotheses}
+\label{sec:hypothesis_tests}
+% ─────────────────────────────────────────────────────────────────────────────
+
+The two hypotheses are evaluated through a combination of incremental
+fit statistics and formal tests on the relevant coefficients.
+
+\paragraph{H1: text adds information beyond financials.}
+The text model
+(equation~\ref{eq:text}) is compared to the baseline
+(equation~\ref{eq:baseline}) on two criteria:
+\begin{enumerate}
+  \item the text model's adjusted~$R^2$ exceeds the baseline's, and
+  \item a Wald-style joint test on
+        $H_0\!: \boldsymbol{\gamma} = \mathbf{0}$ rejects at the
+        conventional 5\% level using firm-clustered standard errors.
+\end{enumerate}
+Both conditions must be met for H1 to be considered supported.
+
+\paragraph{H2: divergence adds information beyond text.}
+The divergence model (equation~\ref{eq:divergence_model}) is
+compared to the text model on two criteria:
+\begin{enumerate}
+  \item the divergence coefficient $\delta$ is positive and
+        significant at the 5\% level, and
+  \item the divergence model's adjusted~$R^2$ exceeds the text
+        model's.
+\end{enumerate}
+A positive sign is required because the theoretical prediction is
+directional: if narrative tone has drifted away from concurrent
+financial performance, future volatility should rise, not fall.
+
+\paragraph{Economic magnitude.}
+Statistical significance alone is not enough to justify a finding,
+so the divergence coefficient is also reported in standardised form:
+the change in $\sigma_{i,t+1}$ implied by a one-standard-deviation
+increase in Divergence, expressed as a percentage of the sample
+mean of the dependent variable.  In addition, the divergence sample
+is split into quartiles and the average post-filing volatility of
+each quartile is reported, which gives a model-free check that the
+relationship is monotone rather than driven by the tails.
+
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Planned robustness checks}
+\label{sec:robustness_plan}
+% ─────────────────────────────────────────────────────────────────────────────
+
+Chapter~\ref{ch:robustness} reports a battery of checks intended to
+make sure the main results do not depend on a single modelling
+choice.  Briefly, we re-estimate the divergence model
+\begin{enumerate*}[label=(\roman*)]
+  \item with the binary divergence dummy in place of the continuous
+        measure;
+  \item with post-filing return as the dependent variable instead of
+        volatility;
+  \item excluding the 2020 fiscal year, which is heavily influenced
+        by the COVID-19 shock;
+  \item excluding firms whose 10-K extraction was flagged in the
+        AI-assisted audit (Section~\ref{ssec:text_coverage}), to
+        confirm that the result is not driven by parsing artefacts;
+  \item with firm fixed effects in place of industry fixed effects,
+        which is a stricter specification but reduces the effective
+        sample.
+\end{enumerate*}
+Each check is reported in full in the tables of
+Chapter~\ref{ch:robustness}.
