@@ -1,0 +1,38 @@
+\begin{table}[htbp]
+\centering
+\caption{Divergence and Post-Filing Volatility}
+\label{tab:divergence_regression}
+\begin{tabular}{lccc}
+\toprule
+ & (1) & (2) & (3) \\
+\midrule
+Lagged Volatility & $0.5357$*** & $0.5385$*** & $0.5315$*** \\
+ & $(22.79)$ & $(22.94)$ & $(21.99)$ \\[4pt]
+$\ln(\text{Total Assets})$ & $-0.0162$*** & $-0.0155$*** & $-0.0154$*** \\
+ & $(-6.30)$ & $(-6.19)$ & $(-6.10)$ \\[4pt]
+Leverage & $-0.0003$ & $-0.0004$ & $-0.0017$ \\
+ & $(-0.04)$ & $(-0.05)$ & $(-0.21)$ \\[4pt]
+ROA & $-0.2097$*** & $-0.2165$*** & $-0.2478$*** \\
+ & $(-7.11)$ & $(-7.41)$ & $(-7.77)$ \\[4pt]
+Asset Growth & $0.0260$*** & $0.0273$*** & $0.0274$*** \\
+ & $(2.58)$ & $(2.69)$ & $(2.68)$ \\[4pt]
+$\Delta$Sentiment &  & $2.0377$*** & $12.7647$*** \\
+ &  & $(4.23)$ & $(3.68)$ \\[4pt]
+$\Delta$Risk &  & $-0.0120$ & $-0.1236$ \\
+ &  & $(-0.02)$ & $(-0.20)$ \\[4pt]
+TextSim &  & $0.0629$* & $0.0570$* \\
+ &  & $(1.86)$ & $(1.67)$ \\[4pt]
+Divergence &  &  & $-11.0916$*** \\
+ &  &  & $(-3.16)$ \\[4pt]
+\midrule
+Industry FE & Yes & Yes & Yes \\
+Year FE & Yes & Yes & Yes \\
+Observations & 5,473 & 5,473 & 5,473 \\
+Firms & 531 & 531 & 531 \\
+Adj.\ $R^2$ & 0.643 & 0.645 & 0.646 \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}
+\item \textit{Note:} This table reports OLS estimates of post-filing annualised volatility on financial controls, textual features, and the Divergence variable defined as $\Delta$Sentiment minus $\lambda \cdot \Delta$ROA, where $\lambda$ is calibrated by a within-firm OLS of $\Delta$Sentiment on $\Delta$ROA. All specifications include two-digit SIC industry (49 groups) and fiscal-year fixed effects. $t$-statistics, reported in parentheses, are based on standard errors clustered at the firm level. ***, **, and * denote significance at the 1\%, 5\%, and 10\% levels, respectively.
+\end{tablenotes}
+\end{table}
