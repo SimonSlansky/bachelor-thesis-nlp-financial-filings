@@ -60,52 +60,64 @@ exceed 0.40 in absolute value, reducing multicollinearity concerns
 \label{sec:baseline}
 % ─────────────────────────────────────────────────────────────────────────────
 
-Before adding textual variables, we first measure the predictive power
-of standard financial variables for future stock return volatility.
-Table~\ref{tab:baseline} reports OLS estimates of post-filing annualised
-volatility on progressively richer sets of financial controls, with
-two-digit SIC industry and fiscal-year fixed effects absorbed in all
-specifications and standard errors clustered by firm.
+Table~\ref{tab:baseline} reports OLS estimates of post-filing
+annualised volatility on progressively richer sets of financial
+controls, estimated as described in Section~\ref{sec:estimation}.
+The three columns correspond to nested specifications: lagged
+volatility only (Column~1), with firm size and leverage added
+(Column~2), and the full baseline including return on assets and
+asset growth (Column~3).
 
 \input{tables/baseline_regression}
 
 \paragraph{Volatility persistence.}
 Column~(1) includes only lagged volatility ($\sigma_{i,t}$) alongside the
-fixed effects.  Its coefficient of $0.67$ ($t = 33.5$) confirms the
-well-known persistence of firm-level return volatility: a one
-percentage-point rise in last year's annual volatility is associated with
-about a two-thirds percentage-point rise in next year's volatility.  Even
-this simple specification, combined with industry and year fixed effects,
-explains about 63\% of the variation in post-filing volatility, showing
-that most of the predictable part of volatility is mechanical.
+fixed effects.  The coefficient of $0.67$ ($t = 33.5$) confirms the
+well-documented persistence of firm-level return volatility: a one
+percentage-point rise in last year's annualised volatility maps into
+about a two-thirds percentage-point rise the following year.  This single
+regressor, combined with industry and year fixed effects, already
+explains about $63\%$ of the cross-sectional and time-series variation
+in post-filing volatility, showing that most of the predictable component
+of risk is mechanical.
 
 \paragraph{Firm size and capital structure.}
 Column~(2) adds firm size, measured as the natural logarithm of total
-assets, and leverage (total liabilities over total assets).  Size has a
-negative and highly significant coefficient ($-0.017$, $t = -7.4$):
-larger firms have lower future volatility, consistent with the
-well-known size--volatility relationship \parencite{chi2017}.  Leverage
-is economically negligible and statistically insignificant ($t = 0.17$),
-probably because the industry fixed effects already absorb much of the
-cross-sectional variation in capital structure.
+assets, and book leverage (total liabilities over total assets).  Size
+enters with a negative and highly significant coefficient
+($-0.017$, $t = -7.4$): larger firms exhibit lower future volatility,
+consistent with the size--risk relationship documented for U.S.\ equities
+by \textcite{chi2017} and \textcite{campbell2014}.  Leverage is
+economically negligible and statistically indistinguishable from zero
+($t = 0.17$); the industry fixed effects appear to absorb most of the
+cross-sectional dispersion in capital structure, leaving little residual
+variation through which leverage can operate.
 
 \paragraph{Profitability and growth.}
 The full specification in Column~(3) adds return on assets and asset
-growth.  ROA has a large negative coefficient ($-0.224$,
-$t = -7.9$): more profitable firms face lower future volatility.  Asset
-growth enters positively ($+0.026$, $t = 3.1$), suggesting that fast
-expansion goes with higher subsequent uncertainty.
+growth.  ROA carries a large negative coefficient ($-0.224$,
+$t = -7.9$), confirming that profitable firms face lower subsequent
+volatility, in line with the earnings-quality intuition of
+\textcite{francis2005}.  Asset growth enters positively
+($+0.026$, $t = 3.1$): rapid expansion is associated with elevated
+future uncertainty, consistent with the operational-risk channel.
+Adding these two regressors raises the adjusted~$R^2$ from $0.643$ to
+$0.654$---a modest but statistically meaningful improvement that refines,
+rather than dominates, the persistence-and-size benchmark.
 
-The gain in adjusted~$R^2$ from these two variables is modest
-(0.654 vs.\ 0.643), meaning that profitability and growth refine the
-prediction beyond what size and past volatility already capture, but do
-not dominate it.
+A noteworthy by-product of the full specification is that the lagged
+volatility coefficient declines from $0.67$ in Column~(1) to $0.55$
+($t = 20.7$) in Column~(3).  Roughly one-fifth of what looked like raw
+persistence is in fact mediated by slower-moving fundamentals---size,
+profitability, and growth---that are themselves persistent.  Lagged
+volatility nonetheless remains by a wide margin the most informative
+single regressor in the model.
 
 \paragraph{Benchmark for textual analysis.}
-The full baseline model explains 65.4\% of the variation in post-filing
-volatility.  This adjusted~$R^2$ serves as the benchmark against which
-we will evaluate later models that add textual features and the
-divergence measure.  Any incremental explanatory power from narrative
-disclosures must beat this already high bar, which is consistent with
-the idea that financial-statement variables and volatility persistence
-together account for most of the predictable firm-level risk.
+The full baseline model explains $65.4\%$ of the variation in
+post-filing volatility.  This adjusted~$R^2$ is the bar that the
+text model and the divergence model must clear, on the criteria
+listed in Section~\ref{sec:hypothesis_tests}.  The bar is high:
+financial fundamentals together with volatility persistence already
+capture most of the predictable variation in firm-level risk,
+leaving narrative disclosures to compete for what remains.
