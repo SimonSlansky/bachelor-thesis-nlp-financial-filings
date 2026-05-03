@@ -183,6 +183,19 @@ def main() -> None:
     cik_map = load_cik_map()
     build_text_dataset(df_all, cik_map)
 
+    # 11. Compute text features and merge into the panel (optional step;
+    # requires data/lm_master.csv — see scripts/lm_loader.py for source).
+    lm_path = DATA_DIR / "lm_master.csv"
+    if lm_path.exists():
+        print("\nBuilding text features …")
+        from build_text_features import main as build_text_features_main
+        build_text_features_main()
+    else:
+        print(f"\n[skip] {lm_path.name} not found — "
+              "download the Loughran-McDonald master dictionary "
+              "(see scripts/lm_loader.py) and rerun "
+              "scripts/build_text_features.py to produce annual_panel_text.csv.")
+
     print("\nDone.")
 
 

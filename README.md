@@ -1,15 +1,12 @@
 # Textual-Financial Divergence and Stock Return Volatility
 
-Bachelor thesis investigating whether the divergence between narrative change and financial change in SEC filings predicts future stock return volatility, using a panel of ~600 large U.S. non-financial firms over 2010–2025.
+Bachelor thesis investigating whether the divergence between narrative change and financial change in SEC filings predicts future stock return volatility, using a panel of ~540 large U.S. non-financial firms over 2010–2024.
 
 ## Repository Structure
 
 ```
 ├── data/                # Raw and processed datasets (CSV, gitignored)
 ├── docs/                # Thesis plan, timeline, literature articles & abstracts
-├── output/              # Script-generated figures and tables
-│   ├── figures/
-│   └── tables/
 ├── scripts/             # Data collection & panel construction pipelines
 ├── tex/                 # LaTeX thesis source (VŠE template)
 │   ├── prace.tex        # Main document
@@ -22,6 +19,7 @@ Bachelor thesis investigating whether the divergence between narrative change an
 │   ├── zkratky.tex      # Abbreviations
 │   ├── app01.tex        # Appendix A
 │   ├── app02.tex        # Appendix B (AI usage)
+│   ├── tables/          # Script-generated LaTeX tables
 │   └── bibliography.bib
 ├── requirements.txt
 └── .gitignore

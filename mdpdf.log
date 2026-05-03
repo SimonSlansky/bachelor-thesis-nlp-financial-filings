@@ -1,0 +1,430 @@
+    INFO: 2026-04-20 16:40:36,271:               log.py:   20: Logging to C:\Users\WX794ZX\Downloads\Pers\School\Bakalarka\mdpdf.log
+   DEBUG: 2026-04-20 16:40:36,271:               cli.py:  103: docs/supervisor_briefing.md
+    INFO: 2026-04-20 16:40:36,271:         converter.py:   14: docs/supervisor_briefing.md
+   DEBUG: 2026-04-20 16:40:36,286:      pdf_renderer.py:  470: printSegment: Přehled pro vedoucího – Data 
+   DEBUG: 2026-04-20 16:40:36,302:      pdf_renderer.py:  470: printSegment: &
+   DEBUG: 2026-04-20 16:40:36,304:      pdf_renderer.py:  470: printSegment:  Results
+   DEBUG: 2026-04-20 16:40:36,306:      pdf_renderer.py:  470: printSegment: Práce:
+   DEBUG: 2026-04-20 16:40:36,308:      pdf_renderer.py:  470: printSegment:  Textual-Financial Divergence and Stock Return Volatility: Evidence from U.S. Corporate Filings
+   DEBUG: 2026-04-20 16:40:36,311:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-04-20 16:40:36,311:      pdf_renderer.py:  470: printSegment: Autor:
+   DEBUG: 2026-04-20 16:40:36,313:      pdf_renderer.py:  470: printSegment: 
+   DEBUG: 2026-04-20 16:40:36,313:      pdf_renderer.py:  470: printSegment: Šimon Slanský | 
+   DEBUG: 2026-04-20 16:40:36,315:      pdf_renderer.py:  470: printSegment: Vedoucí:
+   DEBUG: 2026-04-20 16:40:36,316:      pdf_renderer.py:  470: printSegment:  prof. RNDr. Ing. Michal Černý, Ph.D.
+   DEBUG: 2026-04-20 16:40:36,317:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-04-20 16:40:36,318:      pdf_renderer.py:  470: printSegment: Stav k:
+   DEBUG: 2026-04-20 16:40:36,318:      pdf_renderer.py:  470: printSegment:  duben 2026
+   DEBUG: 2026-04-20 16:40:36,318:      pdf_renderer.py:  470: printSegment: Datová část (hotovo)
+   DEBUG: 2026-04-20 16:40:36,318:      pdf_renderer.py:  470: printSegment: Vzorek
+   DEBUG: 2026-04-20 16:40:36,321:      pdf_renderer.py:  470: printSegment: l
+   DEBUG: 2026-04-20 16:40:36,321:      pdf_renderer.py:  470: printSegment: Začal jsem s top 1 000 amerických firem podle tržní kapitalizace ze SEC EDGAR.
+   DEBUG: 2026-04-20 16:40:36,321:      pdf_renderer.py:  470: printSegment: l
+   DEBUG: 2026-04-20 16:40:36,321:      pdf_renderer.py:  470: printSegment: Filtry:
+   DEBUG: 2026-04-20 16:40:36,326:      pdf_renderer.py:  470: printSegment:  1 
+   DEBUG: 2026-04-20 16:40:36,326:      pdf_renderer.py:  470: printSegment: Jen 
+   DEBUG: 2026-04-20 16:40:36,326:      pdf_renderer.py:  470: printSegment: operating
+   DEBUG: 2026-04-20 16:40:36,326:      pdf_renderer.py:  470: printSegment:  entity → vyřazení ETF, fondů, shell companies.
+   DEBUG: 2026-04-20 16:40:36,343:      pdf_renderer.py:  470: printSegment:  2 
+   DEBUG: 2026-04-20 16:40:36,352:      pdf_renderer.py:  470: printSegment: Vyloučení finančního sektoru SIC 6000–6999 (banky, pojišťovny, REIT) — jejich účetní výkazy
+   DEBUG: 2026-04-20 16:40:36,357:      pdf_renderer.py:  470: printSegment: nejsou srovnatelné s průmyslovými firmami, standardní omezení v
+   DEBUG: 2026-04-20 16:40:36,357:      pdf_renderer.py:  470: printSegment: accruals/earnings-quality literatuře (Sloan 1996, Francis et al. 2005).
+   DEBUG: 2026-04-20 16:40:36,359:      pdf_renderer.py:  470: printSegment:  3 
+   DEBUG: 2026-04-20 16:40:36,359:      pdf_renderer.py:  470: printSegment: Minimum 5 let strojově čitelných XBRL dat z 10-K.
+   DEBUG: 2026-04-20 16:40:36,359:      pdf_renderer.py:  470: printSegment:  4 
+   DEBUG: 2026-04-20 16:40:36,359:      pdf_renderer.py:  470: printSegment: ≥90 % pokrytí akciových výnosů (trading days v měřicím okně).
+   DEBUG: 2026-04-20 16:40:36,368:      pdf_renderer.py:  470: printSegment: l
+   DEBUG: 2026-04-20 16:40:36,368:      pdf_renderer.py:  470: printSegment: Výsledný vzorek: 
+   DEBUG: 2026-04-20 16:40:36,375:      pdf_renderer.py:  470: printSegment: 539 firem, 6 322 pozorování, FY 2010–2024
+   DEBUG: 2026-04-20 16:40:36,384:      pdf_renderer.py:  470: printSegment: .
+   DEBUG: 2026-04-20 16:40:36,384:      pdf_renderer.py:  470: printSegment: l
+   DEBUG: 2026-04-20 16:40:36,387:      pdf_renderer.py:  470: printSegment: Nevyvážený panel (ne všechny firmy mají všechny roky) — odpovídá standardu v literatuře.
+   DEBUG: 2026-04-20 16:40:36,387:      pdf_renderer.py:  470: printSegment: Finanční data z XBRL
+   DEBUG: 2026-04-20 16:40:36,387:      pdf_renderer.py:  470: printSegment: l
+   DEBUG: 2026-04-20 16:40:36,387:      pdf_renderer.py:  470: printSegment: Roční data přímo z SEC EDGAR Company Facts API (10-K filings).
+   DEBUG: 2026-04-20 16:40:36,391:      pdf_renderer.py:  470: printSegment: l
+   DEBUG: 2026-04-20 16:40:36,391:      pdf_renderer.py:  470: printSegment: Extrahované metriky: total assets, total liabilities, net income, operating income, operating cash flow,
+   DEBUG: 2026-04-20 16:40:36,391:      pdf_renderer.py:  470: printSegment: stockholders
+   DEBUG: 2026-04-20 16:40:36,391:      pdf_renderer.py:  470: printSegment: '
+   DEBUG: 2026-04-20 16:40:36,391:      pdf_renderer.py:  470: printSegment:  equity, assets/liabilities current.
+   DEBUG: 2026-04-20 16:40:36,391:      pdf_renderer.py:  470: printSegment: l
+   DEBUG: 2026-04-20 16:40:36,391:      pdf_renderer.py:  470: printSegment: Problém: stejný účetní koncept se v XBRL může skrývat pod různými tagy (např. operating cash flow má tag pro
+   DEBUG: 2026-04-20 16:40:36,391:      pdf_renderer.py:  470: printSegment: 
+   DEBUG: 2026-04-20 16:40:36,391:      pdf_renderer.py:  470: printSegment: total activities
+   DEBUG: 2026-04-20 16:40:36,391:      pdf_renderer.py:  470: printSegment:  i 
+   DEBUG: 2026-04-20 16:40:36,391:      pdf_renderer.py:  470: printSegment: continuing operations only
+   DEBUG: 2026-04-20 16:40:36,399:      pdf_renderer.py:  470: printSegment: ). Řešení dvoustupňovou harmonizací:
+   DEBUG: 2026-04-20 16:40:36,399:      pdf_renderer.py:  470: printSegment: l
+   DEBUG: 2026-04-20 16:40:36,399:      pdf_renderer.py:  470: printSegment: Ekvivalentní tagy
+   DEBUG: 2026-04-20 16:40:36,399:      pdf_renderer.py:  470: printSegment:  (jen jiná verze taxonomie, např. dva tagy pro OCF) → nechávám
+   DEBUG: 2026-04-20 16:40:36,419:      pdf_renderer.py:  470: printSegment: koexistovat v rámci firmy. Empirická kontrola: na 1 352 překryvech OCF byl medián
+   DEBUG: 2026-04-20 16:40:36,419:      pdf_renderer.py:  470: printSegment: rozdílu 0.000 pp, na 4 761 překryvech NI byl medián ROA bias 0.033 pp.
+   DEBUG: 2026-04-20 16:40:36,419:      pdf_renderer.py:  470: printSegment: l
+   DEBUG: 2026-04-20 16:40:36,419:      pdf_renderer.py:  470: printSegment: Ekonomicky odlišné tagy
+   DEBUG: 2026-04-20 16:40:36,419:      pdf_renderer.py:  470: printSegment:  (např. equity s/bez NCI) → per-firm tag locking: pro každou firmu
+   DEBUG: 2026-04-20 16:40:36,432:      pdf_renderer.py:  470: printSegment: vyberu tag, který firma používá nejčastěji, a hodnoty z ostatních tagů nastavím na NaN.
+   DEBUG: 2026-04-20 16:40:36,432:      pdf_renderer.py:  470: printSegment: l
+   DEBUG: 2026-04-20 16:40:36,436:      pdf_renderer.py:  470: printSegment: Výsledek: complete-case rate pro 6 regresních kontrol stoupla z 78,9 % na 92,7 %. Diagnostika tagů je
+   DEBUG: 2026-04-20 16:40:36,436:      pdf_renderer.py:  470: printSegment: v příloze práce (Table A.2).
+   DEBUG: 2026-04-20 16:40:36,436:      pdf_renderer.py:  470: printSegment: l
+   DEBUG: 2026-04-20 16:40:36,436:      pdf_renderer.py:  470: printSegment: Imputace: 
+   DEBUG: 2026-04-20 16:40:36,436:      pdf_renderer.py:  470: printSegment: total_liabilities = total_assets − stockholders_equity
+   DEBUG: 2026-04-20 16:40:36,451:      pdf_renderer.py:  470: printSegment:  kde chybí;
+   DEBUG: 2026-04-20 16:40:36,451:      pdf_renderer.py:  470: printSegment: ±1 periodový ffill/bfill na balance-sheet položky.
+   DEBUG: 2026-04-20 16:40:36,451:      pdf_renderer.py:  470: printSegment: Akciová volatilita
+   DEBUG: 2026-04-20 16:40:36,451:      pdf_renderer.py:  470: printSegment: l
+   DEBUG: 2026-04-20 16:40:36,451:      pdf_renderer.py:  470: printSegment: Zdroj: yfinance (adjusted close prices).
+   DEBUG: 2026-04-20 16:40:36,451:      pdf_renderer.py:  470: printSegment: l
+   DEBUG: 2026-04-20 16:40:36,451:      pdf_renderer.py:  470: printSegment: Anualizovaná volatilita = std(denní log-výnosy) × √252.
+   DEBUG: 2026-04-20 16:40:36,451:      pdf_renderer.py:  470: printSegment: l
+   DEBUG: 2026-04-20 16:40:36,451:      pdf_renderer.py:  470: printSegment: Okno: 365 kalendářních dní, začíná 2 obchodní dny po filing date 10-K.
+   DEBUG: 2026-04-20 16:40:36,451:      pdf_renderer.py:  470: printSegment: l
+   DEBUG: 2026-04-20 16:40:36,451:      pdf_renderer.py:  470: printSegment: Proč post-filing? Zarovnáváme informační šok na datum zveřejnění (event-study logika).
+   DEBUG: 2026-04-20 16:40:36,451:      pdf_renderer.py:  470: printSegment: l
+   DEBUG: 2026-04-20 16:40:36,463:      pdf_renderer.py:  470: printSegment: 2denní lag: filing se typicky zpracovává trhem s mírným zpožděním.
+   DEBUG: 2026-04-20 16:40:36,463:      pdf_renderer.py:  470: printSegment: l
+   DEBUG: 2026-04-20 16:40:36,466:      pdf_renderer.py:  470: printSegment: Minimum 200 obchodních dní v okně, jinak NaN.
+   DEBUG: 2026-04-20 16:40:36,466:      pdf_renderer.py:  470: printSegment: l
+   DEBUG: 2026-04-20 16:40:36,467:      pdf_renderer.py:  470: printSegment: Firmy s 
+   DEBUG: 2026-04-20 16:40:36,467:      pdf_renderer.py:  470: printSegment: <
+   DEBUG: 2026-04-20 16:40:36,469:      pdf_renderer.py:  470: printSegment: 90 % non-NaN volatilitou (po odfiltrování lag-roku a cap FY ≤ 2024) vyřazeny → zajišťuje, že
+   DEBUG: 2026-04-20 16:40:36,469:      pdf_renderer.py:  470: printSegment: regresní vzorek nemá systematické mezery.
+   DEBUG: 2026-04-20 16:40:36,469:      pdf_renderer.py:  470: printSegment: Finanční poměrové ukazatele
+   DEBUG: 2026-04-20 16:40:36,469:      pdf_renderer.py:  470: printSegment: l
+   DEBUG: 2026-04-20 16:40:36,469:      pdf_renderer.py:  470: printSegment: Odvozeno z raw XBRL metrik:
+   DEBUG: 2026-04-20 16:40:36,469:      pdf_renderer.py:  470: printSegment: l
+   DEBUG: 2026-04-20 16:40:36,469:      pdf_renderer.py:  470: printSegment: log(total assets)
+   DEBUG: 2026-04-20 16:40:36,469:      pdf_renderer.py:  470: printSegment:  — proxy pro velikost firmy.
+   DEBUG: 2026-04-20 16:40:36,469:      pdf_renderer.py:  470: printSegment: l
+   DEBUG: 2026-04-20 16:40:36,469:      pdf_renderer.py:  470: printSegment: leverage
+   DEBUG: 2026-04-20 16:40:36,469:      pdf_renderer.py:  470: printSegment:  = total liabilities / total assets.
+   DEBUG: 2026-04-20 16:40:36,469:      pdf_renderer.py:  470: printSegment: l
+   DEBUG: 2026-04-20 16:40:36,469:      pdf_renderer.py:  470: printSegment: ROA
+   DEBUG: 2026-04-20 16:40:36,480:      pdf_renderer.py:  470: printSegment:  = net income / total assets.
+   DEBUG: 2026-04-20 16:40:36,480:      pdf_renderer.py:  470: printSegment: l
+   DEBUG: 2026-04-20 16:40:36,480:      pdf_renderer.py:  470: printSegment: asset growth
+   DEBUG: 2026-04-20 16:40:36,483:      pdf_renderer.py:  470: printSegment:  = (TA
+   DEBUG: 2026-04-20 16:40:36,483:      pdf_renderer.py:  470: printSegment: _
+   DEBUG: 2026-04-20 16:40:36,483:      pdf_renderer.py:  470: printSegment: t − TA
+   DEBUG: 2026-04-20 16:40:36,483:      pdf_renderer.py:  470: printSegment: _
+   DEBUG: 2026-04-20 16:40:36,483:      pdf_renderer.py:  470: printSegment: {t-1}) / TA
+   DEBUG: 2026-04-20 16:40:36,483:      pdf_renderer.py:  470: printSegment: _
+   DEBUG: 2026-04-20 16:40:36,483:      pdf_renderer.py:  470: printSegment: {t-1}, s ochranou proti mezerám způsobeným
+   DEBUG: 2026-04-20 16:40:36,483:      pdf_renderer.py:  470: printSegment: změnou FYE (validní jen pro 300–400denní gap).
+   DEBUG: 2026-04-20 16:40:36,483:      pdf_renderer.py:  470: printSegment: l
+   DEBUG: 2026-04-20 16:40:36,483:      pdf_renderer.py:  470: printSegment: current ratio
+   DEBUG: 2026-04-20 16:40:36,483:      pdf_renderer.py:  470: printSegment:  = current assets / current liabilities.
+   DEBUG: 2026-04-20 16:40:36,483:      pdf_renderer.py:  470: printSegment: l
+   DEBUG: 2026-04-20 16:40:36,483:      pdf_renderer.py:  470: printSegment: accruals
+   DEBUG: 2026-04-20 16:40:36,483:      pdf_renderer.py:  470: printSegment:  = (NI − OCF) / total assets.
+   DEBUG: 2026-04-20 16:40:36,483:      pdf_renderer.py:  470: printSegment: l
+   DEBUG: 2026-04-20 16:40:36,483:      pdf_renderer.py:  470: printSegment: OCF-to-assets
+   DEBUG: 2026-04-20 16:40:36,483:      pdf_renderer.py:  470: printSegment:  = OCF / total assets.
+   DEBUG: 2026-04-20 16:40:36,483:      pdf_renderer.py:  470: printSegment: l
+   DEBUG: 2026-04-20 16:40:36,495:      pdf_renderer.py:  470: printSegment: Winzorizace na 1./99. percentilu u: leverage, ROA, asset growth, current ratio, accruals,
+   DEBUG: 2026-04-20 16:40:36,495:      pdf_renderer.py:  470: printSegment: OCF-to-assets.
+   DEBUG: 2026-04-20 16:40:36,495:      pdf_renderer.py:  470: printSegment: l
+   DEBUG: 2026-04-20 16:40:36,495:      pdf_renderer.py:  470: printSegment: Nejstarší rok firmy odstraněn (spotřebován lag pro asset growth).
+   DEBUG: 2026-04-20 16:40:36,499:      pdf_renderer.py:  470: printSegment: Extrakce textu z 10-K
+   DEBUG: 2026-04-20 16:40:36,499:      pdf_renderer.py:  470: printSegment: l
+   DEBUG: 2026-04-20 16:40:36,501:      pdf_renderer.py:  470: printSegment: Cíl: vytáhnout z každého 10-K čistý text Item 1A (Risk Factors) a Item 7 (MD
+   DEBUG: 2026-04-20 16:40:36,501:      pdf_renderer.py:  470: printSegment: &
+   DEBUG: 2026-04-20 16:40:36,501:      pdf_renderer.py:  470: printSegment: A).
+   DEBUG: 2026-04-20 16:40:36,501:      pdf_renderer.py:  470: printSegment: l
+   DEBUG: 2026-04-20 16:40:36,501:      pdf_renderer.py:  470: printSegment: Problém: sekce nemají standardní tagování; hlavičky jsou různě formátované (CSS bold, 
+   DEBUG: 2026-04-20 16:40:36,501:      pdf_renderer.py:  470: printSegment: <font>
+   DEBUG: 2026-04-20 16:40:36,501:      pdf_renderer.py:  470: printSegment: , uppercase,
+   DEBUG: 2026-04-20 16:40:36,501:      pdf_renderer.py:  470: printSegment: tabulkové layouty), smíchané s obsahem (TOC), page headers a inline cross-referencemi.
+   DEBUG: 2026-04-20 16:40:36,501:      pdf_renderer.py:  470: printSegment: l
+   DEBUG: 2026-04-20 16:40:36,501:      pdf_renderer.py:  470: printSegment: Řešení: vlastní HTML-DOM parser se 4 fázemi:
+   DEBUG: 2026-04-20 16:40:36,501:      pdf_renderer.py:  470: printSegment:  1 
+   DEBUG: 2026-04-20 16:40:36,501:      pdf_renderer.py:  470: printSegment: Header detection
+   DEBUG: 2026-04-20 16:40:36,501:      pdf_renderer.py:  470: printSegment:  — procházím DOM na úrovni bloků, testuji regex pro „Item 1A
+   DEBUG: 2026-04-20 16:40:36,512:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-04-20 16:40:36,512:      pdf_renderer.py:  470: printSegment:  / „Item 7
+   DEBUG: 2026-04-20 16:40:36,513:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-04-20 16:40:36,516:      pdf_renderer.py:  470: printSegment: ,
+   DEBUG: 2026-04-20 16:40:36,518:      pdf_renderer.py:  470: printSegment: filtruji jen elementy s bold/uppercase/large-font; odstraňuji TOC linky a running
+   DEBUG: 2026-04-20 16:40:36,518:      pdf_renderer.py:  470: printSegment: headers.
+   DEBUG: 2026-04-20 16:40:36,518:      pdf_renderer.py:  470: printSegment:  2 
+   DEBUG: 2026-04-20 16:40:36,518:      pdf_renderer.py:  470: printSegment: Position marking
+   DEBUG: 2026-04-20 16:40:36,518:      pdf_renderer.py:  470: printSegment:  — do DOM vkládám unikátní markery, které po flatten na plain text dávají
+   DEBUG: 2026-04-20 16:40:36,518:      pdf_renderer.py:  470: printSegment: pozice hlaviček.
+   DEBUG: 2026-04-20 16:40:36,518:      pdf_renderer.py:  470: printSegment:  3 
+   DEBUG: 2026-04-20 16:40:36,518:      pdf_renderer.py:  470: printSegment: Candidate selection
+   DEBUG: 2026-04-20 16:40:36,528:      pdf_renderer.py:  470: printSegment:  — subtitle keyword check (300 znaků), TOC-cluster pravidlo (≥3
+   DEBUG: 2026-04-20 16:40:36,528:      pdf_renderer.py:  470: printSegment: sousední hlavičky = TOC), cross-reference filtr; vybírám kandidáta s nejdelším textem.
+   DEBUG: 2026-04-20 16:40:36,528:      pdf_renderer.py:  470: printSegment:  4 
+   DEBUG: 2026-04-20 16:40:36,528:      pdf_renderer.py:  470: printSegment: Boundary detection
+   DEBUG: 2026-04-20 16:40:36,528:      pdf_renderer.py:  470: printSegment:  — sekce končí u dalšího Item header; sekce 
+   DEBUG: 2026-04-20 16:40:36,533:      pdf_renderer.py:  470: printSegment: <
+   DEBUG: 2026-04-20 16:40:36,534:      pdf_renderer.py:  470: printSegment: 200 slov → exhibit
+   DEBUG: 2026-04-20 16:40:36,534:      pdf_renderer.py:  470: printSegment: fallback (stáhnu exhibit z filing indexu).
+   DEBUG: 2026-04-20 16:40:36,536:      pdf_renderer.py:  470: printSegment: l
+   DEBUG: 2026-04-20 16:40:36,536:      pdf_renderer.py:  470: printSegment: Post-processing: odstranění page headers/footers, standalone page numbers, 
+   DEBUG: 2026-04-20 16:40:36,536:      pdf_renderer.py:  470: printSegment: &nbsp;
+   DEBUG: 2026-04-20 16:40:36,536:      pdf_renderer.py:  470: printSegment:  → mezera, garbled
+   DEBUG: 2026-04-20 16:40:36,536:      pdf_renderer.py:  470: printSegment: tabulkové řádky.
+   DEBUG: 2026-04-20 16:40:36,536:      pdf_renderer.py:  470: printSegment: l
+   DEBUG: 2026-04-20 16:40:36,536:      pdf_renderer.py:  470: printSegment: Výsledek: ~6 500 zpracovaných filingů (10-K/A amendments vynechány — obsahují jen cover page).
+   DEBUG: 2026-04-20 16:40:36,536:      pdf_renderer.py:  470: printSegment: l
+   DEBUG: 2026-04-20 16:40:36,536:      pdf_renderer.py:  470: printSegment: AI validace
+   DEBUG: 2026-04-20 16:40:36,536:      pdf_renderer.py:  470: printSegment:  (nezávislý audit):
+   DEBUG: 2026-04-20 16:40:36,536:      pdf_renderer.py:  470: printSegment: l
+   DEBUG: 2026-04-20 16:40:36,544:      pdf_renderer.py:  470: printSegment: Nástroj: Google Gemini 2.5 Flash (temperature = 0, deterministic).
+   DEBUG: 2026-04-20 16:40:36,544:      pdf_renderer.py:  470: printSegment: l
+   DEBUG: 2026-04-20 16:40:36,544:      pdf_renderer.py:  470: printSegment: Vzorek: 200 sekcí (100 × Item 1A, 100 × Item 7), stratifikováno po 5 érách (2010–2024).
+   DEBUG: 2026-04-20 16:40:36,544:      pdf_renderer.py:  470: printSegment: l
+   DEBUG: 2026-04-20 16:40:36,549:      pdf_renderer.py:  470: printSegment: 5 kritérií: správná sekce, start boundary, end boundary, kvalita obsahu, kompletnost.
+   DEBUG: 2026-04-20 16:40:36,549:      pdf_renderer.py:  470: printSegment: l
+   DEBUG: 2026-04-20 16:40:36,549:      pdf_renderer.py:  470: printSegment: Výsledek: 
+   DEBUG: 2026-04-20 16:40:36,549:      pdf_renderer.py:  470: printSegment: 93,5 % lenient pass rate
+   DEBUG: 2026-04-20 16:40:36,549:      pdf_renderer.py:  470: printSegment:  (Pass + Minor), 95% CI: 89,2–96,2 %.
+   DEBUG: 2026-04-20 16:40:36,549:      pdf_renderer.py:  470: printSegment: l
+   DEBUG: 2026-04-20 16:40:36,549:      pdf_renderer.py:  470: printSegment: Selhání se koncentrují v raných letech (5/40 v 2010–2012 vs. 1/40 v 2022–2024) → artefakt
+   DEBUG: 2026-04-20 16:40:36,549:      pdf_renderer.py:  470: printSegment: nestandardního HTML, nikoli systematický problém.
+   DEBUG: 2026-04-20 16:40:36,549:      pdf_renderer.py:  470: printSegment: Proč roční a ne kvartální data
+   DEBUG: 2026-04-20 16:40:36,549:      pdf_renderer.py:  470: printSegment: Kvartální data by ztrojnásobila vzorek, ale tři problémy to znemožnily:
+   DEBUG: 2026-04-20 16:40:36,549:      pdf_renderer.py:  470: printSegment:  1 
+   DEBUG: 2026-04-20 16:40:36,561:      pdf_renderer.py:  470: printSegment: Chybějící risk faktory v 10-Q
+   DEBUG: 2026-04-20 16:40:36,561:      pdf_renderer.py:  470: printSegment:  — SEC vyžaduje aktualizaci jen při „material changes
+   DEBUG: 2026-04-20 16:40:36,561:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-04-20 16:40:36,566:      pdf_renderer.py:  470: printSegment: ; v pilotním vzorku (15
+   DEBUG: 2026-04-20 16:40:36,566:      pdf_renderer.py:  470: printSegment: firem, 90 filingů) mělo substantivní risk-factor sekci jen 52 % 10-Q. Nemožnost konstruovat ΔRisk.
+   DEBUG: 2026-04-20 16:40:36,566:      pdf_renderer.py:  470: printSegment:  2 
+   DEBUG: 2026-04-20 16:40:36,566:      pdf_renderer.py:  470: printSegment: Nespolehlivá Q4 finanční data
+   DEBUG: 2026-04-20 16:40:36,577:      pdf_renderer.py:  470: printSegment:  — 10-Q pokrývá jen Q1–Q3; Q4 se musí dopočítat jako Annual − Q1 − Q2 − Q3. OCF
+   DEBUG: 2026-04-20 16:40:36,582:      pdf_renderer.py:  470: printSegment: pokrytí jen 7 % firm-years, ~11 % mismatch kde oba údaje existují. Accruals (NI − OCF) by byly
+   DEBUG: 2026-04-20 16:40:36,582:      pdf_renderer.py:  470: printSegment: nepoužitelné → H3 netestovatelná.
+   DEBUG: 2026-04-20 16:40:36,582:      pdf_renderer.py:  470: printSegment:  3 
+   DEBUG: 2026-04-20 16:40:36,582:      pdf_renderer.py:  470: printSegment: Konsistence s literaturou
+   DEBUG: 2026-04-20 16:40:36,582:      pdf_renderer.py:  470: printSegment:  — Loughran 
+   DEBUG: 2026-04-20 16:40:36,582:      pdf_renderer.py:  470: printSegment: &
+   DEBUG: 2026-04-20 16:40:36,582:      pdf_renderer.py:  470: printSegment:  McDonald (2011), Li (2008), Campbell et al. (2014) pracují s
+   DEBUG: 2026-04-20 16:40:36,582:      pdf_renderer.py:  470: printSegment: 10-K.
+   DEBUG: 2026-04-20 16:40:36,582:      pdf_renderer.py:  470: printSegment: l
+   DEBUG: 2026-04-20 16:40:36,582:      pdf_renderer.py:  470: printSegment: Zdokumentováno diagnostickými tabulkami v příloze (XBRL coverage, Q4 reliability, text availability).
+   DEBUG: 2026-04-20 16:40:36,593:      pdf_renderer.py:  470: printSegment: Výsledky – co už je hotovo
+   DEBUG: 2026-04-20 16:40:36,593:      pdf_renderer.py:  470: printSegment: 1. Deskriptivní statistiky (Table 4 v práci)
+   DEBUG: 2026-04-20 16:40:36,593:      pdf_renderer.py:  470: printSegment: | Proměnná | Průměr | SD | Medián |
+   DEBUG: 2026-04-20 16:40:36,593:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-04-20 16:40:36,593:      pdf_renderer.py:  470: printSegment: |---|---|---|---|
+   DEBUG: 2026-04-20 16:40:36,593:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-04-20 16:40:36,593:      pdf_renderer.py:  470: printSegment: | Volatilita (t+1) | 0.325 | 0.168 | 0.281 |
+   DEBUG: 2026-04-20 16:40:36,593:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-04-20 16:40:36,593:      pdf_renderer.py:  470: printSegment: | Zpožděná volatilita | 0.324 | 0.171 |
+   DEBUG: 2026-04-20 16:40:36,599:      pdf_renderer.py:  470: printSegment: 0.279 |
+   DEBUG: 2026-04-20 16:40:36,599:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-04-20 16:40:36,599:      pdf_renderer.py:  470: printSegment: | ln(Total Assets) | 23.1 | 1.48 | 23.2 |
+   DEBUG: 2026-04-20 16:40:36,599:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-04-20 16:40:36,599:      pdf_renderer.py:  470: printSegment: | Leverage | 0.61 | 0.22 | 0.61 |
+   DEBUG: 2026-04-20 16:40:36,599:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-04-20 16:40:36,599:      pdf_renderer.py:  470: printSegment: | ROA | 0.062 | 0.087 | 0.061 |
+   DEBUG: 2026-04-20 16:40:36,599:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-04-20 16:40:36,599:      pdf_renderer.py:  470: printSegment: | Asset
+   DEBUG: 2026-04-20 16:40:36,599:      pdf_renderer.py:  470: printSegment: Growth | 0.119 | 0.254 | 0.060 |
+   DEBUG: 2026-04-20 16:40:36,599:      pdf_renderer.py:  470: printSegment:  
+   DEBUG: 2026-04-20 16:40:36,599:      pdf_renderer.py:  470: printSegment: | Accruals | −0.048 | 0.054 | −0.042 |
+   DEBUG: 2026-04-20 16:40:36,599:      pdf_renderer.py:  470: printSegment: l
+   DEBUG: 2026-04-20 16:40:36,599:      pdf_renderer.py:  470: printSegment: 538 firem, 6 322 pozorování.
+   DEBUG: 2026-04-20 16:40:36,609:      pdf_renderer.py:  470: printSegment: l
+   DEBUG: 2026-04-20 16:40:36,609:      pdf_renderer.py:  470: printSegment: Volatilita má pravostranné rozdělení (IQR 0.22–0.39), konzistentní s občasnými výkyvy (covid 2020).
+   DEBUG: 2026-04-20 16:40:36,609:      pdf_renderer.py:  470: printSegment: l
+   DEBUG: 2026-04-20 16:40:36,609:      pdf_renderer.py:  470: printSegment: Accruals záporné → OCF > net income (typické kvůli odpisům).
+   DEBUG: 2026-04-20 16:40:36,612:      pdf_renderer.py:  470: printSegment: 2. Korelační matice (Table 5)
+   DEBUG: 2026-04-20 16:40:36,612:      pdf_renderer.py:  470: printSegment: Klíčové poznatky:
+   DEBUG: 2026-04-20 16:40:36,612:      pdf_renderer.py:  470: printSegment: l
+   DEBUG: 2026-04-20 16:40:36,612:      pdf_renderer.py:  470: printSegment: Volatilita vs. zpožděná vol: r = 0.61
+   DEBUG: 2026-04-20 16:40:36,615:      pdf_renderer.py:  470: printSegment:  → silná persistence.
+   DEBUG: 2026-04-20 16:40:36,615:      pdf_renderer.py:  470: printSegment: l
+   DEBUG: 2026-04-20 16:40:36,615:      pdf_renderer.py:  470: printSegment: Velikost vs. vol: r = −0.32
+   DEBUG: 2026-04-20 16:40:36,626:      pdf_renderer.py:  470: printSegment:  → větší firmy nižší vol (klasický vztah).
+   DEBUG: 2026-04-20 16:40:36,626:      pdf_renderer.py:  470: printSegment: l
+   DEBUG: 2026-04-20 16:40:36,626:      pdf_renderer.py:  470: printSegment: ROA vs. vol: r = −0.32
+   DEBUG: 2026-04-20 16:40:36,626:      pdf_renderer.py:  470: printSegment:  → ziskovější firmy nižší vol.
+   DEBUG: 2026-04-20 16:40:36,626:      pdf_renderer.py:  470: printSegment: l
+   DEBUG: 2026-04-20 16:40:36,626:      pdf_renderer.py:  470: printSegment: Accruals vs. ROA: r = 0.44
+   DEBUG: 2026-04-20 16:40:36,626:      pdf_renderer.py:  470: printSegment:  → mechanický link přes NI; proto obě v regresi (separace cash-based a
+   DEBUG: 2026-04-20 16:40:36,633:      pdf_renderer.py:  470: printSegment: accrual-based efektu).
+   DEBUG: 2026-04-20 16:40:36,634:      pdf_renderer.py:  470: printSegment: l
+   DEBUG: 2026-04-20 16:40:36,635:      pdf_renderer.py:  470: printSegment: Žádná korelace mezi explanačními proměnnými nepřekračuje |0.45| → VIF 
+   DEBUG: 2026-04-20 16:40:36,636:      pdf_renderer.py:  470: printSegment: <
+   DEBUG: 2026-04-20 16:40:36,636:      pdf_renderer.py:  470: printSegment:  1.4, nízké riziko multikolinearity.
+   DEBUG: 2026-04-20 16:40:36,636:      pdf_renderer.py:  470: printSegment: 3. Baseline regrese – finanční model (Table 6)
+   DEBUG: 2026-04-20 16:40:36,638:      pdf_renderer.py:  470: printSegment: Tři nested specifikace, všechny s odvětvovými (SIC-2, 49 skupin) a ročními FE, SE clusterované po firmě:
+   DEBUG: 2026-04-20 16:40:36,638:      pdf_renderer.py:  470: printSegment: Model (1): Jen zpožděná volatilita
+   DEBUG: 2026-04-20 16:40:36,638:      pdf_renderer.py:  470: printSegment: l
+   DEBUG: 2026-04-20 16:40:36,638:      pdf_renderer.py:  470: printSegment: Koef. 0.67, t = 32.5 → silná persistence.
+   DEBUG: 2026-04-20 16:40:36,642:      pdf_renderer.py:  470: printSegment: l
+   DEBUG: 2026-04-20 16:40:36,642:      pdf_renderer.py:  470: printSegment: Adj. R² = 0.629.
+   DEBUG: 2026-04-20 16:40:36,642:      pdf_renderer.py:  470: printSegment: l
+   DEBUG: 2026-04-20 16:40:36,642:      pdf_renderer.py:  470: printSegment: Interpretace: jeden procentní bod nárůst loňské vol → ~0.67 pp nárůst letošní vol.
+   DEBUG: 2026-04-20 16:40:36,642:      pdf_renderer.py:  470: printSegment: Model (2): + velikost a leverage
+   DEBUG: 2026-04-20 16:40:36,642:      pdf_renderer.py:  470: printSegment: l
+   DEBUG: 2026-04-20 16:40:36,642:      pdf_renderer.py:  470: printSegment: Velikost: −0.016, t = −7.3 → větší firmy = nižší budoucí vol.
+   DEBUG: 2026-04-20 16:40:36,642:      pdf_renderer.py:  470: printSegment: l
+   DEBUG: 2026-04-20 16:40:36,642:      pdf_renderer.py:  470: printSegment: Leverage: ~0, nesignifikantní (t = 0.08) → industry FE už absorbují průřezovou variaci v kapitálové struktuře.
+   DEBUG: 2026-04-20 16:40:36,642:      pdf_renderer.py:  470: printSegment: l
+   DEBUG: 2026-04-20 16:40:36,650:      pdf_renderer.py:  470: printSegment: Adj. R² = 0.642 (+1.3 pp).
+   DEBUG: 2026-04-20 16:40:36,650:      pdf_renderer.py:  470: printSegment: Model (3): + ROA, asset growth, accruals (plný baseline)
+   DEBUG: 2026-04-20 16:40:36,650:      pdf_renderer.py:  470: printSegment: l
+   DEBUG: 2026-04-20 16:40:36,650:      pdf_renderer.py:  470: printSegment: ROA: −0.240, t = −6.8
+   DEBUG: 2026-04-20 16:40:36,650:      pdf_renderer.py:  470: printSegment:  → silný negativní efekt, ziskovější firmy mají nižší budoucí vol.
+   DEBUG: 2026-04-20 16:40:36,650:      pdf_renderer.py:  470: printSegment: l
+   DEBUG: 2026-04-20 16:40:36,650:      pdf_renderer.py:  470: printSegment: Asset growth: +0.027, t = 3.4
+   DEBUG: 2026-04-20 16:40:36,650:      pdf_renderer.py:  470: printSegment:  → rychlý růst = vyšší nejistota.
+   DEBUG: 2026-04-20 16:40:36,650:      pdf_renderer.py:  470: printSegment: l
+   DEBUG: 2026-04-20 16:40:36,650:      pdf_renderer.py:  470: printSegment: Accruals: +0.057, t = 1.2
+   DEBUG: 2026-04-20 16:40:36,650:      pdf_renderer.py:  470: printSegment:  → kladný ale nesignifikantní; overlap s ROA absorbuje většinu efektu. Zůstává v
+   DEBUG: 2026-04-20 16:40:36,650:      pdf_renderer.py:  470: printSegment: modelu kvůli pozdější interakci s divergencí (H3).
+   DEBUG: 2026-04-20 16:40:36,650:      pdf_renderer.py:  470: printSegment: l
+   DEBUG: 2026-04-20 16:40:36,650:      pdf_renderer.py:  470: printSegment: Adj. R² = 0.653
+   DEBUG: 2026-04-20 16:40:36,650:      pdf_renderer.py:  470: printSegment:  (+1.1 pp oproti modelu 2).
+   DEBUG: 2026-04-20 16:40:36,650:      pdf_renderer.py:  470: printSegment: Co to znamená
+   DEBUG: 2026-04-20 16:40:36,666:      pdf_renderer.py:  470: printSegment: Finanční baseline vysvětluje 
+   DEBUG: 2026-04-20 16:40:36,667:      pdf_renderer.py:  470: printSegment: 65,3 %
+   DEBUG: 2026-04-20 16:40:36,667:      pdf_renderer.py:  470: printSegment:  variace v budoucí volatilitě. To je vysoký benchmark. Hlavní drivery jsou:
+   DEBUG: 2026-04-20 16:40:36,667:      pdf_renderer.py:  470: printSegment:  1 
+   DEBUG: 2026-04-20 16:40:36,667:      pdf_renderer.py:  470: printSegment: Persistence
+   DEBUG: 2026-04-20 16:40:36,667:      pdf_renderer.py:  470: printSegment:  (zpožděná vol) – suverénně nejsilnější prediktor; koef. klesá z 0.67 na 0.55 jak přidáváme kontroly, ale
+   DEBUG: 2026-04-20 16:40:36,667:      pdf_renderer.py:  470: printSegment: zůstává dominantní.
+   DEBUG: 2026-04-20 16:40:36,667:      pdf_renderer.py:  470: printSegment:  2 
+   DEBUG: 2026-04-20 16:40:36,667:      pdf_renderer.py:  470: printSegment: Velikost
+   DEBUG: 2026-04-20 16:40:36,667:      pdf_renderer.py:  470: printSegment:  – menší firmy volatilnější; koef. stabilní napříč modely (−0.016).
+   DEBUG: 2026-04-20 16:40:36,667:      pdf_renderer.py:  470: printSegment:  3 
+   DEBUG: 2026-04-20 16:40:36,667:      pdf_renderer.py:  470: printSegment: Ziskovost (ROA)
+   DEBUG: 2026-04-20 16:40:36,667:      pdf_renderer.py:  470: printSegment:  – neziskové firmy volatilnější; ekonomicky velký efekt (−0.24).
+   DEBUG: 2026-04-20 16:40:36,667:      pdf_renderer.py:  470: printSegment:  4 
+   DEBUG: 2026-04-20 16:40:36,667:      pdf_renderer.py:  470: printSegment: Růst aktiv
+   DEBUG: 2026-04-20 16:40:36,667:      pdf_renderer.py:  470: printSegment:  – expanze = vyšší nejistota; menší efekt ale jasně signifikantní.
+   DEBUG: 2026-04-20 16:40:36,667:      pdf_renderer.py:  470: printSegment:  5 
+   DEBUG: 2026-04-20 16:40:36,667:      pdf_renderer.py:  470: printSegment: Leverage a accruals
+   DEBUG: 2026-04-20 16:40:36,667:      pdf_renderer.py:  470: printSegment:  – nesignifikantní po zahrnutí FE a ostatních kontrol.
+   DEBUG: 2026-04-20 16:40:36,684:      pdf_renderer.py:  470: printSegment: Jakékoliv textové proměnné musí přinést inkrementální vysvětlující sílu nad tímto už poměrně silným modelem. I malý nárůst adj. R²
+   DEBUG: 2026-04-20 16:40:36,684:      pdf_renderer.py:  470: printSegment: (řádově 0.5–2 pp) je ekonomicky významný, protože baseline je už nasycený persistence + FE.
+   DEBUG: 2026-04-20 16:40:36,684:      pdf_renderer.py:  470: printSegment: Co zbývá udělat (další fáze)
+   DEBUG: 2026-04-20 16:40:36,684:      pdf_renderer.py:  470: printSegment: Textové features (fáze 3)
+   DEBUG: 2026-04-20 16:40:36,684:      pdf_renderer.py:  470: printSegment:  1 
+   DEBUG: 2026-04-20 16:40:36,684:      pdf_renderer.py:  470: printSegment: LM dictionary sentiment
+   DEBUG: 2026-04-20 16:40:36,684:      pdf_renderer.py:  470: printSegment:  – Loughran–McDonald slovník specifický pro finanční texty. Počítám % negativních,
+   DEBUG: 2026-04-20 16:40:36,697:      pdf_renderer.py:  470: printSegment: pozitivních a uncertainty slov v Item 7 (MD
+   DEBUG: 2026-04-20 16:40:36,697:      pdf_renderer.py:  470: printSegment: &
+   DEBUG: 2026-04-20 16:40:36,699:      pdf_renderer.py:  470: printSegment: A). Důvod: obecné slovníky (Harvard GI) špatně fungují ve
+   DEBUG: 2026-04-20 16:40:36,699:      pdf_renderer.py:  470: printSegment: finance, protože slova jako „liability
+   DEBUG: 2026-04-20 16:40:36,699:      pdf_renderer.py:  470: printSegment: "
+   DEBUG: 2026-04-20 16:40:36,699:      pdf_renderer.py:  470: printSegment:  mají jinou konotaci.
+   DEBUG: 2026-04-20 16:40:36,699:      pdf_renderer.py:  470: printSegment:  2 
+   DEBUG: 2026-04-20 16:40:36,699:      pdf_renderer.py:  470: printSegment: Risk-word density
+   DEBUG: 2026-04-20 16:40:36,699:      pdf_renderer.py:  470: printSegment:  – uncertainty + litigious + constraining slova v Item 1A (Risk Factors) / celkový
+   DEBUG: 2026-04-20 16:40:36,699:      pdf_renderer.py:  470: printSegment: počet slov.
+   DEBUG: 2026-04-20 16:40:36,699:      pdf_renderer.py:  470: printSegment:  3 
+   DEBUG: 2026-04-20 16:40:36,699:      pdf_renderer.py:  470: printSegment: TF-IDF + cosine similarity
+   DEBUG: 2026-04-20 16:40:36,699:      pdf_renderer.py:  470: printSegment:  – vektorizuji každý dokument, porovnám s minulým rokem téže firmy. Vysoká
+   DEBUG: 2026-04-20 16:40:36,713:      pdf_renderer.py:  470: printSegment: cosine similarity = firma málo změnila text; nízká = nová informace.
+   DEBUG: 2026-04-20 16:40:36,713:      pdf_renderer.py:  470: printSegment:  4 
+   DEBUG: 2026-04-20 16:40:36,713:      pdf_renderer.py:  470: printSegment: Risk factor diff
+   DEBUG: 2026-04-20 16:40:36,717:      pdf_renderer.py:  470: printSegment:  – jednotlivé risk faktory se dají separovat (sub-headers v Item 1A). Pro každý rok a firmu
+   DEBUG: 2026-04-20 16:40:36,717:      pdf_renderer.py:  470: printSegment: spočítám: kolik faktorů bylo přidáno, odebráno a modifikováno. Silný prediktor nejistoty (Lyle, Riedl 
+   DEBUG: 2026-04-20 16:40:36,717:      pdf_renderer.py:  470: printSegment: &
+   DEBUG: 2026-04-20 16:40:36,717:      pdf_renderer.py:  470: printSegment: 
+   DEBUG: 2026-04-20 16:40:36,717:      pdf_renderer.py:  470: printSegment: Siano 2023).
+   DEBUG: 2026-04-20 16:40:36,717:      pdf_renderer.py:  470: printSegment:  5 
+   DEBUG: 2026-04-20 16:40:36,717:      pdf_renderer.py:  470: printSegment: FinBERT
+   DEBUG: 2026-04-20 16:40:36,736:      pdf_renderer.py:  470: printSegment:  – transformer model (ProsusAI/finbert) trénovaný na finančních textech. Scoring na úrovni vět →
+   DEBUG: 2026-04-20 16:40:36,736:      pdf_renderer.py:  470: printSegment: P(positive), P(negative), P(neutral) → agregace průměrem přes celou sekci. Výhoda: chápe kontext, negaci, na
+   DEBUG: 2026-04-20 16:40:36,736:      pdf_renderer.py:  470: printSegment: rozdíl od bag-of-words.
+   DEBUG: 2026-04-20 16:40:36,736:      pdf_renderer.py:  470: printSegment: l
+   DEBUG: 2026-04-20 16:40:36,736:      pdf_renderer.py:  470: printSegment: ~6 300 filingů × ~600 vět = ~3.8M sentence inferences. GPU ideální, CPU proveditelné
+   DEBUG: 2026-04-20 16:40:36,745:      pdf_renderer.py:  470: printSegment: (~6–10 hodin).
+   DEBUG: 2026-04-20 16:40:36,745:      pdf_renderer.py:  470: printSegment: Divergence (fáze 3)
+   DEBUG: 2026-04-20 16:40:36,745:      pdf_renderer.py:  470: printSegment: l
+   DEBUG: 2026-04-20 16:40:36,745:      pdf_renderer.py:  470: printSegment: Hlavní míra
+   DEBUG: 2026-04-20 16:40:36,751:      pdf_renderer.py:  470: printSegment: : residuál z regrese ΔSentiment na ΔROA. Interpretace: jak moc se změnil tón managementu nad
+   DEBUG: 2026-04-20 16:40:36,751:      pdf_renderer.py:  470: printSegment: rámec toho, co bychom čekali z finanční výkonnosti.
+   DEBUG: 2026-04-20 16:40:36,751:      pdf_renderer.py:  470: printSegment: l
+   DEBUG: 2026-04-20 16:40:36,751:      pdf_renderer.py:  470: printSegment: Binární alternativa
+   DEBUG: 2026-04-20 16:40:36,751:      pdf_renderer.py:  470: printSegment: : DivDummy = 1 pokud se sentiment zlepšil ale ROA zhoršila (nebo naopak).
+   DEBUG: 2026-04-20 16:40:36,751:      pdf_renderer.py:  470: printSegment: l
+   DEBUG: 2026-04-20 16:40:36,751:      pdf_renderer.py:  470: printSegment: Winzorizace na 1./99. percentilu po konstrukci.
+   DEBUG: 2026-04-20 16:40:36,751:      pdf_renderer.py:  470: printSegment: Regrese (fáze 4)
+   DEBUG: 2026-04-20 16:40:36,751:      pdf_renderer.py:  470: printSegment: Všechny modely: OLS s absorbovanými SIC-2 + fiscal-year FE, SE clusterované po firmě (Petersen 2009).
+   DEBUG: 2026-04-20 16:40:36,751:      pdf_renderer.py:  470: printSegment: l
+   DEBUG: 2026-04-20 16:40:36,761:      pdf_renderer.py:  470: printSegment: H1 (text přidává info):
+   DEBUG: 2026-04-20 16:40:36,761:      pdf_renderer.py:  470: printSegment:  Text model = baseline + ΔSentiment, ΔRisk density, ΔTextSim, risk factor turnover,
+   DEBUG: 2026-04-20 16:40:36,761:      pdf_renderer.py:  470: printSegment: ΔFinBERT.
+   DEBUG: 2026-04-20 16:40:36,761:      pdf_renderer.py:  470: printSegment: l
+   DEBUG: 2026-04-20 16:40:36,761:      pdf_renderer.py:  470: printSegment: Testováno: joint F-test na textové koeficienty; inkrementální adj. R² nad baseline.
+   DEBUG: 2026-04-20 16:40:36,766:      pdf_renderer.py:  470: printSegment: l
+   DEBUG: 2026-04-20 16:40:36,766:      pdf_renderer.py:  470: printSegment: H2 (divergence je nový signál):
+   DEBUG: 2026-04-20 16:40:36,768:      pdf_renderer.py:  470: printSegment:  Divergence model = text model + Divergence.
+   DEBUG: 2026-04-20 16:40:36,768:      pdf_renderer.py:  470: printSegment: l
+   DEBUG: 2026-04-20 16:40:36,768:      pdf_renderer.py:  470: printSegment: Testováno: t-test na koeficient divergence; inkrementální adj. R² nad text model.
+   DEBUG: 2026-04-20 16:40:36,768:      pdf_renderer.py:  470: printSegment: l
+   DEBUG: 2026-04-20 16:40:36,768:      pdf_renderer.py:  470: printSegment: Toto je klíčový výsledek celé práce.
+   DEBUG: 2026-04-20 16:40:36,768:      pdf_renderer.py:  470: printSegment: l
+   DEBUG: 2026-04-20 16:40:36,768:      pdf_renderer.py:  470: printSegment: H3 (efekt silnější u firem s nízkou kvalitou výdělků):
+   DEBUG: 2026-04-20 16:40:36,768:      pdf_renderer.py:  470: printSegment:  Interakce divergence × HighAccrual (median-split
+   DEBUG: 2026-04-20 16:40:36,768:      pdf_renderer.py:  470: printSegment: dummy).
+   DEBUG: 2026-04-20 16:40:36,768:      pdf_renderer.py:  470: printSegment: l
+   DEBUG: 2026-04-20 16:40:36,777:      pdf_renderer.py:  470: printSegment: Testováno: t-test na interakční člen.
+   DEBUG: 2026-04-20 16:40:36,777:      pdf_renderer.py:  470: printSegment: l
+   DEBUG: 2026-04-20 16:40:36,779:      pdf_renderer.py:  470: printSegment: Ekonomická intuice: u firem kde jsou accruals vysoké (nízká earnings quality), je
+   DEBUG: 2026-04-20 16:40:36,783:      pdf_renderer.py:  470: printSegment: nesoulad text vs. čísla obzvlášť informativní o budoucí nejistotě.
+   DEBUG: 2026-04-20 16:40:36,784:      pdf_renderer.py:  470: printSegment: Robustnost (fáze 5)
+   DEBUG: 2026-04-20 16:40:36,784:      pdf_renderer.py:  470: printSegment: l
+   DEBUG: 2026-04-20 16:40:36,784:      pdf_renderer.py:  470: printSegment: Alternativní vol okna (63d, 180d místo 365d).
+   DEBUG: 2026-04-20 16:40:36,784:      pdf_renderer.py:  470: printSegment: l
+   DEBUG: 2026-04-20 16:40:36,784:      pdf_renderer.py:  470: printSegment: Post-filing log returns jako alternativní závislá proměnná.
+   DEBUG: 2026-04-20 16:40:36,784:      pdf_renderer.py:  470: printSegment: l
+   DEBUG: 2026-04-20 16:40:36,784:      pdf_renderer.py:  470: printSegment: Binární divergence místo continuous.
+   DEBUG: 2026-04-20 16:40:36,784:      pdf_renderer.py:  470: printSegment: l
+   DEBUG: 2026-04-20 16:40:36,784:      pdf_renderer.py:  470: printSegment: Alternativní ΔROA (operating ROA, OCF-to-assets).
+   DEBUG: 2026-04-20 16:40:36,784:      pdf_renderer.py:  470: printSegment: l
+   DEBUG: 2026-04-20 16:40:36,784:      pdf_renderer.py:  470: printSegment: Subsample: pre-2020 vs. post-2020; tech vs. non-tech.
+   DEBUG: 2026-04-20 16:40:36,784:      pdf_renderer.py:  470: printSegment: l
+   DEBUG: 2026-04-20 16:40:36,784:      pdf_renderer.py:  470: printSegment: Firma FE místo industry FE.
+   DEBUG: 2026-04-20 16:40:36,793:      pdf_renderer.py:  470: printSegment: l
+   DEBUG: 2026-04-20 16:40:36,802:      pdf_renderer.py:  470: printSegment: Winzorizace 2.5/97.5 místo 1/99.
+   DEBUG: 2026-04-20 16:40:36,802:      pdf_renderer.py:  470: printSegment: Psaní (fáze 6)
+   DEBUG: 2026-04-20 16:40:36,802:      pdf_renderer.py:  470: printSegment: l
+   DEBUG: 2026-04-20 16:40:36,802:      pdf_renderer.py:  470: printSegment: Metodologie → Zbylé Results (H1/H2/H3) → Robustnost → Literature review → Úvod → Závěr.
+   DEBUG: 2026-04-20 16:40:36,802:      pdf_renderer.py:  470: printSegment: Nejbližší kroky
+   DEBUG: 2026-04-20 16:40:36,802:      pdf_renderer.py:  470: printSegment:  1 
+   DEBUG: 2026-04-20 16:40:36,802:      pdf_renderer.py:  470: printSegment: Stáhnout Loughran–McDonald slovník a napsat skript na dictionary features (sentiment, uncertainty,
+   DEBUG: 2026-04-20 16:40:36,802:      pdf_renderer.py:  470: printSegment: litigious).
+   DEBUG: 2026-04-20 16:40:36,809:      pdf_renderer.py:  470: printSegment:  2 
+   DEBUG: 2026-04-20 16:40:36,809:      pdf_renderer.py:  470: printSegment: TF-IDF vektorizace + cosine similarity mezi po sobě jdoucími roky pro každou firmu.
+   DEBUG: 2026-04-20 16:40:36,809:      pdf_renderer.py:  470: printSegment:  3 
+   DEBUG: 2026-04-20 16:40:36,809:      pdf_renderer.py:  470: printSegment: FinBERT scoring (~3.8M vět, ideálně na GPU).
+   DEBUG: 2026-04-20 16:40:36,809:      pdf_renderer.py:  470: printSegment:  4 
+   DEBUG: 2026-04-20 16:40:36,809:      pdf_renderer.py:  470: printSegment: Merge textových features do panelu → 
+   DEBUG: 2026-04-20 16:40:36,809:      pdf_renderer.py:  470: printSegment: annual_panel_full.csv
+   DEBUG: 2026-04-20 16:40:36,809:      pdf_renderer.py:  470: printSegment: .
+   DEBUG: 2026-04-20 16:40:36,809:      pdf_renderer.py:  470: printSegment:  5 
+   DEBUG: 2026-04-20 16:40:36,816:      pdf_renderer.py:  470: printSegment: Zkonstruovat divergenci (residuál ΔSent ~ ΔROA) a binární variantu.
+   DEBUG: 2026-04-20 16:40:36,818:      pdf_renderer.py:  470: printSegment:  6 
+   DEBUG: 2026-04-20 16:40:36,818:      pdf_renderer.py:  470: printSegment: Odhadnout text model (H1) a divergenční model (H2) → porovnat adj. R² s baseline (0.653).
+   DEBUG: 2026-04-20 16:40:36,818:      pdf_renderer.py:  470: printSegment:  7 
+   DEBUG: 2026-04-20 16:40:36,818:      pdf_renderer.py:  470: printSegment: Interakce s accruals (H3).
+   DEBUG: 2026-04-20 16:40:36,818:      pdf_renderer.py:  470: printSegment:  8 
+   DEBUG: 2026-04-20 16:40:36,818:      pdf_renderer.py:  470: printSegment: Dopsat Metodologii a Results.
+   DEBUG: 2026-04-20 16:40:36,818:      pdf_renderer.py:   53: 0, [1, 'Přehled pro vedoucího – Data ', 1, 68.0]
+   DEBUG: 2026-04-20 16:40:36,818:      pdf_renderer.py:   53: 1, [2, 'Datová část (hotovo)', 1, 148.0]
+   DEBUG: 2026-04-20 16:40:36,818:      pdf_renderer.py:   53: 2, [3, 'Vzorek', 1, 181.20000000000002]
+   DEBUG: 2026-04-20 16:40:36,818:      pdf_renderer.py:   53: 3, [3, 'Finanční data z XBRL', 1, 354.0]
+   DEBUG: 2026-04-20 16:40:36,818:      pdf_renderer.py:   53: 4, [3, 'Akciová volatilita', 1, 574.8]
+   DEBUG: 2026-04-20 16:40:36,818:      pdf_renderer.py:   53: 5, [3, 'Finanční poměrové ukazatele', 2, 72.0]
+   DEBUG: 2026-04-20 16:40:36,818:      pdf_renderer.py:   53: 6, [3, 'Extrakce textu z 10-K', 2, 268.79999999999995]
+   DEBUG: 2026-04-20 16:40:36,818:      pdf_renderer.py:   53: 7, [3, 'Proč roční a ne kvartální data', 2, 609.5999999999999]
+   DEBUG: 2026-04-20 16:40:36,818:      pdf_renderer.py:   53: 8, [2, 'Výsledky – co už je hotovo', 3, 140.8]
+   DEBUG: 2026-04-20 16:40:36,818:      pdf_renderer.py:   53: 9, [3, '1. Deskriptivní statistiky (Table 4 v práci)', 3, 174.00000000000003]
+   DEBUG: 2026-04-20 16:40:36,818:      pdf_renderer.py:   53: 10, [3, '2. Korelační matice (Table 5)', 3, 292.8]
+   DEBUG: 2026-04-20 16:40:36,818:      pdf_renderer.py:   53: 11, [3, '3. Baseline regrese – finanční model (Table 6)', 3, 423.59999999999997]
+   DEBUG: 2026-04-20 16:40:36,818:      pdf_renderer.py:   53: 12, [3, 'Co to znamená', 3, 692.4]
+   DEBUG: 2026-04-20 16:40:36,818:      pdf_renderer.py:   53: 13, [2, 'Co zbývá udělat (další fáze)', 4, 224.8]
+   DEBUG: 2026-04-20 16:40:36,818:      pdf_renderer.py:   53: 14, [3, 'Textové features (fáze 3)', 4, 258.0]
+   DEBUG: 2026-04-20 16:40:36,818:      pdf_renderer.py:   53: 15, [3, 'Divergence (fáze 3)', 4, 490.79999999999995]
+   DEBUG: 2026-04-20 16:40:36,818:      pdf_renderer.py:   53: 16, [3, 'Regrese (fáze 4)', 4, 579.5999999999999]
+   DEBUG: 2026-04-20 16:40:36,818:      pdf_renderer.py:   53: 17, [3, 'Robustnost (fáze 5)', 5, 164.4]
+   DEBUG: 2026-04-20 16:40:36,818:      pdf_renderer.py:   53: 18, [3, 'Psaní (fáze 6)', 5, 289.2]
+   DEBUG: 2026-04-20 16:40:36,818:      pdf_renderer.py:   53: 19, [2, 'Nejbližší kroky', 5, 354.4]
