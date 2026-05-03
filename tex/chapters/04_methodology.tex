@@ -35,9 +35,13 @@ beyond what financial fundamentals already do.  It is supported if the
 text model improves on the baseline both in adjusted~$R^2$ and in a
 joint $F$-test on the textual coefficients.  Hypothesis~H2 holds that
 the divergence measure carries information beyond \emph{both}
-financials and the textual features taken individually.  It is
-supported if the divergence coefficient is positive and statistically
-significant, and if the divergence model improves on the text model.
+financials and the textual features taken individually, and that the
+sign of its effect is \emph{negative}: tone that moves more positively
+than concurrent fundamentals justify operates as a costly, and therefore
+credible, voluntary signal of management's private information about
+future prospects, which lowers post-filing uncertainty.  H2 is supported
+if the divergence coefficient is negative and statistically significant,
+and if the divergence model improves on the text model in adjusted~$R^2$.
 
 The three-step nesting is deliberate.  By first absorbing the
 predictable, mechanical part of volatility (persistence and firm
@@ -192,8 +196,15 @@ $\boldsymbol{\gamma} \neq \mathbf{0}$.
    \;+\; \mu_j \;+\; \tau_t \;+\; \varepsilon_{i,t}.
 \label{eq:divergence_model}
 \end{equation}
-Hypothesis~H2 corresponds to $\delta > 0$ together with a positive
-incremental adjusted~$R^2$ over the text model.
+Hypothesis~H2 corresponds to $\delta < 0$ together with a positive
+incremental adjusted~$R^2$ over the text model.  The directional
+prediction follows the voluntary-disclosure reading of MD\&A: under
+Securities Exchange Act \S\,18 and Rule~10b-5 a manager who writes
+upbeat narrative against weak realised earnings bears a personal and
+legal cost if the optimism is not borne out, so the disclosure is
+costly and therefore credible.  Investors update toward management's
+private signal and uncertainty about future cash flows falls,
+implying a negative coefficient on Divergence.
 
 
 % ─────────────────────────────────────────────────────────────────────────────
@@ -268,14 +279,23 @@ Both conditions must be met for H1 to be considered supported.
 The divergence model (equation~\ref{eq:divergence_model}) is
 compared to the text model on two criteria:
 \begin{enumerate}
-  \item the divergence coefficient $\delta$ is positive and
+  \item the divergence coefficient $\delta$ is negative and
         significant at the 5\% level, and
   \item the divergence model's adjusted~$R^2$ exceeds the text
         model's.
 \end{enumerate}
-A positive sign is required because the theoretical prediction is
-directional: if narrative tone has drifted away from concurrent
-financial performance, future volatility should rise, not fall.
+A negative sign is required because the theoretical prediction is
+directional.  When MD\&A tone moves more positively than
+concurrent financial performance justifies, the disclosure is a costly
+voluntary signal in the sense of the disclosure literature: management
+can be sued under Rule~10b-5 if upbeat narrative is later contradicted
+by outcomes, so the signal is credible only when management has private
+information that future cash flows will exceed what current earnings
+imply.  Investors who update toward this signal face less uncertainty
+about future fundamentals, and post-filing volatility falls.  The
+symmetric case---tone more negative than fundamentals warrant---signals
+downgrade of private information and raises uncertainty in the same
+direction.  Both arms of the prediction imply $\delta < 0$.
 
 \paragraph{Economic magnitude.}
 Statistical significance alone is not enough to justify a finding,
