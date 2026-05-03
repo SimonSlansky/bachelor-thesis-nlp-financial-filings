@@ -4,16 +4,15 @@
 % =============================================================================
 
 This chapter explains how the data described in
-Chapter~\ref{ch:data} are turned into the regressions that test the
-two hypotheses set out in Chapter~\ref{ch:literature_review}.  Section
+Chapter~\ref{ch:data} are used in the regressions that test the
+two hypotheses set out in Chapter~\ref{ch:literature}.  Section
 \ref{sec:design} gives an overview of the empirical strategy.
-Sections~\ref{sec:variables}--\ref{sec:models} define the variables
-and write out the three nested regression equations.
+Sections~\ref{sec:variables} and \ref{sec:models} define the regression
+variables and construct three nested regression equations.
 Section~\ref{sec:estimation} describes how the models are estimated
-and how their standard errors are computed, and
-Section~\ref{sec:hypothesis_tests} states the formal decision rules
-used to evaluate H1 and H2.  Section~\ref{sec:robustness_plan}
-previews the robustness checks reported in
+and how their standard errors are computed.  Section~\ref{sec:hypothesis_tests} states the formal decision rules
+used to evaluate the results for H1 and H2.  Finally, section~\ref{sec:robustness_plan}
+describes the robustness checks reported in
 Chapter~\ref{ch:robustness}.
 
 
@@ -22,7 +21,7 @@ Chapter~\ref{ch:robustness}.
 \label{sec:design}
 % ─────────────────────────────────────────────────────────────────────────────
 
-The thesis estimates three nested panel regressions of post-filing
+The thesis estimates three panel regressions of post-filing
 stock-return volatility on increasingly rich sets of explanatory
 variables.  The \emph{baseline} model uses lagged volatility together
 with standard accounting controls.  The \emph{text} model adds three
@@ -120,24 +119,32 @@ mostly reflect industry vocabulary.
 
 The central novel variable is \emph{Divergence}, a one-dimensional
 measure of the gap between the financial and the narrative
-trajectory of a firm:
+trajectory of a firm.  It is constructed as the firm-demeaned
+residual of $\Delta\text{Sentiment}$ on $\Delta\text{ROA}$:
 \begin{equation}
 \text{Divergence}_{i,t} \;=\;
-\Delta\text{Sentiment}_{i,t} \;-\; \lambda \cdot \Delta\text{ROA}_{i,t},
+\bigl(\Delta\text{Sentiment}_{i,t} - \overline{\Delta\text{Sentiment}}_{i}\bigr)
+\;-\; \lambda \cdot
+\bigl(\Delta\text{ROA}_{i,t} - \overline{\Delta\text{ROA}}_{i}\bigr),
 \label{eq:divergence}
 \end{equation}
-where $\Delta\text{ROA}_{i,t} = \text{ROA}_{i,t} - \text{ROA}_{i,t-1}$
-and $\lambda$ is the slope coefficient of a within-firm regression of
+where $\Delta\text{ROA}_{i,t} = \text{ROA}_{i,t} - \text{ROA}_{i,t-1}$,
+$\overline{X}_{i}$ denotes the within-firm mean of $X$, and $\lambda$
+is the slope coefficient of a within-firm regression of
 $\Delta\text{Sentiment}$ on $\Delta\text{ROA}$ estimated on the
-training sample.  The construction has a simple interpretation:
+training sample.  Centring on the firm mean removes the firm-specific
+intercept, so the construction is exactly the residual of the
+within-firm regression and is therefore orthogonal to
+$\Delta\text{ROA}$ within firm by construction.  The variable inherits
+the units of $\Delta\text{Sentiment}$ and has a simple interpretation:
 $\lambda \cdot \Delta\text{ROA}_{i,t}$ is the change in tone that
 would, on average, accompany a change in profitability of size
-$\Delta\text{ROA}_{i,t}$.  Subtracting it from the actual change in
-tone gives the part of the narrative shift that is \emph{not}
-explained by contemporaneous financial performance.  Large positive
-values flag firms whose tone improved more than their fundamentals
-warranted; large negative values flag the opposite.  As a robustness
-check we also use a binary dummy that equals one when
+$\Delta\text{ROA}_{i,t}$ in a given firm; subtracting it from the
+actual change in tone gives the part of the narrative shift that is
+\emph{not} explained by contemporaneous financial performance.  Large
+positive values flag firms whose tone improved more than their
+fundamentals warranted; large negative values flag the opposite.  As
+a robustness check we also use a binary dummy that equals one when
 $\operatorname{sign}(\Delta\text{Sentiment})$ differs from
 $\operatorname{sign}(\Delta\text{ROA})$.
 

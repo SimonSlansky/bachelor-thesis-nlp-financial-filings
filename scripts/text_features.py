@@ -203,11 +203,29 @@ def calibrate_lambda(panel: pd.DataFrame,
 
 
 def add_divergence(panel: pd.DataFrame, lambda_: float) -> pd.DataFrame:
-    """Add ``divergence = delta_sentiment - lambda * delta_roa`` and the
-    ``divergence_sign`` dummy = 1 if signs of Δsentiment and Δroa differ.
+    """Add ``divergence`` as the within-firm OLS residual of Δsentiment on Δroa.
+
+    Specifically::
+
+        divergence_{i,t} = (Δsent_{i,t} − mean_i Δsent)
+                         − λ · (Δroa_{i,t} − mean_i Δroa)
+
+    where ``λ`` is the within-firm OLS slope returned by
+    :func:`calibrate_lambda`.  Centring on the firm mean partials out
+    both the slope and the firm-specific intercept, so by construction
+    ``divergence`` is orthogonal to Δroa within firm.  The variable is
+    expressed in the same units as Δsentiment.
+
+    Also adds ``divergence_sign`` (1 if signs of Δsentiment and Δroa
+    differ, 0 if they agree, NaN otherwise) for robustness checks.
     """
     p = panel.copy()
-    p["divergence"] = p["delta_sentiment"] - lambda_ * p["delta_roa"]
+    g = p.groupby("ticker", sort=False)
+    ds_mean = g["delta_sentiment"].transform("mean")
+    dr_mean = g["delta_roa"].transform("mean")
+    p["divergence"] = (
+        (p["delta_sentiment"] - ds_mean) - lambda_ * (p["delta_roa"] - dr_mean)
+    )
     sgn_s = np.sign(p["delta_sentiment"])
     sgn_r = np.sign(p["delta_roa"])
     valid = sgn_s.notna() & sgn_r.notna() & (sgn_s != 0) & (sgn_r != 0)
