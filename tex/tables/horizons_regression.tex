@@ -1,0 +1,30 @@
+\begin{table}[htbp]
+\centering
+\caption{Post-Filing Volatility at Alternative Horizons}
+\label{tab:horizons}
+\begin{tabular}{lcccc}
+\toprule
+ & (1) 30d & (2) 90d & (3) 180d & (4) 365d \\
+\midrule
+Lagged Volatility & $+0.0888$*** & $+0.1921$*** & $+0.3150$*** & $+0.5361$*** \\
+ & $(+3.97)$ & $(+8.20)$ & $(+14.66)$ & $(+22.69)$ \\[4pt]
+$\Delta$Sentiment & $+14.0930$*** & $+11.3194$*** & $+8.6803$** & $+6.5744$*** \\
+ & $(+2.94)$ & $(+2.89)$ & $(+2.57)$ & $(+2.66)$ \\[4pt]
+$\Delta$Risk & $+0.1119$ & $-0.5747$ & $-0.6601$ & $-0.0707$ \\
+ & $(+0.06)$ & $(-0.45)$ & $(-0.66)$ & $(-0.11)$ \\[4pt]
+TextSim & $+0.0501$ & $-0.0045$ & $+0.0462$ & $+0.0620$* \\
+ & $(+0.68)$ & $(-0.07)$ & $(+0.99)$ & $(+1.83)$ \\[4pt]
+Divergence & $-14.6169$*** & $-11.0778$*** & $-7.9999$** & $-4.8501$* \\
+ & $(-3.03)$ & $(-2.79)$ & $(-2.31)$ & $(-1.86)$ \\[4pt]
+\midrule
+Industry FE & Yes & Yes & Yes & Yes \\
+Year FE & Yes & Yes & Yes & Yes \\
+Observations & 5,252 & 5,252 & 5,252 & 5,473 \\
+Firms & 510 & 510 & 510 & 531 \\
+Adj.\ $R^2$ & 0.447 & 0.500 & 0.535 & 0.645 \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}
+\item \textit{Note:} Each column re-estimates the divergence specification (equation~\ref{eq:divergence_model}) with the dependent variable replaced by the annualised standard deviation of daily log returns over a shorter post-filing window. The lagged dependent variable is correspondingly the same firm's volatility measured over the prior filing year's window of the same length. All specifications include two-digit SIC industry and fiscal-year fixed effects; $t$-statistics in parentheses use firm-clustered standard errors. ***, **, and * denote significance at the 1\%, 5\%, and 10\% levels, respectively.
+\end{tablenotes}
+\end{table}
