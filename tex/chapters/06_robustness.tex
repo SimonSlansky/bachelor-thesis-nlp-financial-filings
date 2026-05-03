@@ -30,3 +30,35 @@
 % - Excluding firms with fewer than 8 years of data
 % - Effect of fiscal year-end alignment
 % - Winsorisation at 2.5\%/97.5\%
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Alternative post-filing windows}
+\label{sec:robustness_horizons}
+% ─────────────────────────────────────────────────────────────────────────────
+
+The main specifications use the annualised standard deviation of
+daily log returns over a 365-calendar-day window starting two trading
+days after the filing date.  Choosing one year matches the annual
+frequency of the panel, but it has two costs that bear directly on
+hypothesis testing.  First, the window is long enough that the next
+10-K is filed before it closes, so the back half of the window
+overlaps with information from the subsequent disclosure.  Second,
+the prior literature on textual signals in 10-Ks consistently finds
+that any incremental predictive power is concentrated in the first
+few weeks or months after the filing and decays thereafter
+\parencite{loughran2011}.  An annual measure averages this
+short-lived signal against several months of unrelated noise.
+
+To assess the robustness of the main results to this choice, the
+divergence specification (equation~\ref{eq:divergence_model}) is
+re-estimated with the dependent variable replaced by the annualised
+volatility computed over windows of 30, 90, and 180~calendar days
+following the filing.  The lagged dependent variable is correspondingly
+the same firm's volatility measured over the prior filing year's
+window of the same length.  All other regressors, fixed effects, and
+the firm-clustered standard-error structure are unchanged.
+Table~\ref{tab:horizons} reports the four horizons side by side; the
+365-day column reproduces the headline divergence model from
+Chapter~\ref{ch:results} and serves as the long-horizon benchmark.
+
+\input{tables/horizons_regression}
