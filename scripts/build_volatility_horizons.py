@@ -31,6 +31,8 @@ ANNUALISATION_FACTOR = float(np.sqrt(252))
 
 # (window_days, output_column, min_trading_days)
 HORIZONS: list[tuple[int, str, int]] = [
+    (5,   "vol_5d",   3),
+    (10,  "vol_10d",  6),
     (30,  "vol_30d",  15),
     (90,  "vol_90d",  45),
     (180, "vol_180d", 90),

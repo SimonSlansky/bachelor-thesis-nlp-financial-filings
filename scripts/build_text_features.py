@@ -33,7 +33,7 @@ from text_features import (
     save_lambda_diagnostic,
 )
 
-HORIZON_COLS = ["vol_30d", "vol_90d", "vol_180d"]
+HORIZON_COLS = ["vol_5d", "vol_10d", "vol_30d", "vol_90d", "vol_180d"]
 
 
 def main() -> None:

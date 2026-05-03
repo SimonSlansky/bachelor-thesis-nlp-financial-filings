@@ -170,6 +170,8 @@ def wald_joint_zero(res, vars_to_test: list[str]) -> tuple[float, float]:
 
 # (label, dependent variable, lagged dependent variable)
 HORIZONS: list[tuple[str, str, str]] = [
+    ("5d",   "vol_5d",        "lagged_vol_5d"),
+    ("10d",  "vol_10d",       "lagged_vol_10d"),
     ("30d",  "vol_30d",       "lagged_vol_30d"),
     ("90d",  "vol_90d",       "lagged_vol_90d"),
     ("180d", "vol_180d",      "lagged_vol_180d"),
