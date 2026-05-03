@@ -1,14 +1,17 @@
 """End-to-end driver for the textual-feature pipeline.
 
 Reads:
-  * ``data/text_sections.csv``   — Item 1A / Item 7 narratives per filing.
-  * ``data/annual_panel.csv``    — financial / volatility panel.
-  * ``data/lm_master.csv``       — Loughran–McDonald master dictionary.
+  * ``data/text_sections.csv``          — Item 1A / Item 7 narratives per filing.
+  * ``data/annual_panel.csv``           — financial / volatility panel.
+  * ``data/lm_master.csv``              — Loughran–McDonald master dictionary.
+  * ``data/volatility_horizons.csv``    — (optional) short-horizon vols.
 
 Writes:
   * ``data/annual_panel_text.csv`` — the panel extended with sentiment_mda,
     risk_1a, words_mda, words_1a, textsim, delta_sentiment, delta_risk,
-    delta_roa, divergence, divergence_sign.
+    delta_roa, divergence, divergence_sign, and (if present) the
+    short-horizon volatilities ``vol_30d``, ``vol_90d``, ``vol_180d``
+    together with their within-firm one-period lags.
   * ``data/lambda.json``           — the calibrated λ used for divergence.
 """
 
@@ -29,6 +32,8 @@ from text_features import (
     merge_text_features,
     save_lambda_diagnostic,
 )
+
+HORIZON_COLS = ["vol_30d", "vol_90d", "vol_180d"]
 
 
 def main() -> None:
@@ -75,6 +80,30 @@ def main() -> None:
     save_lambda_diagnostic(lam, n_lam)
 
     p = add_divergence(p, lam)
+
+    horizons_path = DATA_DIR / "volatility_horizons.csv"
+    if horizons_path.exists():
+        print("\nMerging short-horizon volatilities …")
+        h = pd.read_csv(horizons_path, parse_dates=["year_end"])
+        # The text panel keeps year_end as a string (it survives a CSV
+        # round-trip); convert both sides to datetime for a clean merge.
+        p["year_end"] = pd.to_datetime(p["year_end"], errors="coerce")
+        cols = ["ticker", "year_end"] + [c for c in HORIZON_COLS if c in h.columns]
+        p = p.merge(h[cols], on=["ticker", "year_end"], how="left")
+        # Lagged short-horizon vols mirror the role of ``lagged_vol`` for
+        # the 365-day horizon: previous filing-year volatility per firm.
+        p = p.sort_values(["ticker", "year_end"]).reset_index(drop=True)
+        g = p.groupby("ticker", sort=False)
+        for c in HORIZON_COLS:
+            if c in p.columns:
+                p[f"lagged_{c}"] = g[c].shift(1)
+        for c in HORIZON_COLS:
+            if c in p.columns:
+                print(f"    {c:10s} coverage = {p[c].notna().mean():6.1%}")
+    else:
+        print(f"\n[skip] {horizons_path.name} not found — "
+              "run build_volatility_horizons.py to enable the"
+              " post-filing-decay robustness check.")
 
     p.to_csv(out_path, index=False)
     print(f"\nSaved {out_path.name}: {p['ticker'].nunique()} firms x {len(p):,} obs")
