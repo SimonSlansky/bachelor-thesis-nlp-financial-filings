@@ -1,0 +1,5 @@
+{
+  "lambda": 0.00915446319366427,
+  "n_obs": 5646,
+  "spec": "within-firm OLS of delta_sentiment on delta_roa"
+}
