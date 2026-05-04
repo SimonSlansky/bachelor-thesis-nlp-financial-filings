@@ -77,6 +77,6 @@ regressions to test FinBERT-based H3 candidates.
 
 * `torch.backends.mps.is_available() == False`: macOS < 12.3 or older
   python build. Update macOS or `pip install --upgrade torch`.
-* OOM on MPS: lower `BATCH_SIZE` from 32 to 16 or 8 in the script.
+* OOM on MPS: lower `BATCH_SIZE` from 64 to 32, 16, or 8 in the script.
 * Network blocked when downloading the model: the script needs one-time
   HTTPS access to `huggingface.co`. Run on a network without TLS interception.

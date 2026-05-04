@@ -55,7 +55,7 @@ INPUT_CSV     = ROOT / "data" / "finbert_input_item1a.csv"
 OUTPUT_CSV    = ROOT / "data" / "finbert_scores_item1a.csv"
 MODEL_NAME    = "yiyanghkust/finbert-tone"   # Huang-Wang-Yang 2022 (CAR)
 MAX_TOKENS    = 510      # 512 minus [CLS], [SEP]
-BATCH_SIZE    = 32
+BATCH_SIZE    = 64       # safe on 32 GB unified memory; halve if MPS OOMs
 # ----------------------------------------------------------------------
 
 
