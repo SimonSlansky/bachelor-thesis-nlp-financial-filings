@@ -1,8 +1,13 @@
 # FinBERT scoring on MacBook (M-series)
 
 This package contains everything needed to score Item 1A sections of 10-K
-filings with FinBERT on a MacBook with Apple Silicon, then bring the
-results back to the Windows machine for regression analysis.
+filings with **FinBERT-tone** (`yiyanghkust/finbert-tone`, Huang-Wang-Yang
+2022, *Contemporary Accounting Research*) on a MacBook with Apple Silicon,
+then bring the results back to the Windows machine for regression analysis.
+
+This variant of FinBERT is pretrained on 4.9 B tokens of corporate filings,
+earnings calls, and analyst reports, making it the accounting-finance
+literature's standard for 10-K tone analysis.
 
 ## What you need to copy to the Mac
 
@@ -37,7 +42,7 @@ python scripts/finbert_score_mac.py
 Expected output on first launch:
 ```
 device: mps
-loading ProsusAI/finbert ...
+loading yiyanghkust/finbert-tone ...
 to score: 6,508 filings
 100%|████████████| 6508/6508 [25:00<00:00, ...]
 done in 25.0 min  ->  data/finbert_scores_item1a.csv

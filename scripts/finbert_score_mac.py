@@ -5,13 +5,18 @@ FinBERT scoring of 10-K Item 1A sections — Mac (M-series) edition.
 Run on a MacBook with Apple Silicon (M1/M2/M3/M4). Uses the MPS backend
 when available, otherwise falls back to CPU.
 
+Model: ``yiyanghkust/finbert-tone`` (Huang, Wang, Yang 2022, CAR).
+This variant of FinBERT is pretrained on 4.9 B tokens of corporate filings,
+earnings calls, and analyst reports and is the literature standard for
+tone analysis of 10-K / 10-Q text.
+
 Inputs  : data/finbert_input_item1a.csv  (cols: ticker, fiscal_year, item_1a)
 Outputs : data/finbert_scores_item1a.csv (cols: ticker, fiscal_year,
                                                 finbert_neg, finbert_neu,
                                                 finbert_pos, finbert_score,
                                                 n_chunks)
 
-`finbert_score` = finbert_pos − finbert_neg  (signed sentiment in [-1, 1])
+`finbert_score` = finbert_pos − finbert_neg  (signed tone in [-1, 1])
 
 Setup (one time, in any Python 3.10+ venv on the Mac):
     python -m venv .venv
@@ -48,7 +53,7 @@ from transformers import AutoModelForSequenceClassification, AutoTokenizer
 ROOT          = Path(__file__).resolve().parent.parent
 INPUT_CSV     = ROOT / "data" / "finbert_input_item1a.csv"
 OUTPUT_CSV    = ROOT / "data" / "finbert_scores_item1a.csv"
-MODEL_NAME    = "ProsusAI/finbert"
+MODEL_NAME    = "yiyanghkust/finbert-tone"   # Huang-Wang-Yang 2022 (CAR)
 MAX_TOKENS    = 510      # 512 minus [CLS], [SEP]
 BATCH_SIZE    = 32
 # ----------------------------------------------------------------------
