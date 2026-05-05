@@ -62,8 +62,12 @@ def main() -> None:
     scores = compute_section_scores(text_df, lm)
     n_sent = scores["sentiment_mda"].notna().sum()
     n_risk = scores["risk_1a"].notna().sum()
+    n_unc  = scores["unc_1a"].notna().sum()
+    n_lit  = scores["lit_1a"].notna().sum()
     print(f"  sentiment_mda: {n_sent:,} / {len(scores):,} non-null")
     print(f"  risk_1a:       {n_risk:,} / {len(scores):,} non-null")
+    print(f"  unc_1a:        {n_unc:,} / {len(scores):,} non-null")
+    print(f"  lit_1a:        {n_lit:,} / {len(scores):,} non-null")
 
     print("\nComputing TF-IDF YoY similarity …")
     sims = compute_textsim(text_df)
@@ -73,6 +77,13 @@ def main() -> None:
     print("\nMerging into panel + first differences …")
     p = merge_text_features(panel, scores, sims)
     p = add_delta_roa(p)
+
+    # Length features used by H1 (verbosity of risk-factor disclosure) and as a
+    # control / robustness for H2 (density of risk language). log(1+x) handles
+    # the rare zero/missing-section cases gracefully.
+    import numpy as np  # local import keeps the module-level imports tidy
+    p["log_words_1a"] = np.log(p["words_1a"].clip(lower=1))
+    p["log_words_mda"] = np.log(p["words_mda"].clip(lower=1))
 
     print("Calibrating λ …")
     lam = calibrate_lambda(p, "delta_sentiment", "delta_roa")

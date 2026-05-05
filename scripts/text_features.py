@@ -1,18 +1,20 @@
 """Text features for the volatility–disclosure panel.
 
 Implements the textual variables defined in
-``tex/chapters/04_methodology.tex`` (§sec:variables, §ssec:divergence):
+``tex/chapters/04_methodology.tex`` (§sec:variables):
 
 * ``sentiment_mda``  — net tone of Item 7 (MD&A): (pos − neg) / N_words.
 * ``risk_1a``        — share of risk words in Item 1A (Risk Factors):
-                       (uncertainty + litigious) / N_words.
+                       (uncertainty + litigious) / N_words.  Kept for
+                       comparison; H3 decomposes it.
+* ``unc_1a``         — share of LM-Uncertainty words in Item 1A.
+* ``lit_1a``         — share of LM-Litigious   words in Item 1A.
+* ``neg_1a``         — share of LM-Negative    words in Item 1A
+                       (auxiliary, used in robustness checks).
 * ``delta_sentiment``, ``delta_risk`` — within-firm year-on-year first
-                                        differences.
-* ``textsim``        — cosine similarity of TF–IDF vectors built from
-                       (item_1a + item_7) versus the firm's prior-year
-                       filing.
-* ``divergence``     — Δsentiment − λ · Δroa, where λ is calibrated by a
-                       within-firm OLS of Δsentiment on Δroa.
+                                        differences (auxiliary).
+* ``textsim``        — cosine similarity of Item 1A TF–IDF vectors against
+                       the firm's prior-year filing (auxiliary).
 
 The module is deliberately small: pure pandas / numpy / scikit-learn,
 no caching, no parallelism.  See ``scripts/build_text_features.py`` for
@@ -60,6 +62,8 @@ def _score_tokens(tokens: list[str], lm: dict[str, set[str]]) -> dict[str, float
             "n_words": n,
             "n_pos": 0, "n_neg": 0, "n_unc": 0, "n_lit": 0,
             "sentiment": np.nan, "risk": np.nan,
+            "uncertainty": np.nan, "litigious": np.nan,
+            "negative": np.nan,
         }
     counts = Counter(tokens)
     n_pos = sum(c for w, c in counts.items() if w in lm["positive"])
@@ -71,6 +75,9 @@ def _score_tokens(tokens: list[str], lm: dict[str, set[str]]) -> dict[str, float
         "n_pos": n_pos, "n_neg": n_neg, "n_unc": n_unc, "n_lit": n_lit,
         "sentiment": (n_pos - n_neg) / n,
         "risk": (n_unc + n_lit) / n,
+        "uncertainty": n_unc / n,
+        "litigious": n_lit / n,
+        "negative": n_neg / n,
     }
 
 
@@ -82,7 +89,7 @@ def compute_section_scores(text_df: pd.DataFrame,
     Sentiment is computed on Item 7 (MD&A); risk on Item 1A.
     Returns a DataFrame with columns:
         ticker, fiscal_year,
-        sentiment_mda, risk_1a,
+        sentiment_mda, risk_1a, unc_1a, lit_1a, neg_1a,
         words_mda, words_1a.
     Rows where the relevant section is missing/short get NaN.
     """
@@ -103,6 +110,9 @@ def compute_section_scores(text_df: pd.DataFrame,
             "fiscal_year": int(r.fiscal_year),
             "sentiment_mda": s_mda["sentiment"],
             "risk_1a": s_1a["risk"],
+            "unc_1a": s_1a["uncertainty"],
+            "lit_1a": s_1a["litigious"],
+            "neg_1a": s_1a["negative"],
             "words_mda": s_mda["n_words"],
             "words_1a": s_1a["n_words"],
         })
@@ -112,19 +122,23 @@ def compute_section_scores(text_df: pd.DataFrame,
 # ── TF–IDF year-on-year similarity ────────────────────────────────────────
 
 def compute_textsim(text_df: pd.DataFrame, verbose: bool = True) -> pd.DataFrame:
-    """Compute YoY cosine similarity of (Item 1A + Item 7) TF–IDF vectors.
+    """Compute YoY cosine similarity of Item~1A TF-IDF vectors.
 
-    A single corpus-wide TF–IDF is fitted on the union of all
-    (ticker, fiscal_year) documents; for each firm-year the cosine is
-    computed against the same firm's prior-year vector.  The first
-    observation per firm has ``textsim = NaN``.
+    A single corpus-wide TF-IDF is fitted on all (ticker, fiscal_year)
+    Item 1A documents; for each firm-year the cosine is computed against
+    the same firm's prior-year Item 1A vector. The first observation per
+    firm has ``textsim = NaN``.
+
+    Item 1A only (not concatenated with Item 7) so the measure is a
+    direct year-on-year staleness score for the risk-factor section
+    that enters H1 and H2.
     """
     from sklearn.feature_extraction.text import TfidfVectorizer
     from sklearn.metrics.pairwise import cosine_similarity
 
     df = text_df.copy()
     df["fiscal_year"] = df["fiscal_year"].astype(int)
-    df["doc"] = (df["item_1a"].fillna("") + " " + df["item_7"].fillna("")).str.lower()
+    df["doc"] = df["item_1a"].fillna("").str.lower()
     df = df.sort_values(["ticker", "fiscal_year"]).reset_index(drop=True)
 
     if verbose:
