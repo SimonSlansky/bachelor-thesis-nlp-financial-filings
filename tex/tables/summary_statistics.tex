@@ -6,18 +6,22 @@
 \toprule
  & Mean & SD & P25 & Median & P75 \\
 \midrule
-Volatility$_{t+1}$ & 0.326 & 0.169 & 0.218 & 0.282 & 0.390 \\
-Lagged Volatility & 0.325 & 0.173 & 0.217 & 0.279 & 0.387 \\
-$\ln(\text{Total Assets})$ & 23.134 & 1.483 & 22.131 & 23.146 & 24.212 \\
-Leverage & 0.611 & 0.218 & 0.471 & 0.607 & 0.735 \\
-ROA & 0.062 & 0.088 & 0.027 & 0.061 & 0.105 \\
-Asset Growth & 0.117 & 0.251 & 0.003 & 0.060 & 0.144 \\
+$\ln(\sigma_{i,t+1})$ & -1.344 & 0.588 & -1.740 & -1.410 & -1.058 \\
+$\ln(\sigma_{i,t})$ & -1.353 & 0.590 & -1.749 & -1.424 & -1.065 \\
+$\ln(\text{Total Assets})$ & 23.182 & 1.452 & 22.191 & 23.206 & 24.236 \\
+Leverage & 0.616 & 0.218 & 0.476 & 0.611 & 0.739 \\
+ROA & 0.063 & 0.087 & 0.027 & 0.062 & 0.106 \\
+Asset Growth & 0.113 & 0.243 & 0.001 & 0.059 & 0.142 \\
+$\ln(\text{Words}^{\text{1A}})$ & 9.026 & 0.637 & 8.639 & 9.079 & 9.418 \\
+RiskDensity & 0.051 & 0.006 & 0.047 & 0.051 & 0.055 \\
+UncDensity & 0.034 & 0.005 & 0.032 & 0.034 & 0.037 \\
+LitDensity & 0.017 & 0.005 & 0.013 & 0.016 & 0.019 \\
 \midrule
-Observations & \multicolumn{5}{c}{6,299} \\
-Firms & \multicolumn{5}{c}{537} \\
+Observations & \multicolumn{5}{c}{5,691} \\
+Firms & \multicolumn{5}{c}{535} \\
 \bottomrule
 \end{tabular}
-\begin{tablenotes}
-\item \textit{Note:} This table reports summary statistics for the regression sample. Volatility$_{t+1}$ is the annualised standard deviation of daily log returns over the 365-day window following each 10-K filing date. Leverage, ROA, and Asset Growth are winsorised at the 1st and 99th percentiles.
-\end{tablenotes}
+\par\smallskip
+\noindent\footnotesize 
+\textit{Note:} Summary statistics for the regression sample at the 30-day horizon. $\sigma_{i,t+1}$ is the annualised standard deviation of daily log returns over the 30-day window starting two trading days after the filing date; $\ln(\sigma_{i,t+1})$ is its natural logarithm. Words$^{\text{1A}}$ is the cleaned word count of Item~1A; RiskDensity is the share of LM uncertainty- and litigious-list words in Item~1A; UncDensity and LitDensity are the two sub-components separately. Financial ratios are winsorised at the 1st and 99th percentiles.
 \end{table}

@@ -1,0 +1,29 @@
+\begin{table}[htbp]
+\centering
+\caption{Within-Firm Identification (Firm $+$ Year FE, 30-day horizon)}
+\label{tab:firm_fe}
+\begin{tabular}{lc}
+\toprule
+ & Estimate \\
+\midrule
+$\ln(\sigma_{i,t})$ & $-0.1059$*** \\
+ & $(-6.77)$ \\[4pt]
+$\ln(\text{Words}^{\text{1A}})$ & $+0.0835$*** \\
+ & $(+3.31)$ \\[4pt]
+UncDensity & $-1.4559$ \\
+ & $(-0.55)$ \\[4pt]
+LitDensity & $+0.9561$ \\
+ & $(+0.35)$ \\[4pt]
+\midrule
+Financial controls & Yes \\
+Firm FE & Yes \\
+Year FE & Yes \\
+Observations & 5,691 \\
+Firms & 535 \\
+Adj.\ $R^2$ & 0.583 \\
+\bottomrule
+\end{tabular}
+\par\smallskip
+\noindent\footnotesize 
+\textit{Note:} H1 + H3-decomposition specification with firm and fiscal-year fixed effects absorbed. Identification of $\ln(\text{Words}^{1A})$, UncDensity and LitDensity comes only from within-firm variation across years. Standard errors clustered by firm. ***, **, * denote significance at the 1\%, 5\%, and 10\% levels.
+\end{table}

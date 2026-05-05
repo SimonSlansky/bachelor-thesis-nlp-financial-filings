@@ -2,19 +2,23 @@
 \centering
 \caption{Pearson Correlation Matrix}
 \label{tab:correlation}
-\begin{tabular}{lcccccc}
+\begin{tabular}{lcccccccccc}
 \toprule
- & (1) & (2) & (3) & (4) & (5) & (6) \\
+ & (1) & (2) & (3) & (4) & (5) & (6) & (7) & (8) & (9) & (10) \\
 \midrule
-(1) Volatility$_{t+1}$ & 1 &  &  &  &  &  \\
-(2) Lagged Volatility & 0.61*** & 1 &  &  &  &  \\
-(3) $\ln(\text{Total Assets})$ & -0.32*** & -0.33*** & 1 &  &  &  \\
-(4) Leverage & -0.07*** & -0.05*** & 0.21*** & 1 &  &  \\
-(5) ROA & -0.33*** & -0.38*** & 0.07*** & -0.06*** & 1 &  \\
-(6) Asset Growth & 0.17*** & 0.17*** & -0.13*** & -0.11*** & -0.05*** & 1 \\
+(1) $\ln(\sigma_{i,t+1})$ & 1 &  &  &  &  &  &  &  &  &  \\
+(2) $\ln(\sigma_{i,t})$ & 0.35*** & 1 &  &  &  &  &  &  &  &  \\
+(3) $\ln(\text{Total Assets})$ & -0.19*** & -0.20*** & 1 &  &  &  &  &  &  &  \\
+(4) Leverage & -0.06*** & -0.07*** & 0.21*** & 1 &  &  &  &  &  &  \\
+(5) ROA & -0.23*** & -0.25*** & 0.05*** & -0.06*** & 1 &  &  &  &  &  \\
+(6) Asset Growth & 0.16*** & 0.09*** & -0.12*** & -0.12*** & -0.04*** & 1 &  &  &  &  \\
+(7) $\ln(\text{Words}^{\text{1A}})$ & 0.31*** & 0.31*** & -0.09*** & -0.04*** & -0.27*** & 0.17*** & 1 &  &  &  \\
+(8) RiskDensity & -0.11*** & -0.12*** & -0.01 & -0.01 & 0.06*** & -0.08*** & -0.30*** & 1 &  &  \\
+(9) UncDensity & -0.09*** & -0.08*** & -0.18*** & -0.06*** & 0.14*** & -0.05*** & -0.43*** & 0.71*** & 1 &  \\
+(10) LitDensity & -0.06*** & -0.08*** & 0.18*** & 0.04*** & -0.06*** & -0.06*** & 0.03** & 0.66*** & -0.06*** & 1 \\
 \bottomrule
 \end{tabular}
-\begin{tablenotes}
-\item \textit{Note:} This table reports pairwise Pearson correlation coefficients. ***, **, and * denote significance at the 1\%, 5\%, and 10\% levels, respectively.
-\end{tablenotes}
+\par\smallskip
+\noindent\footnotesize 
+\textit{Note:} Pairwise Pearson correlation coefficients on the 30-day-horizon regression sample. ***, **, * denote significance at the 1\%, 5\%, and 10\% levels.
 \end{table}

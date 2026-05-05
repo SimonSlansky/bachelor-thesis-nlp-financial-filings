@@ -1,0 +1,29 @@
+\begin{table}[htbp]
+\centering
+\caption{Post-Filing Volatility at Alternative Horizons}
+\label{tab:horizons}
+\begin{tabular}{lcccccc}
+\toprule
+ & (1) 5d & (2) 10d & (3) 30d & (4) 90d & (5) 180d & (6) 365d \\
+\midrule
+$\ln(\sigma_{i,t})$ & $+0.1008$*** & $+0.1249$*** & $+0.1321$*** & $+0.2122$*** & $+0.3533$*** & $+0.5657$*** \\
+ & $(+3.39)$ & $(+7.37)$ & $(+6.79)$ & $(+10.81)$ & $(+17.49)$ & $(+32.84)$ \\[4pt]
+$\ln(\text{Words}^{\text{1A}})$ & $+0.1953$*** & $+0.1524$*** & $+0.1298$*** & $+0.1155$*** & $+0.0962$*** & $+0.0607$*** \\
+ & $(+7.06)$ & $(+7.77)$ & $(+7.70)$ & $(+8.08)$ & $(+8.36)$ & $(+7.35)$ \\[4pt]
+UncDensity & $+0.9530$ & $-2.1555$ & $-1.2779$ & $-0.7636$ & $-0.6946$ & $-0.8552$ \\
+ & $(+0.28)$ & $(-0.94)$ & $(-0.68)$ & $(-0.48)$ & $(-0.53)$ & $(-0.99)$ \\[4pt]
+LitDensity & $-7.0957$** & $-6.6115$*** & $-6.1591$*** & $-6.5495$*** & $-5.1636$*** & $-3.3905$*** \\
+ & $(-2.28)$ & $(-3.02)$ & $(-3.35)$ & $(-4.44)$ & $(-4.31)$ & $(-4.38)$ \\[4pt]
+\midrule
+Financial controls & Yes & Yes & Yes & Yes & Yes & Yes \\
+Industry FE & Yes & Yes & Yes & Yes & Yes & Yes \\
+Year FE & Yes & Yes & Yes & Yes & Yes & Yes \\
+Observations & 5,690 & 5,648 & 5,691 & 5,691 & 5,691 & 6,172 \\
+Firms & 535 & 535 & 535 & 535 & 535 & 535 \\
+Adj.\ $R^2$ & 0.156 & 0.354 & 0.507 & 0.575 & 0.643 & 0.735 \\
+\bottomrule
+\end{tabular}
+\par\smallskip
+\noindent\footnotesize 
+\textit{Note:} Each column re-estimates the H1 + H3-decomposition specification replacing the dependent variable with $\ln(\sigma_{i,t+1}^{[h]})$ measured over a post-filing window of length $h$. The lagged dependent variable is the same firm's log-volatility computed over the prior filing year's window of identical length. UncDensity and LitDensity are the LM-Uncertainty and LM-Litigious word densities on Item~1A; together they sum to RiskDensity (H2). Financial controls (size, leverage, ROA, asset growth) are included but suppressed. Industry and year fixed effects are absorbed; $t$-statistics in parentheses use firm-clustered standard errors. ***, **, * denote significance at the 1\%, 5\%, and 10\% levels.
+\end{table}

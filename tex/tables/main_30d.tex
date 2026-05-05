@@ -1,0 +1,38 @@
+\begin{table}[htbp]
+\centering
+\caption{Item~1A Length, Risk-Word Density, and the Boilerplate Decomposition (30 days window)}
+\label{tab:main_30d}
+\begin{tabular}{lccccc}
+\toprule
+ & (1) & (2) & (3) & (4) & (5) \\
+\midrule
+$\ln(\sigma_{i,t})$ & $+0.1695$*** & $+0.1368$*** & $+0.1552$*** & $+0.1336$*** & $+0.1321$*** \\
+ & $(+8.65)$ & $(+6.99)$ & $(+7.92)$ & $(+6.83)$ & $(+6.79)$ \\[4pt]
+$\ln(\text{Total Assets})$ & $-0.0700$*** & $-0.0671$*** & $-0.0695$*** & $-0.0672$*** & $-0.0645$*** \\
+ & $(-10.32)$ & $(-9.63)$ & $(-10.59)$ & $(-9.85)$ & $(-9.17)$ \\[4pt]
+Leverage & $-0.0198$ & $-0.0026$ & $-0.0249$ & $-0.0072$ & $-0.0082$ \\
+ & $(-0.51)$ & $(-0.06)$ & $(-0.64)$ & $(-0.18)$ & $(-0.21)$ \\[4pt]
+ROA & $-1.0678$*** & $-0.8982$*** & $-1.0689$*** & $-0.9189$*** & $-0.9250$*** \\
+ & $(-12.82)$ & $(-10.61)$ & $(-12.71)$ & $(-10.83)$ & $(-10.92)$ \\[4pt]
+Asset Growth & $+0.2460$*** & $+0.2033$*** & $+0.2313$*** & $+0.2011$*** & $+0.1982$*** \\
+ & $(+9.03)$ & $(+7.54)$ & $(+8.59)$ & $(+7.47)$ & $(+7.36)$ \\[4pt]
+$\ln(\text{Words}^{\text{1A}})$ &  & $+0.1375$*** &  & $+0.1212$*** & $+0.1298$*** \\
+ &  & $(+8.79)$ &  & $(+7.35)$ & $(+7.70)$ \\[4pt]
+RiskDensity &  &  & $-7.7820$*** & $-3.8769$*** &  \\
+ &  &  & $(-6.13)$ & $(-2.74)$ &  \\[4pt]
+UncDensity &  &  &  &  & $-1.2779$ \\
+ &  &  &  &  & $(-0.68)$ \\[4pt]
+LitDensity &  &  &  &  & $-6.1591$*** \\
+ &  &  &  &  & $(-3.35)$ \\[4pt]
+\midrule
+Industry FE & Yes & Yes & Yes & Yes & Yes \\
+Year FE & Yes & Yes & Yes & Yes & Yes \\
+Observations & 5,691 & 5,691 & 5,691 & 5,691 & 5,691 \\
+Firms & 535 & 535 & 535 & 535 & 535 \\
+Adj.\ $R^2$ & 0.492 & 0.505 & 0.497 & 0.506 & 0.507 \\
+\bottomrule
+\end{tabular}
+\par\smallskip
+\noindent\footnotesize 
+\textit{Note:} The dependent variable is $\ln(\sigma_{i,t+1})$, the natural log of annualised post-filing volatility over a 30 days~window starting two trading days after the 10-K filing date. Column~(1) reports the financial baseline; column~(2) adds the log word count of Item~1A (H1); column~(3) adds the composite LM risk-word density (H2); column~(4) adds H1 and H2 jointly; column~(5) replaces the H2 composite by its decomposition (H3) into the LM-Uncertainty and LM-Litigious densities of Item~1A. All specifications include two-digit SIC industry and fiscal-year fixed effects. $t$-statistics in parentheses use firm-clustered standard errors. ***, **, * denote significance at the 1\%, 5\%, and 10\% levels.
+\end{table}
