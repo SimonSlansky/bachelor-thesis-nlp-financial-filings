@@ -1,0 +1,27 @@
+\begin{table}[htbp]
+\centering
+\caption{Silence Hypothesis: Item 1A omission relative to SIC2 peers and post-filing realised volatility.}
+\label{tab:silence_main}
+\footnotesize
+\begin{tabular}{lccccc}
+\toprule
+& $h=5$ & $h=10$ & $h=30$ & $h=90$ & $h=180$ \\
+\midrule
+\multicolumn{6}{l}{\textit{Panel A. Industry $\times$ year fixed effects}} \\
+$\textsc{Omission}_{1A}$ & +0.424 & -0.054 & +0.098 & +0.179 & +0.226 \\
+& (+0.71) & (-0.11) & (+0.28) & (+0.63) & (+1.04) \\
+$N$ & 4,630 & 4,603 & 4,636 & 4,636 & 4,636 \\
+$R^2$ & 0.174 & 0.354 & 0.505 & 0.575 & 0.650 \\
+\midrule
+\multicolumn{6}{l}{\textit{Panel B. Firm $\times$ year fixed effects}} \\
+$\textsc{Omission}_{1A}$ & +0.808 & +1.233 & +1.345*** & +1.299** & +1.136** \\
+& (+0.81) & (+1.50) & (+2.93) & (+2.42) & (+2.35) \\
+$N$ & 4,630 & 4,603 & 4,636 & 4,636 & 4,636 \\
+$R^2$ & 0.322 & 0.484 & 0.627 & 0.691 & 0.750 \\
+\bottomrule
+\end{tabular}
+\par\smallskip
+\begin{flushleft}\footnotesize
+\textit{Notes.} Dependent variable is $\log(\textrm{RV}_{h\textrm{d}})$ over the $h$-day window beginning the trading day after filing. $\textsc{Omission}_{1A}$ is the share of TF-IDF mass on terms used by SIC2-year peers (leave-one-out, $\geq 5$ peers) that the focal firm does not mention. All regressions control for $\log(\textrm{RV}_{h\textrm{d}, t-1})$, the five financial controls (size, leverage, ROA, current ratio, OCF/assets), $\log(\textrm{words}_{1A})$, and $\textsc{RiskDensity}_{1A}$. $t$-statistics in parentheses use two-way clustered standard errors on (ticker, fiscal year). $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.
+\end{flushleft}
+\end{table}

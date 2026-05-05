@@ -1,15 +1,18 @@
-"""Regression analysis for the Volume--Specificity--Boilerplate volatility study.
+"""Regression analysis for the Volume--Specificity--Silence volatility study.
 
-Estimates three nested hypotheses jointly with financial controls and SIC2
-+ year fixed effects, with firm-clustered standard errors:
+Estimates two nested hypotheses on the disclosed-content side
+(H1 + H2 with the LM-list decomposition as the second stage of H2),
+jointly with financial controls and SIC2 + year fixed effects, with
+firm-clustered standard errors. The strategic-silence hypothesis (H3)
+is estimated separately by ``scripts/silence_table.py``.
 
   H1 — Volume       : ``log_words_1a``  (length of Item~1A)
   H2 — Specificity  : ``risk_1a``       (LM uncertainty + litigious density)
-  H3 — Boilerplate  : decompose ``risk_1a`` into
-                       ``unc_1a`` (LM uncertainty density)  and
-                       ``lit_1a`` (LM litigious density);
-                       the negative effect attributed to H2 is shown to
-                       be driven by the litigious component.
+                       Second-stage LM-list decomposition splits ``risk_1a``
+                       into ``unc_1a`` (LM uncertainty density) and
+                       ``lit_1a`` (LM litigious density); the negative
+                       effect on the composite is shown to be carried by
+                       the litigious component.
 
 Produces the LaTeX tables consumed by ``tex/chapters/05_results.tex`` and
 ``tex/chapters/06_robustness.tex``.
@@ -62,8 +65,8 @@ FIN_VARS = ["log_total_assets", "leverage", "roa", "asset_growth"]
 # Three text constructs of the headline test.
 LEN_VAR  = "log_words_1a"   # H1: verbosity of Item 1A
 DENS_VAR = "risk_1a"        # H2: composite LM risk-word density of Item 1A
-UNC_VAR  = "unc_1a"         # H3: LM-Uncertainty density (decomposed from H2)
-LIT_VAR  = "lit_1a"         # H3: LM-Litigious   density (decomposed from H2)
+UNC_VAR  = "unc_1a"         # H2 second stage: LM-Uncertainty density
+LIT_VAR  = "lit_1a"         # H2 second stage: LM-Litigious   density
 
 # Variables for descriptive panel.
 PANEL_VARS = [
@@ -267,7 +270,7 @@ def main_table_to_latex(results, df, specs,
         r"Column~(1) reports the financial baseline; column~(2) adds the log "
         r"word count of Item~1A (H1); column~(3) adds the composite LM "
         r"risk-word density (H2); column~(4) adds H1 and H2 jointly; "
-        r"column~(5) replaces the H2 composite by its decomposition (H3) into "
+        r"column~(5) replaces the H2 composite by its LM-list decomposition into "
         r"the LM-Uncertainty and LM-Litigious densities of Item~1A. All "
         r"specifications include two-digit SIC industry and fiscal-year "
         r"fixed effects. $t$-statistics in parentheses use two-way "
@@ -337,7 +340,7 @@ def horizons_to_latex(runs, path: Path | None = None) -> str:
     lines.append(r"\noindent\footnotesize ")
     lines.append(
         r"\textit{Note:} "
-        r"Each column re-estimates the H1 + H3-decomposition specification "
+        r"Each column re-estimates the H1 + LM-list decomposition specification "
         r"replacing the dependent variable with $\ln(\sigma_{i,t+1}^{[h]})$ "
         r"measured over a post-filing window of length $h$. The lagged "
         r"dependent variable is the same firm's log-volatility computed over "
@@ -540,7 +543,7 @@ def subperiod_to_latex(results: dict, path: Path | None = None) -> str:
     lines.append(r"\noindent\footnotesize ")
     lines.append(
         r"\textit{Note:} "
-        r"H1 + H3-decomposition specification re-estimated on two "
+        r"H1 + LM-list decomposition specification re-estimated on two "
         r"non-overlapping sub-samples. The dependent variable is "
         r"$\ln(\sigma_{i,t+1}^{[30]})$. UncDensity and LitDensity are the "
         r"LM-Uncertainty and LM-Litigious word densities on Item~1A. All "
@@ -606,7 +609,7 @@ def firm_fe_to_latex(res, df, path: Path | None = None) -> str:
     lines.append(r"\noindent\footnotesize ")
     lines.append(
         r"\textit{Note:} "
-        r"H1 + H3-decomposition specification with firm and fiscal-year "
+        r"H1 + LM-list decomposition specification with firm and fiscal-year "
         r"fixed effects absorbed. Identification of $\ln(\text{Words}^{1A})$, "
         r"UncDensity and LitDensity comes only from within-firm variation "
         r"across years. Standard errors clustered by firm. ***, **, * denote "
