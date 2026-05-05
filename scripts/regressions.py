@@ -122,13 +122,17 @@ def load_text_panel(vol_col: str = "vol_next_year",
 # ── Estimation helpers ────────────────────────────────────────────────────
 
 def _fit(df: pd.DataFrame, xvars: list[str]):
-    """Fit one absorbing-LS model with industry+year FE and firm clusters."""
+    """Fit one absorbing-LS model with industry+year FE and two-way
+    (firm + year) clustered standard errors."""
     y = df["log_vol"]
     X = df[xvars].copy()
     X.insert(0, "const", 1.0)
     absorb = df[["sic2", "fiscal_year"]].astype("category")
+    clusters = df[["ticker", "fiscal_year"]].astype("category").apply(
+        lambda c: c.cat.codes
+    )
     return AbsorbingLS(y, X, absorb=absorb).fit(
-        cov_type="clustered", clusters=df["ticker"],
+        cov_type="clustered", clusters=clusters,
     )
 
 
@@ -266,7 +270,8 @@ def main_table_to_latex(results, df, specs,
         r"column~(5) replaces the H2 composite by its decomposition (H3) into "
         r"the LM-Uncertainty and LM-Litigious densities of Item~1A. All "
         r"specifications include two-digit SIC industry and fiscal-year "
-        r"fixed effects. $t$-statistics in parentheses use firm-clustered "
+        r"fixed effects. $t$-statistics in parentheses use two-way "
+        r"(firm and fiscal-year) clustered "
         r"standard errors. ***, **, * denote significance at the 1\%, 5\%, "
         r"and 10\% levels."
     )
@@ -341,7 +346,8 @@ def horizons_to_latex(runs, path: Path | None = None) -> str:
         r"densities on Item~1A; together they sum to RiskDensity (H2). "
         r"Financial controls (size, leverage, ROA, asset growth) are "
         r"included but suppressed. Industry and year fixed effects are "
-        r"absorbed; $t$-statistics in parentheses use firm-clustered "
+        r"absorbed; $t$-statistics in parentheses use two-way "
+        r"(firm and fiscal-year) clustered "
         r"standard errors. ***, **, * denote significance at the 1\%, 5\%, "
         r"and 10\% levels."
     )
@@ -539,7 +545,7 @@ def subperiod_to_latex(results: dict, path: Path | None = None) -> str:
         r"$\ln(\sigma_{i,t+1}^{[30]})$. UncDensity and LitDensity are the "
         r"LM-Uncertainty and LM-Litigious word densities on Item~1A. All "
         r"financial controls and SIC2$+$year fixed effects are included. "
-        r"Standard errors clustered by firm. ***, **, * denote significance "
+        r"Standard errors are two-way clustered by firm and fiscal year. ***, **, * denote significance "
         r"at the 1\%, 5\%, and 10\% levels."
     )
     lines.append(r"\end{table}")
@@ -644,6 +650,33 @@ def main() -> None:
                         path=TEX_TABLE_DIR / "main_30d.tex",
                         horizon_label="30 days",
                         label="tab:main_30d")
+
+    # ── H3 Wald test: β^unc = β^lit on the headline (column 5) ──
+    h3_res = res30[-1]
+    try:
+        import numpy as np
+        b_unc = h3_res.params[UNC_VAR]
+        b_lit = h3_res.params[LIT_VAR]
+        cov = h3_res.cov
+        var_diff = (cov.loc[UNC_VAR, UNC_VAR]
+                    + cov.loc[LIT_VAR, LIT_VAR]
+                    - 2 * cov.loc[UNC_VAR, LIT_VAR])
+        se_diff = float(np.sqrt(var_diff))
+        diff = float(b_unc - b_lit)
+        z = diff / se_diff
+        # two-sided p-value from standard normal
+        from scipy.stats import norm
+        p = 2 * (1 - norm.cdf(abs(z)))
+        # 95% CI on β^unc
+        se_unc = float(np.sqrt(cov.loc[UNC_VAR, UNC_VAR]))
+        ci_lo = b_unc - 1.96 * se_unc
+        ci_hi = b_unc + 1.96 * se_unc
+        print(f"\n  H3 Wald test  H0: β^unc = β^lit")
+        print(f"    diff = {diff:+.3f}  se = {se_diff:.3f}  "
+              f"z = {z:+.2f}  p = {p:.4f}")
+        print(f"  95% CI on β^unc: [{ci_lo:+.2f}, {ci_hi:+.2f}]")
+    except Exception as exc:  # pragma: no cover
+        print(f"  Wald test failed: {exc}")
 
     print("\n=== Headline table (365-day horizon) ===")
     df365 = load_text_panel(vol_col="vol_next_year", lag_col="lagged_vol")

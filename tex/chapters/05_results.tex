@@ -93,38 +93,42 @@ its two LM sub-components.
 \input{tables/main_30d}
 
 \paragraph{The baseline (Column~1).} Lagged log-volatility carries
-the expected positive coefficient ($+0.170$, $t = +8.65$): a
-one-percent rise in last-year's volatility maps into about
-$0.17\%$ extra volatility this year. Firm size enters negatively
-($-0.070$, $t = -10.32$): larger firms are less volatile.
+the expected positive coefficient ($+0.170$, $t = +2.12$ under
+two-way firm-and-year clustering): a one-percent rise in
+last-year's volatility maps into about $0.17\%$ extra volatility
+this year. The relatively small $t$-statistic on the lagged
+dependent variable reflects the strong residual year-level
+comovement in volatility (e.g.\ the 2020 COVID shock) that
+year clustering correctly accounts for. Firm size enters negatively
+($-0.070$, $t = -5.81$): larger firms are less volatile.
 Profitability is strongly stabilising ($\text{ROA}$
-coefficient~$-1.07$, $t = -12.82$); asset growth raises future
-volatility ($+0.246$, $t = +9.03$); leverage is statistically
+coefficient~$-1.07$, $t = -9.72$); asset growth predicts higher
+future volatility ($+0.246$, $t = +4.34$); leverage is statistically
 indistinguishable from zero, as in much of the volatility
 literature \parencite{campbell2014}. The baseline already explains
 $49\%$ of the in-sample variation in log-volatility.
 
 \paragraph{The volume channel (Columns~2, 4, and~5).} Adding
 $\ln(\text{Words}^{1A})$ alone (Column~2) raises adjusted~$R^2$ to
-$0.505$ and yields a length coefficient of $+0.138$ ($t = +8.79$).
+$0.505$ and yields a length coefficient of $+0.138$ ($t = +8.43$).
 In the joint specification (Column~4), where the composite
 risk-word density is controlled for, the length coefficient is
-$+0.121$ ($t = +7.35$). In the H3-decomposition specification
+$+0.121$ ($t = +7.64$). In the H3-decomposition specification
 (Column~5), where the composite is replaced by its two LM
-sub-components, the length coefficient rises slightly to $+0.130$
-($t = +7.70$). The result is unambiguous: longer risk-factor
-sections predict higher post-filing log-volatility at the 30-day
-horizon. The point estimate of $0.130$ from Column~(5)
-corresponds to roughly an $8\%$ increase in post-filing
-volatility for a one-standard-deviation rise in
+sub-components, the length coefficient is $+0.130$
+($t = +7.16$). The pattern is consistent across specifications:
+longer risk-factor sections are associated with higher post-filing
+log-volatility at the 30-day horizon. The point estimate of
+$0.130$ from Column~(5) corresponds to roughly an $8\%$ increase
+in post-filing volatility for a one-standard-deviation rise in
 $\ln(\text{Words}^{1A})$ ($0.64 \times 0.130 = 0.083$, applied to
 $\ln \sigma$). \textbf{H1 is supported.}
 
 \paragraph{The specificity channel (Columns~3 and~4).} Adding
 RiskDensity alone (Column~3) yields a coefficient of $-7.78$
-($t = -6.13$). In the joint specification, where the volume channel
+($t = -5.40$). In the joint specification, where the volume channel
 is controlled for, the coefficient remains negative and significant
-at $-3.88$ ($t = -2.74$, $p = 0.006$). The fact that the density
+at $-3.88$ ($t = -2.68$, $p = 0.007$). The fact that the density
 coefficient halves once length is controlled for is exactly the
 mechanical pattern anticipated in
 Section~\ref{ssec:why_both}: about half of what looked like a
@@ -139,25 +143,33 @@ in much prior work would have hidden.
 
 \paragraph{The boilerplate decomposition (Column~5).} Replacing
 the composite RiskDensity by its two LM sub-components reveals
-that the negative specificity effect of Column~(4) is carried
-entirely by the LM-Litigious sub-list. LitDensity enters with a
-coefficient of $-6.16$ ($t = -3.35$, $p < 0.001$), while
+that the negative specificity association of Column~(4) is carried
+almost entirely by the LM-Litigious sub-list. LitDensity enters
+with a coefficient of $-6.16$ ($t = -3.38$, $p < 0.001$), while
 UncDensity enters with a small and statistically insignificant
-coefficient of $-1.28$ ($t = -0.68$, $p = 0.50$). A formal
-$t$-test of $H_0: \beta^{\text{unc}} = \beta^{\text{lit}}$ rejects
-at the 5\%~level. Adjusted $R^2$ in Column~(5) is essentially
+coefficient of $-1.28$ ($t = -0.62$, $p = 0.53$). A formal Wald
+test of $H_0: \beta^{\text{unc}} = \beta^{\text{lit}}$ yields
+$z = +1.91$ ($p = 0.056$), so the two coefficients are
+distinguishable at the $10\%$~but not the $5\%$~level under the
+full two-way clustering scheme. The $95\%$~confidence interval on
+$\beta^{\text{unc}}$ is wide ($[-5.30, +2.74]$): the data are
+consistent with a modestly negative uncertainty effect, but cannot
+rule out zero. Adjusted $R^2$ in Column~(5) is essentially
 identical to that of the composite specification in Column~(4)
 ($0.5068$ vs.\ $0.5064$), because the litigious sub-list captures
-the variance that drives the composite. The H2 specificity effect
-is therefore not an effect of generic ``risk vocabulary'' as the
-composite would suggest, but specifically of cautionary,
-legal-process language of the kind that
-\textcite{nelson2007,cazier2021} associate with mature, legally
-supervised disclosure environments. \textbf{H3 is supported.}
+the variance that drives the composite. The H2 specificity
+association is therefore concentrated in the litigious rather
+than the uncertainty sub-list, consistent with the cautionary,
+legal-process language that
+\textcite{nelson2007,cazier2021} link to mature, legally
+supervised disclosure environments. \textbf{H3 is supported in the
+cross-section}, with the qualifications discussed in
+Section~\ref{sec:boilerplate_results} and the firm-FE caveat of
+Section~\ref{sec:robustness_firmfe}.
 
 \paragraph{Joint significance and incremental fit.} The joint test
 of $H_0: \beta^{\text{len}} = \beta^{\text{unc}} = \beta^{\text{lit}}
-= 0$ in Column~(5) rejects with $F(3, \cdot) > 40$. Adding the
+= 0$ in Column~(5) rejects at the 1\%~level. Adding the
 three text variables to the baseline raises adjusted $R^2$ from
 $0.492$ (Column~1) to $0.507$ (Column~5), an increment that is
 small in absolute terms because the financial baseline already
@@ -182,12 +194,12 @@ is the analogous one-year window for the prior filing year.
 
 The signs and significance pattern of all three text variables
 survive at the annual horizon. In the H1+H2 joint specification
-(Column~4) $\beta^{\text{len}} = +0.056$ ($t = +7.01$) and
-$\beta^{\text{dens}} = -2.19$ ($t = -3.50$, $p < 0.001$). In the
+(Column~4) $\beta^{\text{len}} = +0.056$ ($t = +4.53$) and
+$\beta^{\text{dens}} = -2.19$ ($t = -3.55$, $p < 0.001$). In the
 H1+H3 decomposition (Column~5) $\beta^{\text{len}} = +0.061$
-($t = +7.35$), $\beta^{\text{lit}} = -3.39$ ($t = -4.38$,
-$p < 0.001$), and $\beta^{\text{unc}} = -0.86$ ($t = -0.99$,
-$p = 0.32$). What changes between the 30-day and 365-day windows is
+($t = +4.93$), $\beta^{\text{lit}} = -3.39$ ($t = -3.91$,
+$p < 0.001$), and $\beta^{\text{unc}} = -0.86$ ($t = -1.08$,
+$p = 0.28$). What changes between the 30-day and 365-day windows is
 the magnitude: the length coefficient is roughly half of the
 30-day estimate; the litigious coefficient is roughly $55\%$ of the
 30-day estimate. Both shrink toward zero as the volatility window
@@ -213,18 +225,18 @@ financial controls and fixed effects are unchanged.
 Three patterns emerge. First, $\ln(\text{Words}^{1A})$ enters with
 a positive and highly significant coefficient at every horizon,
 ranging from $+0.195$ at 5~days to $+0.061$ at 365~days, with
-$t$-statistics between $+7.06$ and $+8.36$. The volume channel is
+$t$-statistics between $+4.93$ and $+8.78$. The volume association is
 robust across horizons. Second, LitDensity enters with a negative
-coefficient at every horizon and is significant at the 5\% level
-from 5~days onward and at the 1\% level from 10~days onward; the
-$t$-statistics range from $-2.28$ at 5~days to $-4.44$ at 90~days.
-Third, UncDensity is small in absolute value and statistically
-indistinguishable from zero at every horizon, with $|t| \leq 1$ at
-all windows except 5~days. The qualitative pattern of
-Column~(5) of Table~\ref{tab:main_30d} therefore replicates at
-every horizon the data admit: the negative effect of risk-word
-language is a litigious-language effect, not an uncertainty-language
-effect.
+coefficient at every horizon and is significant at the 1\% level
+from 10~days onward; the $t$-statistics range from $-2.88$ at
+10~days to $-4.02$ at 180~days. Third, UncDensity is small in
+absolute value and statistically indistinguishable from zero at
+every horizon, with $|t| \leq 1.1$ at all windows. The qualitative
+pattern of Column~(5) of Table~\ref{tab:main_30d} therefore
+replicates at every horizon the data admit: the negative
+association between risk-word language and post-filing volatility
+is a litigious-language association, not an uncertainty-language
+one.
 
 The lagged-dependent-variable coefficient also rises with horizon,
 from about $0.030$ at 5~days to $0.566$ at 365~days, reflecting the

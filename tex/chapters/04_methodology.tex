@@ -190,12 +190,12 @@ volatility response to a denser Item~1A at \emph{constant} length
 Variance-inflation factors for both variables are below 1.5 in the
 joint specification, well within conventional thresholds.
 
-This decomposition is the methodological contribution of the
-thesis. As discussed in Section~\ref{sec:lit_specificity}, the
-dictionary-only risk measure used in much prior work mixes the two
-channels into one statistic; entering them jointly recovers two
-opposite-signed effects that partially cancel when only the ratio
-is examined.
+This joint specification of length and density is one of the
+methodological points of the thesis. As discussed in
+Section~\ref{sec:lit_specificity}, the dictionary-only risk measure
+used in much prior work mixes the two channels into one statistic;
+entering them jointly recovers two opposite-signed associations
+that partially cancel when only the ratio is examined.
 
 
 % ─────────────────────────────────────────────────────────────────────────────
@@ -288,16 +288,22 @@ persistent industry-level differences in risk vocabulary or risk
 levels.
 
 \paragraph{Standard errors.}
-Standard errors are clustered at the firm level following
-\textcite{petersen2009}, which makes inference robust to arbitrary
-within-firm correlation. Two features of the data make this
-particularly important. First, the dependent variable is itself a
+Standard errors are two-way clustered by firm and fiscal year
+following \textcite{petersen2009} and
+\textcite{cameron2011robust}, which makes inference robust to
+arbitrary within-firm correlation \emph{and} to arbitrary
+within-year cross-sectional correlation in the residuals. Three
+features of the data make the year dimension important alongside
+the firm dimension. First, the dependent variable is itself a
 volatility estimate computed on a rolling post-filing window, and
 consecutive firm-year windows from a single firm overlap. This
 induces strong serial correlation in $\ln \sigma_{i,t+1}$ that
 ordinary heteroskedasticity-robust standard errors would
 understate. Second, omitted firm-specific risk characteristics are
-likely to persist over time. Firm clustering addresses both
+likely to persist over time. Third, calendar-year shocks (most
+visibly the 2020 COVID shock) generate strong cross-sectional
+correlation in residuals within a fiscal year that one-way firm
+clustering would miss. Two-way clustering addresses all three
 concerns simultaneously without imposing a particular correlation
 structure.
 
