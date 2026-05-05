@@ -16,7 +16,7 @@
 \input{makra}
 
 %%% Thesis title (exact according to assignment)
-\def\NazevPrace{Textual-Financial Divergence and Stock Return Volatility: Evidence from U.S. Corporate Filings}
+\def\NazevPrace{Volume, Specificity, and Boilerplate: A Decomposition of 10-K Risk-Factor Language and Post-Filing Stock Return Volatility}
 
 %%% Author's name
 \def\AutorPrace{Šimon Slanský}
@@ -45,74 +45,83 @@
 \def\Abstrakt{%
 Výroční zprávy amerických firem (formulář 10-K) obsahují jak auditovaná
 finanční data, tak rozsáhlé textové části psané vedením společnosti.
-Většina empirických modelů však tyto dva informační kanály zkoumá
-odděleně.
+Sekce Rizikové faktory (Item~1A) je tématem dvou paralelních literatur,
+jejichž predikce směřují opačnými směry. Jedna~--- reprezentovaná
+Campbellem a~spol. (2014)~--- spojuje větší \emph{objem} rizikové
+diskuze s~vyšší následnou volatilitou. Druhá~--- reprezentovaná
+Hopem, Hu a~Lu (2016)~--- spojuje vyšší \emph{specifičnost} rizikové
+diskuze s~nižší volatilitou. Protože hustota rizikových slov používaná
+v~předchozí literatuře má délku sekce ve~jmenovateli, oba kanály jsou
+v~ní smíšeny v~jediné statistice.
 %
-Tato práce zkoumá, zda nesoulad mezi směrem změny manažerského jazyka
-a~směrem souběžné finanční změny---označovaný jako
-\emph{textuálně-finanční divergence}---předpovídá budoucí volatilitu
-akciových výnosů.
+Tato práce dekomponuje měření na dvě nezávislé proměnné~---
+logaritmus počtu slov v~Item~1A a~hustotu rizikových slov dle
+slovníku Loughran--McDonald~--- a~vstupuje s~nimi společně do regrese
+log-volatility po zveřejnění s~odvětvovými a~ročními fixními efekty
+a~clustrovanými chybami na úrovni firmy.
 %
-Na nevyváženém panelu 537 velkých amerických firem za fiskální
-roky 2010--2024 (6\,299 pozorování v~regresním vzorku) extrahuji sekce Rizikové faktory
-(Item~1A) a~Diskusi vedení (Item~7) z~každé zprávy 10-K pomocí vlastního
-parseru SEC EDGAR.  Meziroční změny sentimentu, hustoty rizikových slov
-a~textové podobnosti jsou kombinovány se standardními finančními
-kontrolními proměnnými v~OLS regresích s~absorbovanými odvětvovými
-a~ročními fixními efekty.
+Na nevyváženém panelu 535 velkých amerických firem za fiskální
+roky 2010--2024 (5\,691 pozorování při 30denním horizontu) je
+delší Item~1A spojen s~vyšší volatilitou (koeficient $+0{,}121$;
+$t=+7{,}35$), zatímco hustší Item~1A je při kontrolované délce
+spojen s~\emph{nižší} volatilitou (koeficient $-3{,}88$;
+$t=-2{,}74$). Oba znaménka i~významnost jsou potvrzeny při všech
+šesti horizontech od~5 do~365~dní a~přežívají dělení vzorku na
+období před~COVID a~během~COVID. Implikovaný poločas signálu, fitovaný
+exponenciálním modelem, činí přibližně 256 dní pro objemový kanál
+a~386 dní pro specifický kanál.
 %
-Výsledky základního finančního modelu ukazují, že zpožděná volatilita,
-velikost firmy a~ziskovost společně vysvětlují 65,4\,\% průřezové variace
-v~anualizované volatilitě po zveřejnění zprávy.  Zpožděná volatilita je
-nejsilnějším prediktorem (koeficient 0,55; $t=20{,}7$), ROA má silně
-negativní vliv ($-0,22$; $t=-7{,}9$) a~růst aktiv vstupuje kladně
-($+0,03$; $t=3{,}1$).  Výsledky textové analýzy a~modelu divergence budou
-doplněny.
-%
-Pokud se divergence potvrdí jako významný prediktor, mohla by sloužit jako
-nový signál pro identifikaci firem, jejichž narativní zveřejnění si
-zaslouží pozornější posouzení, s~implikacemi pro řízení rizik
-a~regulatorní dohled nad kvalitou firemního výkaznictví.
+Výsledky podporují obě teoretické literatury současně~--- kanály
+fungují, ale opačnými směry~--- a~ukazují, že
+slovníková hustota rizikových slov, používaná v~předchozí praxi,
+podhodnocuje signál o~specifičnosti, protože jej míchá s~objemovým
+kanálem skrze společný jmenovatel.
 }
 
 %%% Abstract in English
 \def\AbstraktEN{%
-Corporate 10-K filings consist of both audited financial data and extensive
-narrative sections written by management, yet most empirical models work with
-these two information channels separately. Whether the \emph{interaction}
-between narrative language and reported financial metrics has any
-additional information about firm-level risk is still largely unexplored.
+The Item~1A risk-factor section of the U.S.\ 10-K is the subject of
+two parallel literatures whose predictions point in opposite
+directions. One, represented by \textcite{campbell2014}, links a
+larger \emph{volume} of risk discussion to higher subsequent
+volatility. The other, represented by \textcite{hope2016}, links a
+higher \emph{specificity} of risk discussion to lower volatility.
 %
-This thesis investigates whether a mismatch between the direction of change in
-managerial language and the direction of financial
-change---in this thesis called \emph{textual-financial divergence}---helps determine future
-stock return volatility.
+This thesis takes the question through three layers. It first
+separates the volume measurement (the log word count of Item~1A)
+from the specificity measurement (the Loughran--McDonald risk-word
+density) and enters them jointly in a panel regression of
+post-filing log-volatility. It then decomposes the composite LM
+risk-density into its two sub-lists---uncertainty wording and
+litigious wording---each normalised by Item~1A length, and enters
+them separately. All specifications use two-digit SIC industry and
+fiscal-year fixed effects and firm-clustered standard errors.
 %
-I build an unbalanced panel of 537 large U.S.\ companies over
-fiscal years 2010--2024 (6{,}299 firm-year observations in the regression
-sample) and extract the Risk Factors (Item~1A) and Management's Discussion
-(Item~7) sections from each 10-K filing using a custom SEC EDGAR parser.
-Year-over-year changes in sentiment, risk-word density, and textual
-similarity are computed and combined with standard financial controls in
-absorbing OLS regressions with industry and year fixed effects.
-%
-Results from the financial baseline model show that lagged volatility,
-firm size, and profitability together explain 65.4\,\% of the
-cross-sectional variation in post-filing annualised volatility.
-Lagged volatility is the strongest predictor (coefficient 0.55,
-$t=20.7$), while ROA has a strong negative effect ($-0.22$, $t=-7.9$)
-and asset growth enters positively ($+0.03$, $t=3.1$).
+On an unbalanced panel of 535 large U.S.\ firms over fiscal years
+2010--2024 (5{,}691 firm-years at the 30-day horizon), longer
+Item~1A sections predict higher post-filing volatility
+($\hat{\beta} = +0.130$, $t = +7.70$), while denser Item~1A
+sections, holding length constant, predict \emph{lower} post-filing
+volatility ($\hat{\beta} = -3.88$, $t = -2.74$). The LM
+decomposition reveals that the entire negative effect is carried
+by the LM-Litigious sub-list ($\hat{\beta}^{\text{lit}} = -6.16$,
+$t = -3.35$), while the LM-Uncertainty sub-list is statistically
+indistinguishable from zero. The pattern survives at every horizon
+from 5 to 365~days and on both COVID-era and pre-COVID
+sub-samples; we read it in light of the literature on
+standardised cautionary boilerplate
+\parencite{nelson2007, cazier2021, beatty2019}.
 }
 
 %%% Keywords in Czech
 \def\KlicovaSlova{textová analýza, 10-K výkazy, SEC EDGAR, volatilita,
-informační nejistota, narativní divergence, sentiment, panelová data,
-firemní zprávy}
+rizikové faktory, Item~1A, Loughran--McDonald, slovník slov soudní agendy,
+výstražná jazyková šablona, panelová data, firemní zprávy}
 
 %%% Keywords in English
 \def\KlicovaSlovaEN{textual analysis, 10-K filings, SEC EDGAR, volatility,
-information uncertainty, narrative divergence, sentiment, panel data,
-corporate disclosures}
+risk factors, Item~1A, Loughran--McDonald, LM-Litigious word list,
+boilerplate disclosure, panel data, corporate disclosures}
 
 %%% Title page and mandatory information pages
 %% Compile all chapters

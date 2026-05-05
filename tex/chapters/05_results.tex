@@ -3,258 +3,337 @@
 \label{ch:results}
 % =============================================================================
 
+This chapter reports the empirical results. Section~\ref{sec:descriptive}
+summarises the regression sample. Section~\ref{sec:joint_results}
+presents the headline test of H1 and H2 at the 30-day horizon and
+introduces the H3 boilerplate-decomposition column.
+Section~\ref{sec:annual_results} reproduces the same specification
+at the 365-day horizon to confirm that the results are not an
+artefact of the short-window choice.
+Section~\ref{sec:horizons_results} runs the H1+H3 specification at
+every horizon between 5 and 365~days, and
+Section~\ref{sec:boilerplate_results} discusses the H3 evidence
+formally. Section~\ref{sec:magnitude} translates the estimated
+coefficients into economic magnitudes.
+
 
 % ─────────────────────────────────────────────────────────────────────────────
-\section{Descriptive Statistics}
+\section{Descriptive statistics}
 \label{sec:descriptive}
 % ─────────────────────────────────────────────────────────────────────────────
 
 Table~\ref{tab:summary} reports summary statistics for the regression
-sample.  The dependent variable, post-filing annualised volatility, has a
-mean of about 0.33 and a standard deviation of 0.17, showing large
-cross-sectional differences in firm-level risk.  The interquartile range
-(0.22 to 0.39) points to a right-skewed distribution, consistent with
-occasional spikes during market stress periods such as 2020.
+sample at the 30-day horizon. The dependent variable is post-filing
+volatility in logs (equation~\ref{eq:vol}); its distribution is
+approximately symmetric with mean
+$\ln \sigma_{i,t+1}^{[30]} \approx -1.34$ and standard deviation
+$\approx 0.59$, and an interquartile range running from $-1.74$ to
+$-1.06$. In raw units this corresponds to a typical annualised
+post-filing volatility around $0.26$ and a P25--P75 band of roughly
+$0.18$--$0.35$, in line with the right-skewed distribution typical
+of equity volatility.
 
-Lagged volatility has a nearly identical distribution, as expected for a
-persistent series.  Firm size, measured as $\ln(\text{Total Assets})$,
-ranges from mid-sized (P25~$\approx$~22.1) to large companies
-(P75~$\approx$~24.2).  Leverage centres around 0.61 with moderate spread.
-ROA has a mean near 0.06, and asset growth averages about 0.12 with a
-long right tail driven by acquisitive firms.
+Lagged log-volatility has a near-identical distribution as expected
+for a persistent series. Firm size is measured as the natural log of
+total assets in dollars, with a sample mean of $23.18$ (roughly
+$\$11.7$~billion in assets) and an interquartile range from
+$22.19$ to $24.24$ (roughly $\$4.4$ to $\$33.6$~billion); this
+confirms the focus on large, liquid firms motivated in
+Section~\ref{sec:sample_selection}. Leverage centres around $0.62$
+with moderate spread; ROA averages $0.06$ with a long left tail; and
+asset growth averages $0.11$ with a long right tail driven by
+acquisitive firms.
+
+The two text variables show economically meaningful spread.
+$\ln(\text{Words}^{1A})$ has a mean of $9.03$ and a standard
+deviation of $0.64$, corresponding to a median Item~1A of roughly
+$8{,}800$~words and an interquartile range from $\approx 5{,}650$
+to $\approx 12{,}300$~words. RiskDensity has a mean of $0.051$ and
+a standard deviation of $0.006$: roughly $5\%$ of the words in a
+typical Item~1A come from the LM uncertainty or litigious lists.
+The two LM sub-components used for H3 are unevenly sized: the
+uncertainty share averages $0.034$ ($\approx 68\%$ of
+RiskDensity) and the litigious share averages $0.016$ ($\approx
+32\%$). The two sub-shares are essentially uncorrelated
+($r \approx -0.05$ in the regression sample), confirming that the
+decomposition delivers two genuinely separate regressors.
 
 \input{tables/summary_statistics}
 
-Table~\ref{tab:correlation} presents pairwise Pearson correlations.
-Volatility and its lag are strongly positively correlated ($r = 0.61$),
-confirming persistence.  Firm size correlates negatively with volatility
-($r \approx -0.32$), in line with the well-known size--risk relationship.
-ROA also correlates negatively with volatility ($r \approx -0.33$),
-while leverage and asset growth show weaker univariate links.
-None of the pairwise correlations among the explanatory variables
-exceed 0.40 in absolute value, reducing multicollinearity concerns
-(variance inflation factors are below 1.4 for all regressors).
+Table~\ref{tab:correlation} reports pairwise Pearson correlations.
+Lagged log-volatility is the strongest single predictor of
+log-volatility ($r = 0.35$). Larger firms have lower log-volatility
+($r \approx -0.19$) and higher profitability also tracks lower
+log-volatility ($r \approx -0.23$), in line with the well-known
+size--risk and earnings-quality relationships. The two text
+variables are correlated at $r = -0.30$: longer Item~1A sections
+tend to have lower risk-word density, consistent with their
+narrative being padded by firm-specific text rather than by extra
+generic risk vocabulary. The negative correlation is moderate and
+leaves both signals separately identifiable in the joint
+specification.
 
 \input{tables/correlation_matrix}
 
 
 % ─────────────────────────────────────────────────────────────────────────────
-\section{Baseline: Financial Determinants of Volatility}
-\label{sec:baseline}
+\section{Volume, specificity, and boilerplate at the 30-day horizon}
+\label{sec:joint_results}
 % ─────────────────────────────────────────────────────────────────────────────
 
-Table~\ref{tab:baseline} reports OLS estimates of post-filing
-annualised volatility on progressively richer sets of financial
-controls, estimated as described in Section~\ref{sec:estimation}.
-The three columns correspond to nested specifications: lagged
-volatility only (Column~1), with firm size and leverage added
-(Column~2), and the full baseline including return on assets and
-asset growth (Column~3).
+Table~\ref{tab:main_30d} reports the headline test of H1, H2, and
+H3. Column~(1) is the financial baseline; Column~(2) adds Item~1A
+length in logs (the volume channel); Column~(3) adds the composite
+risk-word density (the specificity channel); Column~(4) is the joint
+specification of equation~\ref{eq:joint_model} that nests H1 and H2;
+Column~(5) is the H3 decomposition specification of
+equation~\ref{eq:decomposition_model}, which replaces RiskDensity by
+its two LM sub-components.
 
-\input{tables/baseline_regression}
+\input{tables/main_30d}
 
-\paragraph{Volatility persistence.}
-Column~(1) includes only lagged volatility ($\sigma_{i,t}$) alongside the
-fixed effects.  The coefficient of $0.67$ ($t = 33.5$) confirms the
-well-documented persistence of firm-level return volatility: a one
-percentage-point rise in last year's annualised volatility maps into
-about a two-thirds percentage-point rise the following year.  This single
-regressor, combined with industry and year fixed effects, already
-explains about $63\%$ of the cross-sectional and time-series variation
-in post-filing volatility, showing that most of the predictable component
-of risk is mechanical.
+\paragraph{The baseline (Column~1).} Lagged log-volatility carries
+the expected positive coefficient ($+0.170$, $t = +8.65$): a
+one-percent rise in last-year's volatility maps into about
+$0.17\%$ extra volatility this year. Firm size enters negatively
+($-0.070$, $t = -10.32$): larger firms are less volatile.
+Profitability is strongly stabilising ($\text{ROA}$
+coefficient~$-1.07$, $t = -12.82$); asset growth raises future
+volatility ($+0.246$, $t = +9.03$); leverage is statistically
+indistinguishable from zero, as in much of the volatility
+literature \parencite{campbell2014}. The baseline already explains
+$49\%$ of the in-sample variation in log-volatility.
 
-\paragraph{Firm size and capital structure.}
-Column~(2) adds firm size, measured as the natural logarithm of total
-assets, and book leverage (total liabilities over total assets).  Size
-enters with a negative and highly significant coefficient
-($-0.017$, $t = -7.4$): larger firms exhibit lower future volatility,
-consistent with the size--risk relationship documented for U.S.\ equities
-by \textcite{chi2017} and \textcite{campbell2014}.  Leverage is
-economically negligible and statistically indistinguishable from zero
-($t = 0.17$); the industry fixed effects appear to absorb most of the
-cross-sectional dispersion in capital structure, leaving little residual
-variation through which leverage can operate.
+\paragraph{The volume channel (Columns~2, 4, and~5).} Adding
+$\ln(\text{Words}^{1A})$ alone (Column~2) raises adjusted~$R^2$ to
+$0.505$ and yields a length coefficient of $+0.138$ ($t = +8.79$).
+In the joint specification (Column~4), where the composite
+risk-word density is controlled for, the length coefficient is
+$+0.121$ ($t = +7.35$). In the H3-decomposition specification
+(Column~5), where the composite is replaced by its two LM
+sub-components, the length coefficient rises slightly to $+0.130$
+($t = +7.70$). The result is unambiguous: longer risk-factor
+sections predict higher post-filing log-volatility at the 30-day
+horizon. The point estimate of $0.130$ from Column~(5)
+corresponds to roughly an $8\%$ increase in post-filing
+volatility for a one-standard-deviation rise in
+$\ln(\text{Words}^{1A})$ ($0.64 \times 0.130 = 0.083$, applied to
+$\ln \sigma$). \textbf{H1 is supported.}
 
-\paragraph{Profitability and growth.}
-The full specification in Column~(3) adds return on assets and asset
-growth.  ROA carries a large negative coefficient ($-0.224$,
-$t = -7.9$), confirming that profitable firms face lower subsequent
-volatility, in line with the earnings-quality intuition of
-\textcite{francis2005}.  Asset growth enters positively
-($+0.026$, $t = 3.1$): rapid expansion is associated with elevated
-future uncertainty, consistent with the operational-risk channel.
-Adding these two regressors raises the adjusted~$R^2$ from $0.643$ to
-$0.654$---a modest but statistically meaningful improvement that refines,
-rather than dominates, the persistence-and-size benchmark.
+\paragraph{The specificity channel (Columns~3 and~4).} Adding
+RiskDensity alone (Column~3) yields a coefficient of $-7.78$
+($t = -6.13$). In the joint specification, where the volume channel
+is controlled for, the coefficient remains negative and significant
+at $-3.88$ ($t = -2.74$, $p = 0.006$). The fact that the density
+coefficient halves once length is controlled for is exactly the
+mechanical pattern anticipated in
+Section~\ref{ssec:why_both}: about half of what looked like a
+``risk-density effect'' in Column~(3) was in fact the volume effect
+operating through the section's word-count denominator. Once
+$\ln(\text{Words}^{1A})$ is partialled out, the residual density
+effect is purely specificity in the \textcite{hope2016} sense: a
+denser, more boilerplate Item~1A is associated with \emph{lower}
+post-filing volatility. \textbf{H2 is supported}, and the joint
+specification reveals an effect that the dictionary-only ratio used
+in much prior work would have hidden.
 
-A noteworthy by-product of the full specification is that the lagged
-volatility coefficient declines from $0.67$ in Column~(1) to $0.55$
-($t = 20.7$) in Column~(3).  Roughly one-fifth of what looked like raw
-persistence is in fact mediated by slower-moving fundamentals---size,
-profitability, and growth---that are themselves persistent.  Lagged
-volatility nonetheless remains by a wide margin the most informative
-single regressor in the model.
+\paragraph{The boilerplate decomposition (Column~5).} Replacing
+the composite RiskDensity by its two LM sub-components reveals
+that the negative specificity effect of Column~(4) is carried
+entirely by the LM-Litigious sub-list. LitDensity enters with a
+coefficient of $-6.16$ ($t = -3.35$, $p < 0.001$), while
+UncDensity enters with a small and statistically insignificant
+coefficient of $-1.28$ ($t = -0.68$, $p = 0.50$). A formal
+$t$-test of $H_0: \beta^{\text{unc}} = \beta^{\text{lit}}$ rejects
+at the 5\%~level. Adjusted $R^2$ in Column~(5) is essentially
+identical to that of the composite specification in Column~(4)
+($0.5068$ vs.\ $0.5064$), because the litigious sub-list captures
+the variance that drives the composite. The H2 specificity effect
+is therefore not an effect of generic ``risk vocabulary'' as the
+composite would suggest, but specifically of cautionary,
+legal-process language of the kind that
+\textcite{nelson2007,cazier2021} associate with mature, legally
+supervised disclosure environments. \textbf{H3 is supported.}
 
-\paragraph{Benchmark for textual analysis.}
-The full baseline model explains $65.4\%$ of the variation in
-post-filing volatility.  This adjusted~$R^2$ is the bar that the
-text model and the divergence model must clear, on the criteria
-listed in Section~\ref{sec:hypothesis_tests}.  The bar is high:
-financial fundamentals together with volatility persistence already
-capture most of the predictable variation in firm-level risk,
-leaving narrative disclosures to compete for what remains.
-
-
-% ─────────────────────────────────────────────────────────────────────────────
-\section{Textual Features and Volatility (H1)}
-\label{sec:text_results}
-% ─────────────────────────────────────────────────────────────────────────────
-
-Table~\ref{tab:text_regression} adds the three textual features to
-the full baseline.  Column~(1) reproduces the financial baseline.
-Column~(2) adds the two within-firm dictionary measures,
-$\Delta$Sentiment and $\Delta$Risk.  Column~(3) further adds TextSim,
-the cosine similarity of the firm's TF-IDF vector with its own
-prior-year filing.
-
-\input{tables/text_regression}
-
-\paragraph{Sentiment dominates.}
-Of the three textual variables, only $\Delta$Sentiment carries
-information about future volatility.  Its coefficient is positive and
-strongly significant ($+2.04$, $t = 4.23$ in Column~3): firms whose
-MD\&A tone became more positive than usual go on to experience
-higher post-filing volatility.  Read against the prior of
-\textcite{loughran2011}, who find that more pessimistic 10-K tone
-predicts higher returns and volatility, the positive sign here may
-look surprising.  It is reconciled in the next section, where the
-divergence variable separates the part of $\Delta$Sentiment that
-tracks contemporaneous earnings from the part that does not.
-
-\paragraph{Risk-word change adds nothing.}
-$\Delta$Risk is essentially zero ($-0.012$, $t = -0.02$).  This is
-consistent with evidence that the Item~1A risk section has become
-heavily templated since the 2005 SEC mandate
-\parencite{campbell2014}: year-on-year changes in risk-word density
-within a firm carry little new information once industry and year
-fixed effects are absorbed.
-
-\paragraph{TextSim is borderline.}
-The textual-similarity measure carries a small positive coefficient
-($+0.063$, $t = 1.86$, significant at the 10\% level only).
-Mechanically, a value close to one means that this year's filing
-reads almost identically to last year's, which one might expect to
-\emph{lower} subsequent uncertainty.  The weakly positive sign goes
-in the opposite direction and is not robust to the inclusion of the
-divergence variable, so we do not over-interpret it.
-
-\paragraph{Joint significance.}
-A Wald test of $H_0\!: \boldsymbol{\gamma} = \mathbf{0}$ on the
-three textual coefficients in Column~(3) rejects strongly
-($\chi^2(3) = 20.51$, $p = 0.00013$), and the adjusted~$R^2$ rises
-from $0.643$ to $0.645$.  The improvement in fit is small in
-absolute terms because the financial baseline already explains the
-bulk of predictable volatility, but the joint test confirms that
-textual disclosures contribute information that is statistically
-distinct from financial fundamentals.  Both criteria for H1 listed
-in Section~\ref{sec:hypothesis_tests} are therefore met:
-\textbf{H1 is supported}.
+\paragraph{Joint significance and incremental fit.} The joint test
+of $H_0: \beta^{\text{len}} = \beta^{\text{unc}} = \beta^{\text{lit}}
+= 0$ in Column~(5) rejects with $F(3, \cdot) > 40$. Adding the
+three text variables to the baseline raises adjusted $R^2$ from
+$0.492$ (Column~1) to $0.507$ (Column~5), an increment that is
+small in absolute terms because the financial baseline already
+captures the bulk of predictable volatility but is large by the
+standards of the textual-disclosure literature
+\parencite{kravet2013, campbell2014}. The three text variables are
+informative both individually and jointly.
 
 
 % ─────────────────────────────────────────────────────────────────────────────
-\section{Textual--Financial Divergence (H2)}
-\label{sec:divergence_results}
+\section{The same channels at the 365-day horizon}
+\label{sec:annual_results}
 % ─────────────────────────────────────────────────────────────────────────────
 
-The central test of the thesis is reported in
-Table~\ref{tab:divergence_regression}.  Column~(1) again repeats the
-financial baseline; Column~(2) is the full text model from the
-previous section; Column~(3) adds the Divergence variable defined
-in equation~\ref{eq:divergence}.
+Table~\ref{tab:main_365d} re-estimates the same five nested
+specifications with the dependent variable replaced by
+$\ln \sigma_{i,t+1}^{[365]}$, the log of annualised volatility over
+the full year following the filing. The lagged dependent variable
+is the analogous one-year window for the prior filing year.
 
-\input{tables/divergence_regression}
+\input{tables/main_365d}
 
-\paragraph{The divergence coefficient.}
-Divergence enters with a negative coefficient of $-4.85$
-($t = -1.86$, $p = 0.063$) on the one-year horizon.  The sign goes
-in the direction predicted by H2 under the credible-signalling
-reading set out in Section~\ref{sec:hypothesis_tests}: tone that
-moves more positively than concurrent earnings warrant lowers
-post-filing volatility, consistent with investors treating the
-gap as a costly and therefore credible signal of management's
-private information.  At the one-year horizon the result is only
-marginally significant; the next subsection shows that significance
-strengthens sharply once shorter post-filing windows are used, a
-pattern revisited in detail in Chapter~\ref{ch:robustness}.
-
-\paragraph{Why $\Delta$Sentiment changes when divergence is added.}
-The coefficient on $\Delta$Sentiment more than triples between
-Column~(2) and Column~(3) (from $+2.04$ to $+6.57$).  This is not
-instability but mechanics: by construction, Divergence is the part
-of $\Delta$Sentiment that is orthogonal to $\Delta$ROA within firm
-(Section~\ref{ssec:divergence}).  Once the orthogonal part is
-controlled for explicitly, the residual $\Delta$Sentiment
-coefficient measures the volatility response to the part of tone
-that \emph{does} co-move with concurrent earnings.  The two effects
-go in opposite directions and partially cancelled in Column~(2).
-Splitting them clarifies the pattern: tone that tracks fundamentals
-raises volatility (consistent with operating-risk amplification),
-while tone that decouples from fundamentals lowers it (consistent
-with credible signalling).
-
-\paragraph{Incremental fit.}
-Adding Divergence raises the adjusted~$R^2$ from $0.6443$ to
-$0.6448$.  The improvement is small in absolute terms, as is to be
-expected when the dependent variable is annual volatility on top of
-a baseline that already captures persistence and fundamentals; but
-it is in the predicted direction, and the much larger improvements
-at shorter horizons (Section~\ref{sec:robustness_horizons}) confirm
-that divergence carries economic information.  H2 is therefore
-supported on the second criterion of
-Section~\ref{sec:hypothesis_tests} (incremental $R^2$) and on the
-sign criterion; the strict 5\%-significance criterion is met at
-every horizon shorter than one year (see
-Table~\ref{tab:horizons}), which we read as overall support for H2
-across the relevant economic time scales.
+The signs and significance pattern of all three text variables
+survive at the annual horizon. In the H1+H2 joint specification
+(Column~4) $\beta^{\text{len}} = +0.056$ ($t = +7.01$) and
+$\beta^{\text{dens}} = -2.19$ ($t = -3.50$, $p < 0.001$). In the
+H1+H3 decomposition (Column~5) $\beta^{\text{len}} = +0.061$
+($t = +7.35$), $\beta^{\text{lit}} = -3.39$ ($t = -4.38$,
+$p < 0.001$), and $\beta^{\text{unc}} = -0.86$ ($t = -0.99$,
+$p = 0.32$). What changes between the 30-day and 365-day windows is
+the magnitude: the length coefficient is roughly half of the
+30-day estimate; the litigious coefficient is roughly $55\%$ of the
+30-day estimate. Both shrink toward zero as the volatility window
+lengthens, exactly as the event-study evidence of
+\textcite{loughran2011} would predict, but neither sign nor
+significance reverses. The split between an active LitDensity and
+a null UncDensity is preserved.
 
 
 % ─────────────────────────────────────────────────────────────────────────────
-\section{Economic Magnitude}
+\section{Multi-horizon table}
+\label{sec:horizons_results}
+% ─────────────────────────────────────────────────────────────────────────────
+
+Table~\ref{tab:horizons} reports the H1+H3 decomposition
+specification of equation~\ref{eq:decomposition_model} at six
+post-filing horizons: $h \in \{5, 10, 30, 90, 180, 365\}$ calendar
+days. Each column is a separate regression on the full panel;
+financial controls and fixed effects are unchanged.
+
+\input{tables/horizons}
+
+Three patterns emerge. First, $\ln(\text{Words}^{1A})$ enters with
+a positive and highly significant coefficient at every horizon,
+ranging from $+0.195$ at 5~days to $+0.061$ at 365~days, with
+$t$-statistics between $+7.06$ and $+8.36$. The volume channel is
+robust across horizons. Second, LitDensity enters with a negative
+coefficient at every horizon and is significant at the 5\% level
+from 5~days onward and at the 1\% level from 10~days onward; the
+$t$-statistics range from $-2.28$ at 5~days to $-4.44$ at 90~days.
+Third, UncDensity is small in absolute value and statistically
+indistinguishable from zero at every horizon, with $|t| \leq 1$ at
+all windows except 5~days. The qualitative pattern of
+Column~(5) of Table~\ref{tab:main_30d} therefore replicates at
+every horizon the data admit: the negative effect of risk-word
+language is a litigious-language effect, not an uncertainty-language
+effect.
+
+The lagged-dependent-variable coefficient also rises with horizon,
+from about $0.030$ at 5~days to $0.566$ at 365~days, reflecting the
+mechanical fact that longer windows for both the dependent and
+the lagged variable share more of their underlying daily-return
+sample. This is a feature of the data, not of the specification.
+
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{The boilerplate decomposition}
+\label{sec:boilerplate_results}
+% ─────────────────────────────────────────────────────────────────────────────
+
+The headline result of Column~(5) of Table~\ref{tab:main_30d} and
+the consistent across-horizon pattern of
+Table~\ref{tab:horizons} together support a sharp interpretation
+of what the H2 ``specificity effect'' actually is. The composite
+RiskDensity used in much of the prior literature
+\parencite{loughran2011, kravet2013} pools two LM word lists with
+very different production technologies. Our decomposition shows
+that the negative association of RiskDensity with post-filing
+volatility is driven entirely by the LM-Litigious sub-list. Once
+the litigious component is partialled out, the LM-Uncertainty
+component has no incremental association with volatility at any
+horizon.
+
+The magnitude is economically meaningful. A one-standard-deviation
+rise in LitDensity ($\approx 0.005$) corresponds to a
+$0.005 \times 6.16 \approx 2.8\%$ decrease in 30-day annualised
+volatility. The interquartile range of LitDensity
+($\approx 0.006$) implies an $\approx 3.8\%$ swing in volatility
+from the lowest to the highest litigious-density quartile.
+
+The interpretation aligns with the boilerplate-disclosure literature
+reviewed in Section~\ref{sec:lit_boilerplate}.
+\textcite{nelson2007} and \textcite{cazier2021} document that
+litigious-list language in mandatory filings is dominated by
+standardised cautionary boilerplate inserted by legal counsel
+under the safe-harbour regime of the 1995 Private Securities
+Litigation Reform Act, while \textcite{loughran2015} stress that
+uncertainty and litigious wordings are conceptually distinct
+constructs. Firms whose Item~1A is heavier in litigious wording
+are therefore plausibly firms with more institutionalised
+compliance functions and more legally supervised disclosure
+processes, characteristics that prior work
+\parencite{nelson2007, cazier2021, beatty2019} associates with
+lower realised risk. The Item~1A length effect (H1) and the
+litigious-density effect (H3) are then two distinct
+firm-level signals: the former captures how much management has
+chosen to disclose, the latter captures the legal-procedural style
+in which it is disclosed.
+
+A caveat on identification is reserved for
+Section~\ref{sec:robustness_firmfe} of the next chapter.
+\textbf{H3 is supported in the cross-section}, with the LitDensity
+sign holding at every horizon and on both COVID sub-samples;
+whether it survives within-firm absorption is examined separately
+in the robustness chapter.
+
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Economic magnitude}
 \label{sec:magnitude}
 % ─────────────────────────────────────────────────────────────────────────────
 
-The Divergence variable has a within-firm standard deviation of
-about $0.0026$ on the regression sample.  Combining this with the
-estimated coefficients gives the implied effect of a
-one-standard-deviation rise in Divergence on post-filing
-annualised volatility:
-\begin{itemize}
-  \item at the 5-day horizon: $-18.13 \times 0.0026 \approx -0.047$,
-        i.e.\ a drop of about $4.7$ percentage points of annualised
-        volatility, or roughly $19\%$ of the sample mean
-        ($\bar{\sigma}_{5d} = 0.255$);
-  \item at the 30-day horizon: $-13.91 \times 0.0026 \approx
-        -0.036$, about $11\%$ of the sample mean of vol\textsubscript{30d};
-  \item at the one-year horizon: $-4.85 \times 0.0026 \approx
-        -0.013$, about $4\%$ of the sample mean of annual volatility.
-\end{itemize}
-The effect is therefore economically meaningful in the days
-immediately after the filing and decays smoothly with horizon, in
-line with the timing intuition that any credible-signalling channel
-should operate first and decay as new information arrives.  The
-five-day effect of roughly five percentage points of annualised
-volatility is comparable in size to the cross-sectional effect of
-moving a firm from the median to the 25th percentile of size, and
-so is well within the range of effects routinely reported in the
-disclosure literature \parencite{loughran2011, campbell2014}.
+Table~\ref{tab:main_30d} translates straightforwardly into
+economic magnitudes because the dependent variable is in logs and
+the regressors are either in logs or are bounded densities.
 
-The same picture is visible without any model: sorting the
-estimation sample into quartiles by Divergence and computing the
-average post-filing 30-day volatility within each quartile yields a
-near-monotone decline from the lowest to the highest quartile, with
-the top quartile averaging roughly two percentage points of
-annualised volatility lower than the bottom quartile.  The model
-estimate and the model-free sort agree on direction and on rough
-magnitude, which provides reassurance that the regression result is
-not driven by a small subset of influential observations.
+\paragraph{Length.} A one-standard-deviation rise in
+$\ln(\text{Words}^{1A})$ ($\approx 0.64$, corresponding to a
+$\approx 90\%$ increase in word count) implies an
+$0.64 \times 0.130 \approx 8.3\%$ increase in 30-day annualised
+volatility (using the Column~5 estimate). Going from the 25th to
+the 75th percentile of Item~1A length implies an
+$0.78 \times 0.130 \approx 10.1\%$ increase in volatility. Relative
+to a sample-mean annualised volatility of $\approx 0.26$, this is
+roughly $2.6$~percentage points of annualised volatility---an
+economically substantive effect well within the range of
+disclosure effects reported in
+\textcite{loughran2011, campbell2014}.
+
+\paragraph{Composite specificity (H2).} A one-standard-deviation
+rise in RiskDensity ($\approx 0.006$) implies a
+$0.006 \times (-3.88) \approx -2.3\%$ change in 30-day annualised
+volatility. The interquartile range of RiskDensity is
+$\approx 0.008$, implying an $\approx -3.1\%$ swing in volatility
+from the lowest to the highest density quartile.
+
+\paragraph{Litigious sub-component (H3).} A one-standard-deviation
+rise in LitDensity ($\approx 0.005$) implies a
+$0.005 \times (-6.16) \approx -2.8\%$ change in 30-day annualised
+volatility---of the same order of magnitude as the composite H2
+effect, despite LitDensity being only one-third of RiskDensity by
+share. The fact that the entire composite effect can be relocated
+onto a sub-list one-third its size is the empirical content of the
+H3 decomposition: the negative ``specificity'' effect of generic
+risk vocabulary is in fact concentrated in cautionary
+legal-process boilerplate.
+\paragraph{Why the dictionary-only ratio understates the
+specificity channel.} The univariate Column~(3) coefficient on
+RiskDensity is $-7.78$, twice the Column~(4) joint estimate of
+$-3.88$. The reason is the negative correlation between the two
+text variables (Section~\ref{sec:descriptive}): longer Item~1A
+sections tend to be slightly less dense, so omitting length from
+the regression loads part of the (positive) volume effect onto a
+variable ($\text{RiskDensity}$) that is itself negatively
+correlated with length, exaggerating the negative coefficient.
+The joint specification of equation~\ref{eq:joint_model}
+disentangles the two channels and the H3 decomposition
+(equation~\ref{eq:decomposition_model}) localises the resulting
+effect inside the LM lexicon.

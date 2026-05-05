@@ -3,90 +3,222 @@
 \label{ch:robustness}
 % =============================================================================
 
-% TODO: Structure
-%
-% \section{Alternative Volatility Windows}
-% - 63-day and 180-day post-filing windows
-% - Check whether divergence effect is short-lived or persistent
-%
-% \section{Stock Returns as Alternative Dependent Variable}
-% - Re-estimate all three models with post-filing log returns as DV
-% - Weaker signal expected (low cross-sectional R²); included for completeness
-%
-% \section{Alternative Divergence Constructions}
-% - Swap ROA for operating\_roa or ocf\_to\_assets in ΔROA
-% - Use binary DivDummy instead of continuous divergence
-% - Residual-based divergence (regress ΔSent on ΔROA, take residual)
-%
-% \section{Alternative Textual Measures}
-% - Different dictionaries (Henry 2008 vs.\ Loughran--McDonald)
-% - Tf-idf weighting instead of raw word counts
-%
-% \section{Subsample Analysis}
-% - Pre/post-2020 (COVID, supply-chain disruptions, inflation)
-% - High-tech vs.\ traditional industries
-%
-% \section{Sensitivity to Sample Construction}
-% - Excluding firms with fewer than 8 years of data
-% - Effect of fiscal year-end alignment
-% - Winsorisation at 2.5\%/97.5\%
+This chapter checks that the headline results of
+Chapter~\ref{ch:results} survive plausible variations in the
+specification. Section~\ref{sec:robustness_horizons} reviews the
+multi-horizon evidence already documented in
+Section~\ref{sec:horizons_results} from a robustness angle.
+Section~\ref{sec:robustness_subperiods} re-estimates the H1+H3
+decomposition specification on the pre-COVID and COVID-era
+sub-samples. Section~\ref{sec:robustness_firmfe} replaces industry
+fixed effects with firm fixed effects, which absorbs all
+time-invariant firm-level heterogeneity and isolates the
+within-firm year-to-year variation in the three text variables.
+Section~\ref{sec:robustness_failed} closes the chapter with a
+transparent account of the seven alternative H3 candidates that
+were tested and rejected before settling on the LM-list
+decomposition.
+
 
 % ─────────────────────────────────────────────────────────────────────────────
 \section{Alternative post-filing windows}
 \label{sec:robustness_horizons}
 % ─────────────────────────────────────────────────────────────────────────────
 
-The main specifications measure post-filing volatility over a
-365-day window. One year matches the annual frequency of the panel,
-but it has two drawbacks. First, the window is long enough that the
-next 10-K is filed before it ends, so the second half of the window
-already contains information from the next disclosure. Second, prior
-work on text in 10-Ks consistently finds that any predictive power
-shows up in the first weeks or months after the filing and fades
-afterwards \parencite{loughran2011}. A one-year window
-mixes the short signal with many months of unrelated noise.
+The headline specification measures post-filing volatility over a
+30-day window. One month is short enough to capture the bulk of the
+post-filing reaction documented by \textcite{loughran2011} but long
+enough that the volatility estimate is built on roughly 21~trading
+days of returns. To check the choice of window we re-estimate the
+H1+H3 specification of equation~\ref{eq:decomposition_model} at
+five additional horizons (5, 10, 90, 180, and 365~days) and inspect
+the resulting series of coefficients. Table~\ref{tab:horizons}
+reports all six columns side by side; the discussion in
+Section~\ref{sec:horizons_results} is repeated here from a
+robustness angle.
 
-To check whether the main results depend on this choice, the
-divergence model (equation~\ref{eq:divergence_model}) is re-estimated
-with the dependent variable replaced by volatility measured over
-5, 10, 30, 90, and 180~days after the filing. The lagged dependent
-variable is the same firm's volatility computed over the previous
-filing year's window of the same length. All other controls, fixed
-effects, and the firm-clustered standard errors are kept the same.
-Table~\ref{tab:horizons} shows all six horizons side by side; the
-365-day column reproduces the divergence model from
-Chapter~\ref{ch:results}. The 5- and 10-day windows are short
-enough that the volatility estimate is computed from only a handful
-of daily returns, so its standard deviation is mechanically noisier;
-the coefficient, however, is unaffected by this.
+The pattern is unambiguous in three respects. First, all three text
+coefficients keep the predicted sign at every horizon---positive
+for $\ln(\text{Words}^{1A})$, negative for LitDensity, and
+statistically indistinguishable from zero for UncDensity---so
+neither H1 nor H3 reverses for any plausible choice of window.
+Second, the LitDensity coefficient is significant at the 5\% level
+at every horizon, with $|t|$ between $2.28$ (5~days) and $4.44$
+(90~days). Third, the UncDensity coefficient never approaches
+statistical significance, with $|t| \leq 1$ at all windows except
+5~days. The 30-day choice for the headline specification is
+therefore not a window in which the results happen to be
+sharpest---they are sharp at every horizon the data admit.
 
-\input{tables/horizons_regression}
+Both coefficient series also decline approximately monotonically
+in $h$, which is the empirical signature of an event-driven signal
+that is incorporated into prices over weeks rather than years
+\parencite{loughran2011, tetlock2007}. The thesis does not fit a
+formal exponential decay because the coefficient series is
+short and the across-horizon error terms are correlated by the
+sharing of underlying daily returns, which would understate the
+bootstrap CI on any half-life estimate. The qualitative attenuation
+is nonetheless visible by inspection of Table~\ref{tab:horizons}.
 
-The pattern is clear and goes in one direction. The divergence
-coefficient is largest at 5~days ($\delta = -18.13$, $t = -3.27$,
-$p = 0.001$), stays large at 30~days ($-13.91$, $p = 0.002$),
-shrinks to $-10.80$ at 90~days, falls further to $-8.04$ at
-180~days, and reaches $-4.85$ at one year, where it becomes only
-marginally significant. The size of the effect drops roughly by a
-factor of four from the shortest to the longest window, and the
-$t$-statistic moves in the same direction. The 10-day column is the
-only minor break in monotonicity ($\delta = -11.93$, $p = 0.015$);
-this reflects the fact that the volatility estimate at this horizon
-uses only six to eight daily returns and is therefore the noisiest
-of the six dependent variables. The same broad pattern is visible
-for $\Delta$Sentiment, while $\Delta$Risk and TextSim remain small
-at every horizon.
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Pre-COVID and COVID-era sub-samples}
+\label{sec:robustness_subperiods}
+% ─────────────────────────────────────────────────────────────────────────────
 
-Two conclusions follow. First, the headline divergence result is not
-an artefact of the one-year window: the effect is in fact strongest
-in the first trading week after the filing and is highly significant
-at every sub-annual window. The marginal $p$-value in the annual
-specification reported in Chapter~\ref{ch:results} reflects dilution
-by months of unrelated post-filing noise, not the absence of a
-signal. H2 is therefore supported once the dependent variable is
-matched to the horizon over which the textual signal actually
-operates. Second, the decay matches the event-study timing patterns
-documented for textual measures in 10-Ks by \textcite{loughran2011},
-who also find the strongest reaction in the first few trading days
-after the filing; this adds external validity to the divergence
-construction used here.
+The 2020 fiscal year and its aftermath were a structural shock for
+both equity volatility and corporate disclosure: average annualised
+volatility roughly doubled in the spring of 2020 and Item~1A
+sections grew systematically longer as firms added pandemic and
+supply-chain language. To check that the headline results are not
+driven by either the pre-COVID baseline or the COVID-era spike, we
+re-estimate the H1+H3 decomposition specification
+(equation~\ref{eq:decomposition_model}) separately on the two
+sub-periods. Filings with fiscal year $\leq 2019$ form the pre-COVID
+sample (3{,}243~firm-years) and filings with fiscal year $\geq 2020$
+form the COVID-era sample (2{,}448~firm-years). All other features
+of the specification are unchanged. Table~\ref{tab:subperiod}
+reports the result.
+
+\input{tables/subperiods}
+
+The two active text channels are present in both sub-periods with
+the predicted signs and at the same order of magnitude. Length is
+significant at the 1\% level in both ($\beta = +0.103$, $t = +5.45$
+pre-COVID; $\beta = +0.172$, $t = +7.01$ COVID era). LitDensity is
+negative and significant in both ($\beta = -5.49$, $t = -2.52$
+pre-COVID; $\beta = -9.88$, $t = -3.86$ COVID era). UncDensity is
+statistically indistinguishable from zero in both samples,
+consistent with the headline finding that uncertainty wording adds
+no explanatory power once length and litigious wording are
+controlled for. The two active coefficients (length and LitDensity)
+are larger in absolute value in the COVID-era sample, consistent
+with the higher overall level of volatility in that period giving
+more scale to the disclosure signal, but the qualitative pattern is
+identical. The headline finding is not a COVID artefact.
+
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Within-firm identification: firm fixed effects}
+\label{sec:robustness_firmfe}
+% ─────────────────────────────────────────────────────────────────────────────
+
+The headline specification absorbs two-digit SIC industry and
+fiscal-year fixed effects. Coefficients are therefore identified
+from variation \emph{within an industry-year cell}, which removes
+the most plausible confounders (industry-level differences in
+risk vocabulary and macroeconomic time effects) but still allows
+permanent firm-level traits to drive the result. To rule that out
+we replace the industry fixed effects with firm fixed effects, so
+that identification comes only from \emph{within-firm} year-to-year
+variation in the three text variables. Table~\ref{tab:firm_fe}
+reports the result at the 30-day horizon.
+
+\input{tables/firm_fe}
+
+The volume channel survives the firmer specification:
+$\hat{\beta}^{\text{len}} = +0.084$ ($t = +3.31$, $p < 0.001$).
+A within-firm one-standard-deviation rise in
+$\ln(\text{Words}^{1A})$ still predicts a meaningful rise in
+post-filing volatility, so the H1 result is not a cross-sectional
+artefact---firms that grow their Item~1A from year to year do
+experience higher subsequent volatility.
+
+Both LM sub-densities, by contrast, are absorbed by firm fixed
+effects: $\hat{\beta}^{\text{unc}} = -1.46$ ($t = -0.55$) and
+$\hat{\beta}^{\text{lit}} = +0.96$ ($t = +0.35$). The interpretation
+is straightforward and economically informative. The composition of
+an Item~1A's risk wording---both the uncertainty share and the
+litigious share---has very little within-firm variation across
+years, because the section is largely recycled from one filing to
+the next \parencite{cazier2021} and the legal advisers who shape
+its cautionary language change slowly. A specification that throws
+away the cross-sectional variation has therefore almost no
+remaining variance in either density to identify a coefficient
+from.
+
+This pattern is consistent with the production-side reading of
+litigious language given by
+\textcite{nelson2007,cazier2021,beatty2019}: cautionary boilerplate
+is a quasi-permanent firm-level disclosure-style trait that proxies
+for an institutionalised, legally supervised compliance function.
+It is precisely such a permanent firm trait that would be
+cross-sectionally informative but within-firm null.
+
+A single thesis cannot adjudicate between the two readings of
+LitDensity that the data are consistent with: (i)~it captures a
+genuine causal between-firm effect of legal-style boilerplate on
+perceived risk, or (ii)~it correlates with an unobserved
+firm-level trait (e.g.\ governance quality, legal-counsel
+seniority, board composition) that itself drives volatility. The
+firm-FE result rules out the second reading only as a within-firm
+driver. The thesis reports both findings transparently and reads
+the headline result as a between-firm regularity that aligns with
+the \textcite{nelson2007,cazier2021,beatty2019} interpretation,
+without claiming a within-firm causal channel.
+
+\paragraph{Bottom line.} Across alternative horizons and
+sub-periods, the qualitative picture of
+Chapter~\ref{ch:results} is preserved: longer risk-factor sections
+predict higher post-filing volatility, and---wherever
+cross-sectional variation in disclosure style is
+available---denser litigious-list sections predict lower
+post-filing volatility, while denser uncertainty-list sections do
+not. H1 clears all robustness checks including firm-FE; H2 and H3
+clear the cross-sectional and sub-period checks but are absorbed
+by firm-FE because both the composite RiskDensity and its two LM
+sub-components are quasi-permanent firm-level traits.
+
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{What did not work: alternative H3 candidates}
+\label{sec:robustness_failed}
+% ─────────────────────────────────────────────────────────────────────────────
+
+In the spirit of full disclosure, this section documents the
+seven text-based H3 candidates that were estimated on the same
+panel and rejected before the LM-list decomposition was adopted.
+All seven specifications add a third Item~1A or MD\&A text
+variable to the H1+H2 joint specification of
+equation~\ref{eq:joint_model} and ask whether it adds incremental
+explanatory power for $\ln \sigma_{i,t+1}^{[30]}$.
+
+\paragraph{Year-on-year textual similarity (Item~1A).} A TF--IDF
+cosine similarity between consecutive years' Item~1A sections, in
+the spirit of \textcite{brown2011}'s MD\&A modification score, was
+estimated as a measure of disclosure ``staleness''. The coefficient
+was not statistically distinguishable from zero in the joint
+specification, with the predicted sign nonetheless reversing across
+horizons.
+
+\paragraph{MD\&A LM-Negativity.} The share of LM-Negative words in
+the Management's Discussion and Analysis section was estimated as a
+functionally distinct sentiment proxy. It did not add incremental
+explanatory power once Item~1A length was controlled for.
+
+\paragraph{Year-on-year change in Item~1A length ($\Delta$Words).}
+The first difference of $\ln(\text{Words}^{1A})$, motivated by the
+\textcite{lyle2023} ``changes'' framing, was statistically
+indistinguishable from zero in the joint specification.
+
+\paragraph{FinBERT-tone (four functional forms).} A pretrained
+FinBERT-tone classifier (\texttt{yiyanghkust/finbert-tone}) was
+run on every Item~1A in the panel. Four candidate signals were
+constructed from the per-sentence tone probabilities and aggregated
+to the section level: (i)~$P(\text{negative})$, (ii)~the signed
+difference $P(\text{positive}) - P(\text{negative})$, (iii)~the
+share of neutral sentences $P(\text{neutral})$, and (iv)~the
+``intensity'' measure $1 - P(\text{neutral})$. None of the four
+adds statistically significant explanatory power to the joint
+specification at the 30-day horizon, with $|t| < 1$ in all
+four cases. The detailed null results are not tabulated in the
+interest of brevity, but the FinBERT scoring pipeline
+(\texttt{scripts/finbert\_score\_mac.py}) and its per-firm output
+are preserved in the project repository for future replication.
+
+The negative results have an intuitive reading. The TF--IDF and
+FinBERT signals capture firm-specific narrative changes whose
+informational content is, on this panel, dominated by the much
+stronger length signal of H1. The LM-list decomposition succeeds
+where these alternatives fail because it identifies a structural
+composition of the H2 specificity effect rather than an additional
+firm-specific signal that competes with H1.

@@ -4,16 +4,17 @@
 % =============================================================================
 
 This chapter explains how the data described in
-Chapter~\ref{ch:data} are used in the regressions that test the
-two hypotheses set out in Chapter~\ref{ch:literature}.  Section
-\ref{sec:design} gives an overview of the empirical strategy.
-Sections~\ref{sec:variables} and \ref{sec:models} define the regression
-variables and construct three nested regression equations.
-Section~\ref{sec:estimation} describes how the models are estimated
-and how their standard errors are computed.  Section~\ref{sec:hypothesis_tests} states the formal decision rules
-used to evaluate the results for H1 and H2.  Finally, section~\ref{sec:robustness_plan}
-describes the robustness checks reported in
-Chapter~\ref{ch:robustness}.
+Chapter~\ref{ch:data} are used to test the three hypotheses set out
+in Section~\ref{sec:hypotheses}. Section~\ref{sec:design} gives an
+overview of the empirical strategy. Section~\ref{sec:variables}
+defines the regression variables and Section~\ref{sec:models}
+formalises the joint specification used for H1 and H2 and the
+LM-list-decomposition specification used for H3.
+Section~\ref{sec:estimation} describes estimation and inference,
+and Section~\ref{sec:hypothesis_tests} states the formal decision
+rules used to evaluate each hypothesis.
+Section~\ref{sec:robustness_plan} previews the robustness checks
+reported in Chapter~\ref{ch:robustness}.
 
 
 % ─────────────────────────────────────────────────────────────────────────────
@@ -21,33 +22,43 @@ Chapter~\ref{ch:robustness}.
 \label{sec:design}
 % ─────────────────────────────────────────────────────────────────────────────
 
-The thesis estimates three panel regressions of post-filing
-stock-return volatility on increasingly rich sets of explanatory
-variables.  The \emph{baseline} model uses lagged volatility together
-with standard accounting controls.  The \emph{text} model adds three
-features extracted from the 10-K narrative.  The \emph{divergence}
-model further adds a single composite measure that captures the gap
-between the financial and the narrative trajectory of a firm from one
-year to the next.
+The thesis tests two competing predictions about the same section
+of the 10-K---Item~1A, the mandatory risk-factor disclosure---in a
+single regression specification. The volume channel
+\parencite{campbell2014} predicts that longer risk-factor sections
+indicate more risk and therefore higher post-filing volatility. The
+specificity channel \parencite{hope2016} predicts that, holding
+length constant, a higher share of \emph{generic} risk vocabulary
+indicates a more boilerplate and less informative section, and is
+therefore associated with \emph{lower} post-filing volatility.
+Because the dictionary risk-density commonly used in prior work has
+section length in its denominator, separating the two channels
+requires entering log word count and risk-word density jointly.
 
-Hypothesis~H1 holds that the textual features explain volatility
-beyond what financial fundamentals already do.  It is supported if the
-text model improves on the baseline both in adjusted~$R^2$ and in a
-joint $F$-test on the textual coefficients.  Hypothesis~H2 holds that
-the divergence measure carries information beyond \emph{both}
-financials and the textual features taken individually, and that the
-sign of its effect is \emph{negative}: tone that moves more positively
-than concurrent fundamentals justify operates as a costly, and therefore
-credible, voluntary signal of management's private information about
-future prospects, which lowers post-filing uncertainty.  H2 is supported
-if the divergence coefficient is negative and statistically significant,
-and if the divergence model improves on the text model in adjusted~$R^2$.
+Once the joint specification is in place, H3 looks inside the
+composite RiskDensity. The same headline regression is re-estimated
+with the LM uncertainty- and litigious-list densities entered
+separately as $\text{UncDensity}$ and $\text{LitDensity}$, and the
+two coefficients are inspected for which sub-list is the active
+ingredient of the H2 effect. By construction
+$\text{RiskDensity} = \text{UncDensity} + \text{LitDensity}$, so the
+decomposition is an algebraic refinement of H2, not a competing
+specification. The same six post-filing horizons
+($h \in \{5, 10, 30, 90, 180, 365\}$~days) are used in the
+robustness chapter to confirm that the sub-list that is identified as
+active at the headline horizon retains its sign and significance
+across all alternative windows.
 
-The three-step nesting is deliberate.  By first absorbing the
-predictable, mechanical part of volatility (persistence and firm
-fundamentals) and only then asking whether language adds further
-explanatory power, the design avoids attributing to text variation
-that any reasonable accounting model could already account for.
+The dependent variable is the natural log of post-filing annualised
+volatility. The log transformation has two advantages. First, raw
+volatility is bounded below by zero and right-skewed, so OLS in
+levels gives disproportionate weight to the right tail; the log
+transformation symmetrises the distribution and makes coefficients
+on continuous regressors directly interpretable as
+semi-elasticities. Second, the log transformation makes the
+specification scale-free: a one-unit change in
+$\ln(\text{Words}^{1A})$ corresponds to a constant percentage change
+in volatility regardless of the firm's baseline level of risk.
 
 
 % ─────────────────────────────────────────────────────────────────────────────
@@ -55,102 +66,136 @@ that any reasonable accounting model could already account for.
 \label{sec:variables}
 % ─────────────────────────────────────────────────────────────────────────────
 
-\subsection{Dependent variable: post-filing volatility}
+\subsection{Dependent variable: post-filing log-volatility}
 \label{ssec:dependent_variable}
 
-The dependent variable is the \emph{annualised standard deviation of
-daily log returns} computed over a 365-calendar-day window that begins
-two trading days after the 10-K filing date.  The two-day lag avoids
-any same-day price reaction to the filing itself, while the one-year
-window matches the annual frequency of the panel and reflects the
-horizon over which a 10-K is typically the most recent piece of
-public information.  Formally,
+The dependent variable is the natural logarithm of the annualised
+standard deviation of daily log returns computed over a post-filing
+window of length~$h$ that begins two trading days after the 10-K
+filing date:
 \begin{equation}
-\sigma_{i,t+1} \;=\; \sqrt{252}\;\cdot\;
-\operatorname{sd}\!\bigl(r_{i,d}\bigr)_{d \in W_{i,t}},
+\ln \sigma_{i,t+1}^{[h]} \;=\; \ln\!\left(
+\sqrt{252}\cdot
+\operatorname{sd}\!\bigl(r_{i,d}\bigr)_{d \in W_{i,t}^{[h]}}
+\right),
 \label{eq:vol}
 \end{equation}
 where $r_{i,d} = \ln(P_{i,d}/P_{i,d-1})$ is the daily log return for
-firm~$i$ and $W_{i,t}$ is the post-filing window for filing year~$t$.
-The factor $\sqrt{252}$ rescales the daily standard deviation to an
-annual figure, which is the conventional unit in the volatility
-literature.  A firm-year is kept only if the window contains at least
-200~trading days, and a firm enters the panel only if at least 90\%
-of its expected windows meet this requirement.
+firm~$i$ and $W_{i,t}^{[h]}$ is the post-filing window of length~$h$
+calendar days for filing year~$t$. The two-day lag avoids the
+same-day price reaction to the filing itself; the
+$\sqrt{252}$ factor rescales the daily standard deviation to an
+annualised figure, which is the conventional unit in the volatility
+literature.
+
+For the headline specification we use $h = 30$~days, which is short
+enough to capture the post-filing reaction documented by
+\textcite{loughran2011} but long enough that the volatility
+estimate is built on a meaningful number of daily returns
+($\approx 21$~trading days). Robustness checks at
+$h \in \{5, 10, 90, 180, 365\}$ trace the temporal decay of the
+signal (Section~\ref{sec:robustness_plan} and
+Chapter~\ref{ch:robustness}).
 
 \subsection{Financial controls}
 \label{ssec:financial_controls}
 
-The baseline regressors are taken directly from the firm's annual
-XBRL filings (Section~\ref{sec:xbrl_tags}).  Five controls enter the
-full baseline:
-\emph{lagged volatility} (the same measure as the dependent variable
-but for the previous filing year), \emph{firm size} measured as the
-natural logarithm of total assets, \emph{leverage} (total liabilities
-over total assets), \emph{return on assets} (net income over total
-assets), and \emph{asset growth} (the year-on-year change in total
-assets divided by lagged total assets).  All ratios are winsorised at
-the 1st and 99th percentiles within the regression sample to reduce
-the influence of extreme observations and small-denominator artefacts.
+The controls are taken directly from the firm's annual XBRL filings
+(Section~\ref{sec:xbrl_tags}). Five regressors enter every
+specification: \emph{lagged log-volatility}
+$\ln \sigma_{i,t}^{[h]}$ (the same measure as the dependent
+variable but for the previous filing year's window of identical
+length), \emph{firm size} $\ln(\text{Total Assets})$,
+\emph{leverage} (total liabilities over total assets), \emph{return
+on assets} (net income over total assets), and \emph{asset growth}
+(year-on-year change in total assets divided by lagged total
+assets). All ratios are winsorised at the 1st and 99th percentiles
+within the regression sample to bound the influence of extreme
+values without discarding economically meaningful observations.
 
-\subsection{Textual features}
+\subsection{Text variables: Item~1A length and risk-word density}
 \label{ssec:textual_features}
 
-Three textual features summarise the narrative content of each 10-K:
-\begin{itemize}
-  \item $\Delta\text{Sentiment}_{i,t}$: the year-on-year change in
-        net tone of Item~7 (MD\&A), measured with the
-        \textcite{loughran2011} positive and negative word lists.
-        Net tone is the count of positive minus negative words,
-        scaled by the total word count of the section.
-  \item $\Delta\text{Risk}_{i,t}$: the year-on-year change in the
-        share of risk-related words in Item~1A (Risk Factors), using
-        the same dictionary's uncertainty and litigious lists.
-  \item $\text{TextSim}_{i,t}$: the cosine similarity between the
-        full 10-K text in year~$t$ and year~$t-1$, computed on
-        TF--IDF vectors built from the cleaned narrative
-        (Section~\ref{ssec:text_postprocessing}).  Higher values
-        mean the firm's disclosure is more similar to the previous
-        year; lower values indicate substantive changes in language.
-\end{itemize}
-All three features are by construction first differences (or
-similarity to the previous filing) and therefore capture changes in
-narrative content rather than cross-sectional levels, which would
-mostly reflect industry vocabulary.
+Two text variables operationalise the two channels of
+Sections~\ref{sec:lit_volume}--\ref{sec:lit_specificity}.
 
-\subsection{Divergence}
-\label{ssec:divergence}
-
-The central novel variable is \emph{Divergence}, a one-dimensional
-measure of the gap between the financial and the narrative
-trajectory of a firm.  It is constructed as the firm-demeaned
-residual of $\Delta\text{Sentiment}$ on $\Delta\text{ROA}$:
+\paragraph{Item~1A length (H1).} The volume channel is captured by
+the natural logarithm of the cleaned word count of Item~1A:
 \begin{equation}
-\text{Divergence}_{i,t} \;=\;
-\bigl(\Delta\text{Sentiment}_{i,t} - \overline{\Delta\text{Sentiment}}_{i}\bigr)
-\;-\; \lambda \cdot
-\bigl(\Delta\text{ROA}_{i,t} - \overline{\Delta\text{ROA}}_{i}\bigr),
-\label{eq:divergence}
+\text{Words}^{1A}_{i,t} \;=\; \text{number of tokens in Item~1A
+of firm~$i$'s year-$t$ 10-K},
 \end{equation}
-where $\Delta\text{ROA}_{i,t} = \text{ROA}_{i,t} - \text{ROA}_{i,t-1}$,
-$\overline{X}_{i}$ denotes the within-firm mean of $X$, and $\lambda$
-is the slope coefficient of a within-firm regression of
-$\Delta\text{Sentiment}$ on $\Delta\text{ROA}$ estimated on the
-training sample.  Centring on the firm mean removes the firm-specific
-intercept, so the construction is exactly the residual of the
-within-firm regression and is therefore orthogonal to
-$\Delta\text{ROA}$ within firm by construction.  The variable inherits
-the units of $\Delta\text{Sentiment}$ and has a simple interpretation:
-$\lambda \cdot \Delta\text{ROA}_{i,t}$ is the change in tone that
-would, on average, accompany a change in profitability of size
-$\Delta\text{ROA}_{i,t}$ in a given firm; subtracting it from the
-actual change in tone gives the part of the narrative shift that is
-\emph{not} explained by contemporaneous financial performance.  Large
-positive values flag firms whose tone improved more than their
-fundamentals warranted; large negative values flag the opposite.  As
-a robustness check we also use a binary dummy that equals one when
-$\operatorname{sign}(\Delta\text{Sentiment})$ differs from
-$\operatorname{sign}(\Delta\text{ROA})$.
+$\ln(\text{Words}^{1A}_{i,t})$ enters the regression. The cleaning
+pipeline (Section~\ref{ssec:text_postprocessing}) strips XBRL
+tags, footnote markers, and table cell contents before tokenisation,
+so the count reflects genuine narrative content rather than markup.
+Across the sample the median Item~1A contains roughly $8{,}800$~words,
+with a long right tail (Section~\ref{sec:descriptive}).
+
+\paragraph{Item~1A risk-word density (H2) and its decomposition (H3).}
+The specificity channel is captured by the share of words in
+Item~1A that match the \textcite{loughran2011} uncertainty or
+litigious word lists:
+\begin{equation}
+\text{RiskDensity}_{i,t} \;=\; \frac{
+n^{\text{unc}}_{i,t} + n^{\text{lit}}_{i,t}
+}{
+\text{Words}^{1A}_{i,t}
+},
+\label{eq:risk_density}
+\end{equation}
+where $n^{\text{unc}}$ and $n^{\text{lit}}$ are the per-section
+counts of uncertainty- and litigious-list words. Higher values
+indicate that a larger share of the section consists of generic
+risk vocabulary; lower values indicate a section in which the
+narrative is dominated by firm-specific or non-dictionary
+content---names, numbers, geographies, products---that the
+\textcite{hope2016} reading associates with greater specificity.
+
+For H3 the same composite is decomposed into its two LM sub-lists,
+each normalised by Item~1A length:
+\begin{align}
+\text{UncDensity}_{i,t} &\;=\; \frac{n^{\text{unc}}_{i,t}}
+  {\text{Words}^{1A}_{i,t}},
+\label{eq:unc_density}\\[4pt]
+\text{LitDensity}_{i,t} &\;=\; \frac{n^{\text{lit}}_{i,t}}
+  {\text{Words}^{1A}_{i,t}},
+\label{eq:lit_density}
+\end{align}
+with the algebraic identity
+$\text{RiskDensity} = \text{UncDensity} + \text{LitDensity}$. The
+two sub-densities operationalise the conceptually distinct
+uncertainty and litigious constructs of
+Section~\ref{sec:lit_boilerplate}: $\text{UncDensity}$ captures
+hedging vocabulary about what management does not know about its
+own business, while $\text{LitDensity}$ captures the cautionary
+legal-process boilerplate that legal advisers insert under the
+safe-harbour regime of \textcite{nelson2007}.
+
+\subsection{Why both variables are needed}
+\label{ssec:why_both}
+
+The two variables are mechanically related but not redundant. The
+denominator of $\text{RiskDensity}$ is the same total word count
+that enters H1 in logs. Across the sample the Pearson correlation
+between $\ln(\text{Words}^{1A})$ and $\text{RiskDensity}$ is
+$-0.31$, which is far from collinear but is also not zero. Entering
+the two variables jointly therefore lets each coefficient be
+interpreted holding the other fixed: $\beta^{\text{len}}$ measures
+the volatility response to a longer Item~1A at \emph{constant}
+risk-word density (the volume channel net of any change in
+boilerplate share), and $\beta^{\text{dens}}$ measures the
+volatility response to a denser Item~1A at \emph{constant} length
+(the specificity channel net of any change in volume).
+Variance-inflation factors for both variables are below 1.5 in the
+joint specification, well within conventional thresholds.
+
+This decomposition is the methodological contribution of the
+thesis. As discussed in Section~\ref{sec:lit_specificity}, the
+dictionary-only risk measure used in much prior work mixes the two
+channels into one statistic; entering them jointly recovers two
+opposite-signed effects that partially cancel when only the ratio
+is examined.
 
 
 % ─────────────────────────────────────────────────────────────────────────────
@@ -158,53 +203,73 @@ $\operatorname{sign}(\Delta\text{ROA})$.
 \label{sec:models}
 % ─────────────────────────────────────────────────────────────────────────────
 
-The three nested specifications are estimated on the same firm-year
-panel with the same fixed-effect structure.  Let
-$\mathbf{X}^{\text{fin}}_{i,t}$ collect the four financial controls
-(size, leverage, ROA, asset growth) and let
-$\mathbf{X}^{\text{text}}_{i,t}$ collect the three textual features.
+Let $\mathbf{X}^{\text{fin}}_{i,t}$ collect the four financial
+controls (size, leverage, ROA, asset growth) and let
+$\sigma_{i,t}^{[h]}$ denote the firm's lagged volatility computed on
+the prior filing year's window of the same length~$h$.
 
-\paragraph{Baseline model.}
+\paragraph{Joint specification (H1 and H2).}
 \begin{equation}
-\sigma_{i,t+1} \;=\; \alpha + \phi \, \sigma_{i,t}
-   \;+\; \boldsymbol{\beta}' \mathbf{X}^{\text{fin}}_{i,t}
-   \;+\; \mu_j \;+\; \tau_t \;+\; \varepsilon_{i,t},
-\label{eq:baseline}
+\ln \sigma_{i,t+1}^{[h]} \;=\; \alpha
+\;+\; \phi \, \ln \sigma_{i,t}^{[h]}
+\;+\; \boldsymbol{\beta}' \mathbf{X}^{\text{fin}}_{i,t}
+\;+\; \beta^{\text{len}} \cdot \ln(\text{Words}^{1A}_{i,t})
+\;+\; \beta^{\text{dens}} \cdot \text{RiskDensity}_{i,t}
+\;+\; \mu_j \;+\; \tau_t
+\;+\; \varepsilon_{i,t},
+\label{eq:joint_model}
 \end{equation}
 where $\mu_j$ is a two-digit SIC industry fixed effect and $\tau_t$
-is a fiscal-year fixed effect.  The model isolates the share of
-volatility that is mechanically traceable to past volatility and
-balance-sheet fundamentals.
+is a fiscal-year fixed effect. Equation~\ref{eq:joint_model} is
+estimated at the headline horizon $h = 30$~days for the main table
+(Section~\ref{sec:joint_results}) and at $h \in
+\{5,10,30,90,180,365\}$ for the multi-horizon
+table~\ref{tab:horizons}. H1 is supported if
+$\beta^{\text{len}} > 0$ and significant at the 5\% level; H2 is
+supported if $\beta^{\text{dens}} < 0$ and significant at the 5\%
+level. Both predictions must hold jointly in
+equation~\ref{eq:joint_model} for the volume--specificity
+decomposition to be considered confirmed.
 
-\paragraph{Text model.}
-\begin{equation}
-\sigma_{i,t+1} \;=\; \alpha + \phi \, \sigma_{i,t}
-   \;+\; \boldsymbol{\beta}' \mathbf{X}^{\text{fin}}_{i,t}
-   \;+\; \boldsymbol{\gamma}' \mathbf{X}^{\text{text}}_{i,t}
-   \;+\; \mu_j \;+\; \tau_t \;+\; \varepsilon_{i,t}.
-\label{eq:text}
-\end{equation}
-Hypothesis~H1 corresponds to a joint test that
-$\boldsymbol{\gamma} \neq \mathbf{0}$.
+To document the marginal contribution of each text variable, the
+results chapter also reports two partial specifications that drop
+$\beta^{\text{dens}}$ (column~2 of the headline table) or
+$\beta^{\text{len}}$ (column~3) from
+equation~\ref{eq:joint_model}. The five-column nested table
+(baseline / +length / +density / +both / +length+decomposition) makes
+visible the fact that each variable carries meaningful incremental
+information and that the composite RiskDensity hides a heterogeneous
+mix of two LM sub-components, only one of which is active.
 
-\paragraph{Divergence model.}
+\paragraph{Decomposition specification (H3).}
+For H3 the composite RiskDensity in equation~\ref{eq:joint_model} is
+replaced by its two LM sub-densities entered jointly:
 \begin{equation}
-\sigma_{i,t+1} \;=\; \alpha + \phi \, \sigma_{i,t}
-   \;+\; \boldsymbol{\beta}' \mathbf{X}^{\text{fin}}_{i,t}
-   \;+\; \boldsymbol{\gamma}' \mathbf{X}^{\text{text}}_{i,t}
-   \;+\; \delta \cdot \text{Divergence}_{i,t}
-   \;+\; \mu_j \;+\; \tau_t \;+\; \varepsilon_{i,t}.
-\label{eq:divergence_model}
+\ln \sigma_{i,t+1}^{[h]} \;=\; \alpha
+\;+\; \phi \, \ln \sigma_{i,t}^{[h]}
+\;+\; \boldsymbol{\beta}' \mathbf{X}^{\text{fin}}_{i,t}
+\;+\; \beta^{\text{len}} \cdot \ln(\text{Words}^{1A}_{i,t})
+\;+\; \beta^{\text{unc}} \cdot \text{UncDensity}_{i,t}
+\;+\; \beta^{\text{lit}} \cdot \text{LitDensity}_{i,t}
+\;+\; \mu_j \;+\; \tau_t
+\;+\; \varepsilon_{i,t}.
+\label{eq:decomposition_model}
 \end{equation}
-Hypothesis~H2 corresponds to $\delta < 0$ together with a positive
-incremental adjusted~$R^2$ over the text model.  The directional
-prediction follows the voluntary-disclosure reading of MD\&A: under
-Securities Exchange Act \S\,18 and Rule~10b-5 a manager who writes
-upbeat narrative against weak realised earnings bears a personal and
-legal cost if the optimism is not borne out, so the disclosure is
-costly and therefore credible.  Investors update toward management's
-private signal and uncertainty about future cash flows falls,
-implying a negative coefficient on Divergence.
+By the algebraic identity
+$\text{RiskDensity}=\text{UncDensity}+\text{LitDensity}$, the
+decomposition (equation~\ref{eq:decomposition_model}) nests the
+joint specification (equation~\ref{eq:joint_model}) as the special
+case $\beta^{\text{unc}}=\beta^{\text{lit}}$. Equation~
+\ref{eq:decomposition_model} is estimated at the headline
+$h=30$~days for column~(5) of the headline table
+(Section~\ref{sec:joint_results}) and across all six post-filing
+horizons in Table~\ref{tab:horizons}. H3 is supported if
+$\beta^{\text{lit}} < 0$ at the 5\%~level with the sign and
+significance preserved at every horizon, while $\beta^{\text{unc}}$
+is small in absolute value and statistically indistinguishable from
+zero. The Pearson correlation between UncDensity and LitDensity is
+essentially zero ($r \approx -0.05$ in the regression sample), so
+the two coefficients are separately identified.
 
 
 % ─────────────────────────────────────────────────────────────────────────────
@@ -212,47 +277,48 @@ implying a negative coefficient on Divergence.
 \label{sec:estimation}
 % ─────────────────────────────────────────────────────────────────────────────
 
-All three models are estimated by ordinary least squares with
-two-digit SIC industry and fiscal-year fixed effects absorbed using
-the absorbing-regression routine of the
-\texttt{linearmodels} package.  Coefficients are therefore identified
-from \emph{within-industry, within-year} variation, which removes the
-risk that the results are driven by either time trends in
-volatility (e.g.\ the 2008 and 2020 crises) or by persistent
-industry-level differences in risk.
+Equation~\ref{eq:joint_model} is estimated by ordinary least
+squares with two-digit SIC industry and fiscal-year fixed effects
+absorbed using the absorbing-regression routine of the
+\texttt{linearmodels} package. Coefficients are therefore
+identified from \emph{within-industry, within-year} variation,
+which removes the risk that the results are driven by either time
+trends in volatility (e.g.\ the 2008 and 2020 crises) or by
+persistent industry-level differences in risk vocabulary or risk
+levels.
 
 \paragraph{Standard errors.}
 Standard errors are clustered at the firm level following
 \textcite{petersen2009}, which makes inference robust to arbitrary
-within-firm correlation.  Two features of the data make this
-particularly important.  First, the dependent variable is itself a
-volatility estimate computed on a 365-day window, so consecutive
-firm-year windows from a single firm overlap by roughly two-thirds of
-their length.  This induces strong serial correlation in
-$\sigma_{i,t+1}$ that ordinary heteroskedasticity-robust standard
-errors would understate.  Second, omitted firm-specific risk
-characteristics are likely to persist over time.  Firm clustering
-addresses both concerns simultaneously without imposing any
-particular correlation structure.
+within-firm correlation. Two features of the data make this
+particularly important. First, the dependent variable is itself a
+volatility estimate computed on a rolling post-filing window, and
+consecutive firm-year windows from a single firm overlap. This
+induces strong serial correlation in $\ln \sigma_{i,t+1}$ that
+ordinary heteroskedasticity-robust standard errors would
+understate. Second, omitted firm-specific risk characteristics are
+likely to persist over time. Firm clustering addresses both
+concerns simultaneously without imposing a particular correlation
+structure.
 
 \paragraph{Outliers.}
-The financial ratios used as regressors are winsorised at the 1st and
-99th percentiles of the regression sample
-(Section~\ref{ssec:financial_controls}).  Winsorisation is preferred
-to outright deletion because many of the extreme values are
-economically real (e.g.\ acquisition-driven asset growth) but would
-otherwise dominate OLS estimation through the squared-residual
-objective.
+The financial ratios used as regressors are winsorised at the 1st
+and 99th percentiles of the regression sample
+(Section~\ref{ssec:financial_controls}). The text variables are
+not winsorised: $\ln(\text{Words}^{1A})$ is naturally bounded
+because of the log transformation and $\text{RiskDensity}$ is a
+ratio bounded between zero and one in practice (sample maximum
+$\approx 0.05$).
 
 \paragraph{Sample composition.}
 After applying all data filters described in Chapter~\ref{ch:data}
 and dropping firm-years with missing values for any regressor, the
-estimation sample consists of about 6{,}300 firm-years on 537~unique
-firms.  Twelve firms changed their fiscal year-end during the sample
-period; the transition year is dropped, leaving a multi-year gap in
-the time series of those firms.  Asset growth is set to missing at
-the gap, while lagged volatility and lagged returns are unaffected
-because they are anchored to filing dates rather than fiscal periods.
+estimation sample at the 30-day horizon consists of 5{,}691
+firm-years on 535~unique firms. The 365-day horizon retains
+6{,}172~firm-years on the same set of firms; the larger sample
+reflects the fact that the longer window admits more observations
+near the end of the panel period for which a 30-day window does
+not yet have a complete 30~trading days of post-filing returns.
 
 
 % ─────────────────────────────────────────────────────────────────────────────
@@ -260,52 +326,33 @@ because they are anchored to filing dates rather than fiscal periods.
 \label{sec:hypothesis_tests}
 % ─────────────────────────────────────────────────────────────────────────────
 
-The two hypotheses are evaluated through a combination of incremental
-fit statistics and formal tests on the relevant coefficients.
+\paragraph{H1 (Volume).}
+Supported if $\hat{\beta}^{\text{len}} > 0$ at the 5\%~level in
+equation~\ref{eq:joint_model} estimated at $h = 30$~days, and the
+sign survives in the 365-day specification and at every intermediate
+horizon. The economic magnitude is reported as the percentage
+change in $\sigma_{i,t+1}^{[30]}$ implied by an interquartile-range
+movement in $\ln(\text{Words}^{1A})$.
 
-\paragraph{H1: text adds information beyond financials.}
-The text model
-(equation~\ref{eq:text}) is compared to the baseline
-(equation~\ref{eq:baseline}) on two criteria:
-\begin{enumerate}
-  \item the text model's adjusted~$R^2$ exceeds the baseline's, and
-  \item a Wald-style joint test on
-        $H_0\!: \boldsymbol{\gamma} = \mathbf{0}$ rejects at the
-        conventional 5\% level using firm-clustered standard errors.
-\end{enumerate}
-Both conditions must be met for H1 to be considered supported.
+\paragraph{H2 (Specificity).}
+Supported if $\hat{\beta}^{\text{dens}} < 0$ at the 5\%~level in
+the same joint specification, with the sign and significance
+preserved across horizons. The magnitude is reported analogously.
 
-\paragraph{H2: divergence adds information beyond text.}
-The divergence model (equation~\ref{eq:divergence_model}) is
-compared to the text model on two criteria:
-\begin{enumerate}
-  \item the divergence coefficient $\delta$ is negative and
-        significant at the 5\% level, and
-  \item the divergence model's adjusted~$R^2$ exceeds the text
-        model's.
-\end{enumerate}
-A negative sign is required because the theoretical prediction is
-directional.  When MD\&A tone moves more positively than
-concurrent financial performance justifies, the disclosure is a costly
-voluntary signal in the sense of the disclosure literature: management
-can be sued under Rule~10b-5 if upbeat narrative is later contradicted
-by outcomes, so the signal is credible only when management has private
-information that future cash flows will exceed what current earnings
-imply.  Investors who update toward this signal face less uncertainty
-about future fundamentals, and post-filing volatility falls.  The
-symmetric case---tone more negative than fundamentals warrant---signals
-downgrade of private information and raises uncertainty in the same
-direction.  Both arms of the prediction imply $\delta < 0$.
+\paragraph{H3 (Boilerplate decomposition).}
+Supported if, in equation~\ref{eq:decomposition_model} estimated
+at $h = 30$~days, $\hat{\beta}^{\text{lit}} < 0$ at the
+5\%~level and $\hat{\beta}^{\text{unc}}$ is statistically
+indistinguishable from zero. The qualitative pattern
+(LitDensity strongly negative, UncDensity null) must survive at
+every horizon $h \in \{5, 10, 30, 90, 180, 365\}$ and on both
+sub-period samples (Section~\ref{sec:robustness_plan}).
 
-\paragraph{Economic magnitude.}
-Statistical significance alone is not enough to justify a finding,
-so the divergence coefficient is also reported in standardised form:
-the change in $\sigma_{i,t+1}$ implied by a one-standard-deviation
-increase in Divergence, expressed as a percentage of the sample
-mean of the dependent variable.  In addition, the divergence sample
-is split into quartiles and the average post-filing volatility of
-each quartile is reported, which gives a model-free check that the
-relationship is monotone rather than driven by the tails.
+The three criteria are evaluated jointly. Statistical significance
+alone is not enough: results that are statistically significant in
+the headline 30-day specification but reverse sign at neighbouring
+horizons would be evidence of overfitting rather than of a robust
+economic channel.
 
 
 % ─────────────────────────────────────────────────────────────────────────────
@@ -313,25 +360,20 @@ relationship is monotone rather than driven by the tails.
 \label{sec:robustness_plan}
 % ─────────────────────────────────────────────────────────────────────────────
 
-Chapter~\ref{ch:robustness} reports a battery of checks intended to
-make sure the main results do not depend on a single modelling
-choice.  Briefly, we re-estimate the divergence model
+Chapter~\ref{ch:robustness} reports a battery of checks intended
+to ensure that the headline results do not depend on a single
+modelling choice. Briefly, equation~\ref{eq:decomposition_model} is
+re-estimated
 \begin{enumerate*}[label=(\roman*)]
-  \item with the binary divergence dummy in place of the continuous
-        measure;
-  \item with post-filing return as the dependent variable instead of
-        volatility;
-  \item with the dependent variable measured over shorter post-filing
-        windows (30, 90, and 180~calendar days), which lets us trace
-        whether any textual signal decays as the disclosure ages;
-  \item excluding the 2020 fiscal year, which is heavily influenced
-        by the COVID-19 shock;
-  \item excluding firms whose 10-K extraction was flagged in the
-        AI-assisted audit (Section~\ref{ssec:text_coverage}), to
-        confirm that the result is not driven by parsing artefacts;
+  \item at five additional post-filing horizons (5, 10, 90, 180, and
+        365~days) to confirm that the LM-Litigious sub-list is the
+        active sub-component at every window;
+  \item separately on the pre-COVID (2010--2019) and COVID-era
+        (2020--2024) sub-periods, to confirm that the result is
+        not driven by either macro regime;
   \item with firm fixed effects in place of industry fixed effects,
-        which is a stricter specification but reduces the effective
-        sample.
+        which absorbs all time-invariant firm-level heterogeneity
+        and isolates within-firm year-to-year variation.
 \end{enumerate*}
 Each check is reported in full in the tables of
 Chapter~\ref{ch:robustness}.

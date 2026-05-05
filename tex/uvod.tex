@@ -2,26 +2,82 @@
 \addcontentsline{toc}{chapter}{Introduction}
 \label{ch:introduction}
 
-% TODO: Structure
-%
-% 1. Motivation — corporate filings contain both numbers and narratives;
-%    investors face information processing costs when filings are long/complex
-%    (Blankespoor et al. 2020); most research tests text and financials
-%    additively, but the *gap* between them may be the real signal
-%
-% 2. Research gap — no study systematically tests whether the divergence
-%    between narrative trajectory and financial trajectory predicts
-%    future volatility; existing work focuses on returns (crowded, low R²),
-%    while volatility is economically cleaner (no market-efficiency assumption)
-%
-% 3. Research question — Does textual-financial divergence in 10-K filings
-%    predict future stock return volatility beyond past volatility,
-%    financial variables, and textual features alone?
-%
-% 4. Contribution:
-%    (a) Novel divergence measure (narrative change vs. financial change)
-%    (b) Volatility as primary DV — avoids "beat the market" framing
-%    (c) Broad cross-section (~540 large U.S. non-financial firms, 2010-2024)
-%    (d) Three nested models: baseline → text → divergence
-%
-% 5. Thesis outline — brief chapter overview
+The Item~1A risk-factor section of the U.S.\ 10-K, mandatory since
+2005, is the longest and most carefully written piece of
+risk-disclosure language in U.S.\ corporate reporting. Two parallel
+literatures argue that this section conveys economically meaningful
+information about firm-level risk, but they reach opposite
+predictions about its sign. \textcite{campbell2014} show that
+\emph{larger} risk-factor sections, both in raw word count and in
+the count of risk-related words, are associated with higher
+subsequent return volatility, market beta, and bid--ask spreads:
+when managers write more about risk, they are signalling more risk.
+\textcite{hope2016} show that, for a given length, risk-factor
+sections that contain a higher proportion of \emph{specific}
+content---names, numbers, geographies---are associated with
+stronger analyst-forecast revisions and lower implied cost of
+capital: more concrete risk language pins down exposures and reduces
+uncertainty.
+
+Much of the empirical literature operationalises both predictions
+through a single statistic, the dictionary-based risk-word density of
+Item~1A: the share of the section's words that match the
+\textcite{loughran2011} uncertainty and litigious word lists. This
+ratio, however, has section length in its denominator. The volume
+channel (numerator) and the specificity channel (denominator,
+inverted) are therefore mixed into one number that has been hard to
+sign cleanly in the data.
+
+This thesis makes a small methodological move with substantive
+payoff: it decomposes the dictionary risk-density into its two
+components---the natural log of the Item~1A word count, and the
+risk-word density itself---and enters them jointly in a panel
+regression of post-filing log-volatility. With both regressors in
+the specification, length captures the volume channel net of any
+change in boilerplate share, and density captures the specificity
+channel net of any change in volume. Both predictions can therefore
+be tested in the same equation, and the data can adjudicate.
+
+On an unbalanced panel of 535 large U.S.\ non-financial firms over
+fiscal years 2010--2024 the joint specification at the 30-day
+horizon delivers exactly the two predictions: longer Item~1A
+sections predict higher post-filing volatility (the volume effect,
+H1), while denser Item~1A sections, holding length constant, predict
+lower volatility (the specificity effect, H2). Both signs and
+significance survive at every post-filing horizon between 5 and 365
+days and across pre-COVID and COVID-era sub-samples; the joint
+specification also reveals that the dictionary-only risk-density
+estimate of the specificity channel is roughly twice as large as the
+true effect, because the omitted volume channel loads onto it
+through the negative cross-sectional correlation between length and
+density.
+
+A third contribution looks inside the LM risk lexicon itself.
+Decomposing the composite RiskDensity into its two LM
+sub-components---uncertainty-list and litigious-list densities,
+each normalised by Item~1A length---reveals that the entire
+negative specificity effect is carried by the LM-Litigious
+sub-list (H3): conditional on length, LitDensity has a coefficient
+of $-6.16$ ($t = -3.35$) on 30-day post-filing log-volatility,
+while UncDensity is small and statistically indistinguishable from
+zero. The pattern survives at every horizon and on both COVID
+sub-samples. The interpretation aligns with the
+\textcite{nelson2007,cazier2021,beatty2019} reading of
+litigious-list language as standardised cautionary boilerplate
+produced under the safe-harbour regime of the 1995 Private
+Securities Litigation Reform Act and characteristic of mature,
+legally supervised firm-level disclosure environments.
+
+The remainder of the thesis is organised as follows.
+Chapter~\ref{ch:literature} reviews the volume, specificity, and
+boilerplate literatures and motivates the three hypotheses.
+Chapter~\ref{ch:data} describes the SEC EDGAR data, the textual
+extraction pipeline, and the construction of the financial controls
+and the post-filing volatility windows. Chapter~\ref{ch:methodology}
+formalises the joint specification and the LM-list decomposition.
+Chapter~\ref{ch:results} reports the headline tests of H1, H2, and
+H3. Chapter~\ref{ch:robustness} reports the multi-horizon evidence,
+pre/post-COVID splits, a within-firm fixed-effects specification,
+and a transparent account of seven alternative H3 candidates that
+were tested and rejected. The Conclusion summarises the contribution
+and discusses limitations and suggested extensions.

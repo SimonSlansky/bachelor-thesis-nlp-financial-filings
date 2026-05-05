@@ -9,47 +9,36 @@
 % - Universe: top ~1,000 U.S. companies by market cap from SEC EDGAR
 % - Filters: operating entities only, exclude SIC 6000--6999 (financials)
 % - Final sample: ~540 non-financial firms, 2010--2024
-% - Table~\ref{tab:sample}: industry distribution, FYE month distribution
 %
 % \section{Data Sources}
 % \subsection{SEC EDGAR}
 % - XBRL Company Facts API for financial statements (10-K)
-% - Full-text filings for textual analysis (Item 7 MD\&A, Item 1A Risk Factors)
+% - Full-text filings for textual analysis (Item 1A Risk Factors)
 %
 % \subsection{Stock Market Data}
 % - Source: yfinance (adjusted close prices)
-% - Volatility: annualised std of daily log returns over 365-day post-filing window
+% - Volatility: annualised std of daily log returns over post-filing windows
+%   (5, 10, 30, 90, 180, 365 days)
 %
 % \section{Financial Variables}
-% - Raw XBRL metrics: total\_assets, net\_income, operating\_income,
-%   operating\_cash\_flow, eps\_diluted, etc.
-% - Derived ratios: log\_total\_assets, leverage, ROA, asset\_growth,
-%   current\_ratio, ocf\_to\_assets, operating\_roa
+% - Raw XBRL metrics: total\_assets, net\_income, operating\_income, ...
+% - Derived ratios: log\_total\_assets, leverage, ROA, asset\_growth
 % - Winsorisation at 1\%/99\%
 %
 % \section{Textual Variables}
-% - $\Delta$Sentiment: YoY change in Loughran--McDonald net tone (Item 7)
-% - $\Delta$Risk: YoY change in risk-word frequency (Item 1A)
-% - TextSim: cosine similarity of consecutive filings
-%
-% \section{Divergence Measure Construction}
-% - Financial trajectory: $\Delta$ROA = ROA$_t$ $-$ ROA$_{t-1}$
-% - Narrative trajectory: $\Delta$Sentiment = Sent$_t$ $-$ Sent$_{t-1}$
-% - Continuous: Divergence = $\Delta$Sentiment $-$ $\lambda \cdot \Delta$ROA
-% - Binary: DivDummy = 1 if sign($\Delta$Sentiment) $\neq$ sign($\Delta$ROA)
+% - Item 1A length: ln(Words^{1A}) (H1, volume channel)
+% - Item 1A risk-word density: LM uncertainty + litigious counts /
+%   total words (H2, specificity channel)
 %
 % \section{Dependent Variable}
-% - Primary: annualised volatility (std of daily log returns $\times \sqrt{252}$)
-%   over 365-day post-filing window
-% - Robustness: post-filing log stock return
+% - log(annualised post-filing volatility) over 5/10/30/90/180/365 day
+%   windows starting two trading days after filing
 %
 % \section{Panel Data Construction}
-% - Annual panel: ~6,400 firm-years
-% - Unbalanced panel, fiscal year-end alignment
+% - Annual panel: ~6,300 firm-years; ~5,690 with valid Item 1A text
 %
 % \section{Descriptive Statistics}
-% - Summary statistics (Table~\ref{tab:desc_stats})
-% - Correlation matrix (Table~\ref{tab:correlations})
+% - Summary statistics, correlation matrix (in Chapter 5)
 
 
 % ─────────────────────────────────────────────────────────────────────────────
@@ -73,8 +62,8 @@ We deliberately focus on large, liquid firms rather than the full
 EDGAR universe for several reasons.  First, our regressions use firm
 fixed effects with standard errors clustered by firm.  As
 \textcite{petersen2009} shows, the reliability of cluster-robust
-standard errors depends on the number of clusters---here 537---not on
-total observations, and 537~clusters are well above the
+standard errors depends on the number of clusters---here 539---not on
+total observations, and 539~clusters are well above the
 threshold for reliable inference.  Also, the textual-analysis part
 of the thesis requires downloading, parsing, and scoring every 10-K in
 the sample.  Expanding to several thousand firms would greatly
@@ -89,7 +78,8 @@ financial analysis of annual filings.
 disclosures from large U.S.\ firms; \textcite{loughran2011} use a
 broader set of roughly 50{,}000 firm-years, but their goal---validating
 a sentiment dictionary---calls for maximal cross-sectional coverage,
-whereas our divergence measure is estimated within firms over time.
+whereas the joint volume--specificity test estimated here exploits
+within-industry-year variation across $\sim 535$ firms.
 
 
 % ─────────────────────────────────────────────────────────────────────────────
@@ -126,9 +116,9 @@ last 10-K.  In practice, only about half the 10-Q filings in our pilot
 sample (15~firms, 90~filings) contained a legitimate risk-factor section.
 The rest had only a reference back to the annual report
 (Table~\ref{tab:text_availability}).  This held across sectors---technology,
-healthcare, consumer goods, energy---with few exceptions.  Building
-$\Delta$Risk, which enters both H1 and H2, is therefore not feasible
-at a quarterly frequency.
+healthcare, consumer goods, energy---with few exceptions.  Constructing the
+year-on-year text variables that the headline specifications require
+is therefore not feasible at a quarterly frequency.
 
 \input{tables/text_availability}
 
@@ -407,7 +397,7 @@ This design is in line with what \textcite{krippendorff2019} recommends
 as reliable for content-analysis studies, and large enough that
 pass-rate estimates carry a margin of error of about
 $\pm$3~percentage points.  The 100~filings also cover roughly
-19\,\% of the 537-firm panel and span the full history of SEC filing
+19\,\% of the 539-firm panel and span the full history of SEC filing
 formats.
 
 For each filing, both extracted sections were sent to the model in a
