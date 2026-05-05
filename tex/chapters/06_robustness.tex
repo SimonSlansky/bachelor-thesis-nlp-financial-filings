@@ -8,16 +8,18 @@ Chapter~\ref{ch:results} survive plausible variations in the
 specification. Section~\ref{sec:robustness_horizons} reviews the
 multi-horizon evidence already documented in
 Section~\ref{sec:horizons_results} from a robustness angle.
-Section~\ref{sec:robustness_subperiods} re-estimates the H1+H3
+Section~\ref{sec:robustness_subperiods} re-estimates the H1+H2
 decomposition specification on the pre-COVID and COVID-era
 sub-samples. Section~\ref{sec:robustness_firmfe} replaces industry
 fixed effects with firm fixed effects, which absorbs all
 time-invariant firm-level heterogeneity and isolates the
 within-firm year-to-year variation in the three text variables.
-Section~\ref{sec:robustness_failed} closes the chapter with a
-transparent account of the seven alternative H3 candidates that
-were tested and rejected before settling on the LM-list
-decomposition.
+Section~\ref{sec:robustness_silence} reports the placebo,
+length-residualised, large-cell, decile-rank, and prior-year
+specifications of the H3 strategic-silence result.
+Section~\ref{sec:robustness_failed} closes with a brief note on
+alternative specificity-channel candidates that were tested and
+rejected before settling on the LM-list decomposition.
 
 
 % ─────────────────────────────────────────────────────────────────────────────
@@ -30,7 +32,7 @@ The headline specification measures post-filing volatility over a
 post-filing reaction documented by \textcite{loughran2011} but long
 enough that the volatility estimate is built on roughly 21~trading
 days of returns. To check the choice of window we re-estimate the
-H1+H3 specification of equation~\ref{eq:decomposition_model} at
+H1+H2 specification of equation~\ref{eq:decomposition_model} at
 five additional horizons (5, 10, 90, 180, and 365~days) and inspect
 the resulting series of coefficients. Table~\ref{tab:horizons}
 reports all six columns side by side; the discussion in
@@ -41,7 +43,7 @@ The pattern is consistent in three respects. First, all three text
 coefficients keep the predicted sign at every horizon---positive
 for $\ln(\text{Words}^{1A})$, negative for LitDensity, and
 statistically indistinguishable from zero for UncDensity---so
-neither H1 nor H3 reverses for any plausible choice of window.
+neither H1 nor the LM-list decomposition reverses for any plausible choice of window.
 Second, the LitDensity coefficient is significant at the 1\%~level
 from 10~days onward, with $|t|$ between $2.88$ (10~days) and
 $4.02$ (180~days). Third, the UncDensity coefficient never
@@ -51,14 +53,11 @@ therefore not a window in which the results happen to be
 sharpest---they are sharp at every horizon the data admit.
 
 Both coefficient series also decline approximately monotonically
-in $h$, which is the empirical signature of an event-driven signal
-that is incorporated into prices over weeks rather than years
-\parencite{loughran2011, tetlock2007}. The thesis does not fit a
-formal exponential decay because the coefficient series is
-short and the across-horizon error terms are correlated by the
-sharing of underlying daily returns, which would understate the
-bootstrap CI on any half-life estimate. The qualitative attenuation
-is nonetheless visible by inspection of Table~\ref{tab:horizons}.
+in $h$, the empirical signature of an event-driven signal that is
+incorporated into prices over weeks rather than years
+\parencite{loughran2011, tetlock2007}. No formal half-life is
+fitted because the across-horizon error terms are correlated
+through the shared underlying daily returns.
 
 % ─────────────────────────────────────────────────────────────────────────────
 \section{Pre-COVID and COVID-era sub-samples}
@@ -71,7 +70,7 @@ volatility roughly doubled in the spring of 2020 and Item~1A
 sections grew systematically longer as firms added pandemic and
 supply-chain language. To check that the headline results are not
 driven by either the pre-COVID baseline or the COVID-era spike, we
-re-estimate the H1+H3 decomposition specification
+re-estimate the H1+H2 decomposition specification
 (equation~\ref{eq:decomposition_model}) separately on the two
 sub-periods. Filings with fiscal year $\leq 2019$ form the pre-COVID
 sample (3{,}243~firm-years) and filings with fiscal year $\geq 2020$
@@ -125,100 +124,133 @@ experience higher subsequent volatility.
 
 Both LM sub-densities, by contrast, are absorbed by firm fixed
 effects: $\hat{\beta}^{\text{unc}} = -1.46$ ($t = -0.55$) and
-$\hat{\beta}^{\text{lit}} = +0.96$ ($t = +0.35$). The interpretation
-is straightforward and economically informative. The composition of
-an Item~1A's risk wording---both the uncertainty share and the
-litigious share---has very little within-firm variation across
-years, because the section is largely recycled from one filing to
-the next \parencite{cazier2021} and the legal advisers who shape
-its cautionary language change slowly. A specification that throws
-away the cross-sectional variation has therefore almost no
-remaining variance in either density to identify a coefficient
-from.
+$\hat{\beta}^{\text{lit}} = +0.96$ ($t = +0.35$). Risk-vocabulary
+composition has very little within-firm variation across years
+because Item~1A is largely recycled from one filing to the next
+\parencite{cazier2021}; the firm-FE specification therefore has
+almost no remaining variance to identify a sub-density coefficient
+from. This is consistent with the production-side reading of
+\textcite{nelson2007,cazier2021,beatty2019}, in which cautionary
+boilerplate is a quasi-permanent firm-level disclosure-style
+trait. The thesis reports both findings and reads the headline
+result as a between-firm regularity, without claiming a within-firm
+causal channel.
 
-This pattern is consistent with the production-side reading of
-litigious language given by
-\textcite{nelson2007,cazier2021,beatty2019}: cautionary boilerplate
-is a quasi-permanent firm-level disclosure-style trait that proxies
-for an institutionalised, legally supervised compliance function.
-It is precisely such a permanent firm trait that would be
-cross-sectionally informative but within-firm null.
-
-A single thesis cannot adjudicate between the two readings of
-LitDensity that the data are consistent with: (i)~it captures a
-genuine causal between-firm effect of legal-style boilerplate on
-perceived risk, or (ii)~it correlates with an unobserved
-firm-level trait (e.g.\ governance quality, legal-counsel
-seniority, board composition) that itself drives volatility. The
-firm-FE result rules out the second reading only as a within-firm
-driver. The thesis reports both findings transparently and reads
-the headline result as a between-firm regularity that aligns with
-the \textcite{nelson2007,cazier2021,beatty2019} interpretation,
-without claiming a within-firm causal channel.
-
-\paragraph{Bottom line.} Across alternative horizons and
-sub-periods, the qualitative picture of
-Chapter~\ref{ch:results} is preserved: longer risk-factor sections
-predict higher post-filing volatility, and---wherever
-cross-sectional variation in disclosure style is
-available---denser litigious-list sections predict lower
-post-filing volatility, while denser uncertainty-list sections do
-not. H1 clears all robustness checks including firm-FE; H2 and H3
-clear the cross-sectional and sub-period checks but are absorbed
-by firm-FE because both the composite RiskDensity and its two LM
-sub-components are quasi-permanent firm-level traits.
+\paragraph{Bottom line.} H1 clears all robustness checks including
+firm-FE; the H2 composite and its LM sub-components clear the
+cross-sectional and sub-period checks but are absorbed by firm-FE
+because both RiskDensity and the two LM sub-densities are
+quasi-permanent firm-level traits.
 
 
-% ─────────────────────────────────────────────────────────────────────────────
-\section{What did not work: alternative H3 candidates}
+% ─────────────────────────────────────────────────────────────────────────────\section{Robustness of the strategic-silence result (H3)}
+\label{sec:robustness_silence}
+% ────────────────────────────────────────────────────────────────────────────
+
+The headline H3 result of Section~\ref{sec:silence_results} relies
+on a within-firm specification at the 30-day horizon. Three
+features of the construction make further robustness checks
+essential before reading the result as evidence for strategic
+silence rather than for some confounding artefact:
+(i)~the omission gap is mechanically negatively correlated with
+Item~1A length ($r = -0.85$), so any insufficiently strong control
+for length would let omission proxy for length;
+(ii)~the SIC2 peer benchmark is one of several plausible reference
+sets, and the result might be specific to that choice;
+(iii)~the contemporaneous design has a partial overlap between the
+filing date and the start of the post-filing volatility window,
+leaving some scope for reverse causality if a difficult year
+produces both a shorter, less peer-aligned 10-K and higher
+subsequent volatility for unrelated reasons.
+Table~\ref{tab:silence_robust} reports six robustness specifications
+designed to address these concerns; a placebo test is reported
+separately below.
+
+\input{tables/silence_robust}
+
+\paragraph{Placebo (peer-cell shuffle).} The first and most important
+robustness check holds the SIC2 cell sizes and the firm-year
+distribution constant but randomly permutes which firm belongs to
+which SIC2 cell within fiscal year, then recomputes the omission
+gap of equation~\ref{eq:omission} and re-estimates
+equation~\ref{eq:silence_model} with firm and year fixed effects.
+If the omission--volatility association reflects something
+specifically about being silent on \emph{peer-relevant} risks, the
+placebo coefficient should die. If the result is a length artefact,
+the placebo should mirror the real coefficient. Across five
+independent permutations the placebo coefficient is small and
+statistically insignificant in every draw, with $|t|$~values
+$0.88, 0.90, 0.54, 0.57, 0.63$. The real coefficient $t = +2.93$
+exceeds the maximum placebo $|t|$ by a factor of three. The
+strategic-silence reading of the H3 result therefore survives a
+clean placebo test on the peer-structure mechanism.
+
+\paragraph{Length is not the driver (Columns 3 and 5).}
+Column~(3) replaces the omission gap by its residual after
+regressing on $\ln(\textsc{Words}_{1A})$ within each (SIC2,
+fiscal year) cell; the purified variation enters with the right
+sign but loses significance ($t = +1.49$). Column~(5) keeps the
+original gap but adds two further length controls (MD\&A word
+count and squared Item~1A log word count); the omission
+coefficient strengthens to $t = +3.18$ ($p = 0.001$). Linear or
+quadratic length controls do not remove the signal, but the
+strict orthogonalisation of Column~(3) absorbs enough of the
+effect to leave a borderline rather than a strong association.
+
+\paragraph{Large-cell restriction (Column 4) and prior-year
+specification (Column 6).} Restricting to cells with at least
+20~peers reduces the panel to $3{,}248$~firm-years but
+\emph{strengthens} the coefficient to $+2.52$ ($t = +3.09$): the
+signal is sharper where the peer aggregate is more reliably
+estimated. Column~(6) replaces the contemporaneous omission with
+its prior-year value to address the filing-window overlap
+concern; the lagged coefficient remains positive and significant
+at the 5\%~level ($+0.485$, $t = +1.97$).
+
+\paragraph{Decile rank (Column 2).} Replacing the level of
+omission by its decile rank within each (SIC2, fiscal year) cell
+preserves the predicted positive sign but reduces significance to
+$t = +1.31$. The H3 effect is concentrated in the tails of the
+omission distribution, consistent with a strategic-silence reading
+in which conspicuous omissions drive the response. The
+decile-rank weakness is the H3 result's most important
+qualification.
+
+\paragraph{Bottom line on H3.} The strategic-silence result
+survives the placebo, two stronger length controls, the
+large-cell restriction, and the one-year-lag specification, with
+the right sign in every column. Two qualifications apply: the
+decile-rank specification is not significant at the 5\%~level,
+and the fully length-orthogonalised reformulation (Column~3) is
+borderline rather than significant. The thesis reads the H3
+evidence as supportive of a within-firm strategic-silence channel
+with these stated qualifications, and does not extend the claim
+to a causal interpretation.
+
+
+% ────────────────────────────────────────────────────────────────────────────
+\section{What did not work}
 \label{sec:robustness_failed}
 % ─────────────────────────────────────────────────────────────────────────────
 
-In the spirit of full disclosure, this section documents the
-seven text-based H3 candidates that were estimated on the same
-panel and rejected before the LM-list decomposition was adopted.
-All seven specifications add a third Item~1A or MD\&A text
-variable to the H1+H2 joint specification of
-equation~\ref{eq:joint_model} and ask whether it adds incremental
-explanatory power for $\ln \sigma_{i,t+1}^{[30]}$.
-
-\paragraph{Year-on-year textual similarity (Item~1A).} A TF--IDF
-cosine similarity between consecutive years' Item~1A sections, in
-the spirit of \textcite{brown2011}'s MD\&A modification score, was
-estimated as a measure of disclosure ``staleness''. The coefficient
-was not statistically distinguishable from zero in the joint
-specification, with the predicted sign nonetheless reversing across
-horizons.
-
-\paragraph{MD\&A LM-Negativity.} The share of LM-Negative words in
-the Management's Discussion and Analysis section was estimated as a
-functionally distinct sentiment proxy. It did not add incremental
-explanatory power once Item~1A length was controlled for.
-
-\paragraph{Year-on-year change in Item~1A length ($\Delta$Words).}
-The first difference of $\ln(\text{Words}^{1A})$, motivated by the
-\textcite{lyle2023} ``changes'' framing, was statistically
-indistinguishable from zero in the joint specification.
-
-\paragraph{FinBERT-tone (four functional forms).} A pretrained
-FinBERT-tone classifier (\texttt{yiyanghkust/finbert-tone}) was
-run on every Item~1A in the panel. Four candidate signals were
-constructed from the per-sentence tone probabilities and aggregated
-to the section level: (i)~$P(\text{negative})$, (ii)~the signed
-difference $P(\text{positive}) - P(\text{negative})$, (iii)~the
-share of neutral sentences $P(\text{neutral})$, and (iv)~the
-``intensity'' measure $1 - P(\text{neutral})$. None of the four
-adds statistically significant explanatory power to the joint
-specification at the 30-day horizon, with $|t| < 1$ in all
-four cases. The detailed null results are not tabulated in the
-interest of brevity, but the FinBERT scoring pipeline
-(\texttt{scripts/finbert\_score\_mac.py}) and its per-firm output
-are preserved in the project repository for future replication.
-
-The negative results have an intuitive reading. The TF--IDF and
-FinBERT signals capture firm-specific narrative changes whose
-informational content is, on this panel, dominated by the much
-stronger length signal of H1. The LM-list decomposition succeeds
-where these alternatives fail because it identifies a structural
-composition of the H2 specificity effect rather than an additional
+Seven alternative specificity-channel candidates were estimated
+on the same panel and rejected before the LM-list decomposition
+was adopted: (i)~year-on-year TF--IDF similarity of Item~1A in
+the spirit of \textcite{brown2011}; (ii)~MD\&A LM-Negativity;
+(iii)~the first difference $\Delta \ln(\text{Words}^{1A})$
+following \textcite{lyle2023}; and (iv)--(vii)~four functional
+forms of FinBERT-tone
+(\texttt{yiyanghkust/finbert-tone}) aggregated from the
+per-sentence probabilities ($P(\text{neg})$, the signed
+$P(\text{pos})-P(\text{neg})$, $P(\text{neutral})$, and the
+intensity $1-P(\text{neutral})$). Each candidate was added as a
+third text variable to the H1+H2 joint specification of
+equation~\ref{eq:joint_model}; none added statistically
+significant explanatory power for $\ln \sigma_{i,t+1}^{[30]}$
+($|t| < 1.5$ in every case). The TF--IDF and FinBERT signals
+capture firm-specific narrative changes whose informational
+content is, on this panel, dominated by the much stronger length
+signal of H1. The LM-list decomposition succeeds where these
+alternatives fail because it identifies a structural composition
+of the H2 specificity effect rather than an additional
 firm-specific signal that competes with H1.

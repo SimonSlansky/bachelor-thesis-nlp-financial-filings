@@ -6,15 +6,18 @@
 This chapter reports the empirical results. Section~\ref{sec:descriptive}
 summarises the regression sample. Section~\ref{sec:joint_results}
 presents the headline test of H1 and H2 at the 30-day horizon and
-introduces the H3 boilerplate-decomposition column.
+introduces the LM-list decomposition column (the second-stage test
+of H2).
 Section~\ref{sec:annual_results} reproduces the same specification
 at the 365-day horizon to confirm that the results are not an
 artefact of the short-window choice.
-Section~\ref{sec:horizons_results} runs the H1+H3 specification at
+Section~\ref{sec:horizons_results} runs the joint H1+H2 decomposition at
 every horizon between 5 and 365~days, and
-Section~\ref{sec:boilerplate_results} discusses the H3 evidence
-formally. Section~\ref{sec:magnitude} translates the estimated
-coefficients into economic magnitudes.
+Section~\ref{sec:boilerplate_results} discusses the LM-list
+decomposition evidence formally. Section~\ref{sec:silence_results}
+introduces the strategic-silence specification (H3) and reports the
+headline within-firm test, with full robustness deferred to
+Chapter~\ref{ch:robustness}.
 
 
 % ─────────────────────────────────────────────────────────────────────────────
@@ -22,41 +25,18 @@ coefficients into economic magnitudes.
 \label{sec:descriptive}
 % ─────────────────────────────────────────────────────────────────────────────
 
-Table~\ref{tab:summary} reports summary statistics for the regression
-sample at the 30-day horizon. The dependent variable is post-filing
-volatility in logs (equation~\ref{eq:vol}); its distribution is
-approximately symmetric with mean
-$\ln \sigma_{i,t+1}^{[30]} \approx -1.34$ and standard deviation
-$\approx 0.59$, and an interquartile range running from $-1.74$ to
-$-1.06$. In raw units this corresponds to a typical annualised
-post-filing volatility around $0.26$ and a P25--P75 band of roughly
-$0.18$--$0.35$, in line with the right-skewed distribution typical
-of equity volatility.
-
-Lagged log-volatility has a near-identical distribution as expected
-for a persistent series. Firm size is measured as the natural log of
-total assets in dollars, with a sample mean of $23.18$ (roughly
-$\$11.7$~billion in assets) and an interquartile range from
-$22.19$ to $24.24$ (roughly $\$4.4$ to $\$33.6$~billion); this
-confirms the focus on large, liquid firms motivated in
-Section~\ref{sec:sample_selection}. Leverage centres around $0.62$
-with moderate spread; ROA averages $0.06$ with a long left tail; and
-asset growth averages $0.11$ with a long right tail driven by
-acquisitive firms.
-
-The two text variables show economically meaningful spread.
-$\ln(\text{Words}^{1A})$ has a mean of $9.03$ and a standard
-deviation of $0.64$, corresponding to a median Item~1A of roughly
-$8{,}800$~words and an interquartile range from $\approx 5{,}650$
-to $\approx 12{,}300$~words. RiskDensity has a mean of $0.051$ and
-a standard deviation of $0.006$: roughly $5\%$ of the words in a
-typical Item~1A come from the LM uncertainty or litigious lists.
-The two LM sub-components used for H3 are unevenly sized: the
-uncertainty share averages $0.034$ ($\approx 68\%$ of
-RiskDensity) and the litigious share averages $0.016$ ($\approx
-32\%$). The two sub-shares are essentially uncorrelated
-($r \approx -0.05$ in the regression sample), confirming that the
-decomposition delivers two genuinely separate regressors.
+Table~\ref{tab:summary} reports summary statistics for the
+regression sample at the 30-day horizon. The dependent variable
+has mean $\ln \sigma_{i,t+1}^{[30]} \approx -1.34$
+(SD~$\approx 0.59$), corresponding to a typical annualised
+post-filing volatility around $0.26$. Firm size centres on
+$\$11.7$~billion in total assets, confirming the focus on large,
+liquid firms. The two text variables show economically meaningful
+spread: $\ln(\text{Words}^{1A})$ has a standard deviation of
+$0.64$ (median Item~1A $\approx 8{,}800$~words), and the LM
+uncertainty and litigious sub-shares are essentially uncorrelated
+($r \approx -0.05$), confirming that the H2 decomposition
+delivers two genuinely separate regressors.
 
 \input{tables/summary_statistics}
 
@@ -81,39 +61,30 @@ specification.
 \label{sec:joint_results}
 % ─────────────────────────────────────────────────────────────────────────────
 
-Table~\ref{tab:main_30d} reports the headline test of H1, H2, and
-H3. Column~(1) is the financial baseline; Column~(2) adds Item~1A
+Table~\ref{tab:main_30d} reports the headline test of H1 and H2,
+together with the LM-list decomposition column. Column~(1) is the financial baseline; Column~(2) adds Item~1A
 length in logs (the volume channel); Column~(3) adds the composite
 risk-word density (the specificity channel); Column~(4) is the joint
 specification of equation~\ref{eq:joint_model} that nests H1 and H2;
-Column~(5) is the H3 decomposition specification of
+Column~(5) is the LM-list decomposition specification of
 equation~\ref{eq:decomposition_model}, which replaces RiskDensity by
 its two LM sub-components.
 
 \input{tables/main_30d}
 
-\paragraph{The baseline (Column~1).} Lagged log-volatility carries
-the expected positive coefficient ($+0.170$, $t = +2.12$ under
-two-way firm-and-year clustering): a one-percent rise in
-last-year's volatility maps into about $0.17\%$ extra volatility
-this year. The relatively small $t$-statistic on the lagged
-dependent variable reflects the strong residual year-level
-comovement in volatility (e.g.\ the 2020 COVID shock) that
-year clustering correctly accounts for. Firm size enters negatively
-($-0.070$, $t = -5.81$): larger firms are less volatile.
-Profitability is strongly stabilising ($\text{ROA}$
-coefficient~$-1.07$, $t = -9.72$); asset growth predicts higher
-future volatility ($+0.246$, $t = +4.34$); leverage is statistically
-indistinguishable from zero, as in much of the volatility
-literature \parencite{campbell2014}. The baseline already explains
-$49\%$ of the in-sample variation in log-volatility.
+\paragraph{The baseline (Column~1).} Lagged log-volatility, firm
+size (negative), ROA (negative), and asset growth (positive)
+enter with the expected signs and conventional significance;
+leverage is statistically indistinguishable from zero, as in much
+of the volatility literature \parencite{campbell2014}. The
+baseline already explains $49\%$ of the in-sample variation.
 
 \paragraph{The volume channel (Columns~2, 4, and~5).} Adding
 $\ln(\text{Words}^{1A})$ alone (Column~2) raises adjusted~$R^2$ to
 $0.505$ and yields a length coefficient of $+0.138$ ($t = +8.43$).
 In the joint specification (Column~4), where the composite
 risk-word density is controlled for, the length coefficient is
-$+0.121$ ($t = +7.64$). In the H3-decomposition specification
+$+0.121$ ($t = +7.64$). In the LM-list decomposition specification
 (Column~5), where the composite is replaced by its two LM
 sub-components, the length coefficient is $+0.130$
 ($t = +7.16$). The pattern is consistent across specifications:
@@ -131,7 +102,7 @@ is controlled for, the coefficient remains negative and significant
 at $-3.88$ ($t = -2.68$, $p = 0.007$). The fact that the density
 coefficient halves once length is controlled for is exactly the
 mechanical pattern anticipated in
-Section~\ref{ssec:why_both}: about half of what looked like a
+Section~\ref{ssec:textual_features}: about half of what looked like a
 ``risk-density effect'' in Column~(3) was in fact the volume effect
 operating through the section's word-count denominator. Once
 $\ln(\text{Words}^{1A})$ is partialled out, the residual density
@@ -162,7 +133,7 @@ association is therefore concentrated in the litigious rather
 than the uncertainty sub-list, consistent with the cautionary,
 legal-process language that
 \textcite{nelson2007,cazier2021} link to mature, legally
-supervised disclosure environments. \textbf{H3 is supported in the
+supervised disclosure environments. \textbf{The LM-list decomposition is supported in the
 cross-section}, with the qualifications discussed in
 Section~\ref{sec:boilerplate_results} and the firm-FE caveat of
 Section~\ref{sec:robustness_firmfe}.
@@ -180,33 +151,22 @@ informative both individually and jointly.
 
 
 % ─────────────────────────────────────────────────────────────────────────────
-\section{The same channels at the 365-day horizon}
+\section{The same channels at the 365-day horizon and across
+intermediate windows}
 \label{sec:annual_results}
 % ─────────────────────────────────────────────────────────────────────────────
 
 Table~\ref{tab:main_365d} re-estimates the same five nested
 specifications with the dependent variable replaced by
-$\ln \sigma_{i,t+1}^{[365]}$, the log of annualised volatility over
-the full year following the filing. The lagged dependent variable
-is the analogous one-year window for the prior filing year.
+$\ln \sigma_{i,t+1}^{[365]}$. The signs and significance of all
+three text variables are preserved: in the H1+H2 decomposition
+(Column~5) $\beta^{\text{len}} = +0.061$ ($t = +4.93$),
+$\beta^{\text{lit}} = -3.39$ ($t = -3.91$), and
+$\beta^{\text{unc}}$ remains null. Magnitudes shrink to roughly
+half of the 30-day estimates, consistent with the post-filing
+reaction documented by \textcite{loughran2011}.
 
 \input{tables/main_365d}
-
-The signs and significance pattern of all three text variables
-survive at the annual horizon. In the H1+H2 joint specification
-(Column~4) $\beta^{\text{len}} = +0.056$ ($t = +4.53$) and
-$\beta^{\text{dens}} = -2.19$ ($t = -3.55$, $p < 0.001$). In the
-H1+H3 decomposition (Column~5) $\beta^{\text{len}} = +0.061$
-($t = +4.93$), $\beta^{\text{lit}} = -3.39$ ($t = -3.91$,
-$p < 0.001$), and $\beta^{\text{unc}} = -0.86$ ($t = -1.08$,
-$p = 0.28$). What changes between the 30-day and 365-day windows is
-the magnitude: the length coefficient is roughly half of the
-30-day estimate; the litigious coefficient is roughly $55\%$ of the
-30-day estimate. Both shrink toward zero as the volatility window
-lengthens, exactly as the event-study evidence of
-\textcite{loughran2011} would predict, but neither sign nor
-significance reverses. The split between an active LitDensity and
-a null UncDensity is preserved.
 
 
 % ─────────────────────────────────────────────────────────────────────────────
@@ -214,7 +174,7 @@ a null UncDensity is preserved.
 \label{sec:horizons_results}
 % ─────────────────────────────────────────────────────────────────────────────
 
-Table~\ref{tab:horizons} reports the H1+H3 decomposition
+Table~\ref{tab:horizons} reports the H1+H2 decomposition
 specification of equation~\ref{eq:decomposition_model} at six
 post-filing horizons: $h \in \{5, 10, 30, 90, 180, 365\}$ calendar
 days. Each column is a separate regression on the full panel;
@@ -250,102 +210,75 @@ sample. This is a feature of the data, not of the specification.
 \label{sec:boilerplate_results}
 % ─────────────────────────────────────────────────────────────────────────────
 
-The headline result of Column~(5) of Table~\ref{tab:main_30d} and
-the consistent across-horizon pattern of
-Table~\ref{tab:horizons} together support a sharp interpretation
-of what the H2 ``specificity effect'' actually is. The composite
-RiskDensity used in much of the prior literature
-\parencite{loughran2011, kravet2013} pools two LM word lists with
-very different production technologies. Our decomposition shows
-that the negative association of RiskDensity with post-filing
-volatility is driven entirely by the LM-Litigious sub-list. Once
-the litigious component is partialled out, the LM-Uncertainty
-component has no incremental association with volatility at any
-horizon.
-
-The magnitude is economically meaningful. A one-standard-deviation
-rise in LitDensity ($\approx 0.005$) corresponds to a
+The negative association of the composite RiskDensity with
+post-filing volatility is driven entirely by the LM-Litigious
+sub-list; once the litigious component is partialled out, the
+LM-Uncertainty component has no incremental association at any
+horizon. A one-standard-deviation rise in LitDensity
+($\approx 0.005$) corresponds to a
 $0.005 \times 6.16 \approx 2.8\%$ decrease in 30-day annualised
-volatility. The interquartile range of LitDensity
-($\approx 0.006$) implies an $\approx 3.8\%$ swing in volatility
-from the lowest to the highest litigious-density quartile.
-
-The interpretation aligns with the boilerplate-disclosure literature
-reviewed in Section~\ref{sec:lit_boilerplate}.
-\textcite{nelson2007} and \textcite{cazier2021} document that
-litigious-list language in mandatory filings is dominated by
-standardised cautionary boilerplate inserted by legal counsel
-under the safe-harbour regime of the 1995 Private Securities
-Litigation Reform Act, while \textcite{loughran2015} stress that
-uncertainty and litigious wordings are conceptually distinct
-constructs. Firms whose Item~1A is heavier in litigious wording
-are therefore plausibly firms with more institutionalised
-compliance functions and more legally supervised disclosure
-processes, characteristics that prior work
-\parencite{nelson2007, cazier2021, beatty2019} associates with
-lower realised risk. The Item~1A length effect (H1) and the
-litigious-density effect (H3) are then two distinct
-firm-level signals: the former captures how much management has
-chosen to disclose, the latter captures the legal-procedural style
-in which it is disclosed.
-
-A caveat on identification is reserved for
-Section~\ref{sec:robustness_firmfe} of the next chapter.
-\textbf{H3 is supported in the cross-section}, with the LitDensity
-sign holding at every horizon and on both COVID sub-samples;
-whether it survives within-firm absorption is examined separately
-in the robustness chapter.
+volatility, and the interquartile swing is $\approx 3.8\%$.
+The reading aligns with the
+\textcite{nelson2007,cazier2021,beatty2019} interpretation of
+litigious-list language as standardised cautionary boilerplate
+that proxies for an institutionalised, legally supervised
+compliance function. The within-firm caveat is reserved for
+Section~\ref{sec:robustness_firmfe}.
 
 
-% ─────────────────────────────────────────────────────────────────────────────
-\section{Economic magnitude}
-\label{sec:magnitude}
-% ─────────────────────────────────────────────────────────────────────────────
+% ────────────────────────────────────────────────────────────────────────────
+\section{Strategic silence and within-firm post-filing volatility}
+\label{sec:silence_results}
+% ────────────────────────────────────────────────────────────────────────────
 
-Table~\ref{tab:main_30d} translates straightforwardly into
-economic magnitudes because the dependent variable is in logs and
-the regressors are either in logs or are bounded densities.
+Table~\ref{tab:silence_main} reports the H3 strategic-silence
+specification of equation~\ref{eq:silence_model} at five
+post-filing horizons under both fixed-effect structures: industry
+plus year FE in Panel~A and firm plus year FE in Panel~B. The
+coefficient of interest is $\beta^{\text{om}}$ on the peer-relative
+omission gap of equation~\ref{eq:omission}. Item~1A length is in
+the regression as a control alongside RiskDensity, the five
+financial controls, and lagged log-volatility, so $\beta^{\text{om}}$
+measures the incremental association of peer-relative omission with
+post-filing volatility holding the firm's own length and
+risk-vocabulary density fixed.
 
-\paragraph{Length.} A one-standard-deviation rise in
-$\ln(\text{Words}^{1A})$ ($\approx 0.64$, corresponding to a
-$\approx 90\%$ increase in word count) implies an
-$0.64 \times 0.130 \approx 8.3\%$ increase in 30-day annualised
-volatility (using the Column~5 estimate). Going from the 25th to
-the 75th percentile of Item~1A length implies an
-$0.78 \times 0.130 \approx 10.1\%$ increase in volatility. Relative
-to a sample-mean annualised volatility of $\approx 0.26$, this is
-roughly $2.6$~percentage points of annualised volatility---an
-economically substantive effect well within the range of
-disclosure effects reported in
-\textcite{loughran2011, campbell2014}.
+\input{tables/silence_main}
 
-\paragraph{Composite specificity (H2).} A one-standard-deviation
-rise in RiskDensity ($\approx 0.006$) implies a
-$0.006 \times (-3.88) \approx -2.3\%$ change in 30-day annualised
-volatility. The interquartile range of RiskDensity is
-$\approx 0.008$, implying an $\approx -3.1\%$ swing in volatility
-from the lowest to the highest density quartile.
+\paragraph{Cross-section is null.} Panel~A of
+Table~\ref{tab:silence_main} shows that, conditional on the H1+H2
+controls and SIC2-and-year fixed effects, peer-relative omission
+has no detectable cross-sectional association with post-filing
+volatility at any horizon: $|t| < 1.1$ at every window. The
+cross-sectional version of equation~\ref{eq:silence_model} does not
+identify a between-firm strategic-silence effect on this panel.
 
-\paragraph{Litigious sub-component (H3).} A one-standard-deviation
-rise in LitDensity ($\approx 0.005$) implies a
-$0.005 \times (-6.16) \approx -2.8\%$ change in 30-day annualised
-volatility---of the same order of magnitude as the composite H2
-effect, despite LitDensity being only one-third of RiskDensity by
-share. The fact that the entire composite effect can be relocated
-onto a sub-list one-third its size is the empirical content of the
-H3 decomposition: the negative ``specificity'' effect of generic
-risk vocabulary is in fact concentrated in cautionary
-legal-process boilerplate.
-\paragraph{Why the dictionary-only ratio understates the
-specificity channel.} The univariate Column~(3) coefficient on
-RiskDensity is $-7.78$, twice the Column~(4) joint estimate of
-$-3.88$. The reason is the negative correlation between the two
-text variables (Section~\ref{sec:descriptive}): longer Item~1A
-sections tend to be slightly less dense, so omitting length from
-the regression loads part of the (positive) volume effect onto a
-variable ($\text{RiskDensity}$) that is itself negatively
-correlated with length, exaggerating the negative coefficient.
-The joint specification of equation~\ref{eq:joint_model}
-disentangles the two channels and the H3 decomposition
-(equation~\ref{eq:decomposition_model}) localises the resulting
-effect inside the LM lexicon.
+\paragraph{Within-firm survival and economic magnitude.} Panel~B
+reports the strict version with industry fixed effects replaced
+by firm fixed effects. The omission coefficient is positive and
+significant at the 30-day horizon
+($\hat{\beta}^{\text{om}} = +1.345$, $t = +2.93$, $p = 0.003$),
+and remains significant at 90 and 180~days ($t = +2.42$ and
+$+2.35$); at 5 and 10~days the coefficient is positive but
+insignificant. A one-within-firm-SD rise in $\textsc{Omission}^{1A}$
+($0.054$) implies a $\approx 7.3\%$ increase in 30-day annualised
+volatility, of the same order as the cross-sectional H1 length
+effect. \textbf{H3 is supported within-firm at the 30-day
+horizon}, with the qualifications discussed in
+Section~\ref{sec:robustness_silence}.
+
+\paragraph{Cross-section vs.\ within-firm.} The H3 omission gap
+shows the opposite pattern to the H2 LM sub-densities: no
+cross-sectional power but a within-firm signal. The reading is
+that permanent firm-level disclosure styles absorb the
+cross-section, whereas the omission gap, by construction, varies
+with what \emph{other} firms write each year and is therefore a
+year-specific peer-relative signal that the firm-FE
+specification lets through. An alternative reading---omission
+proxies for a year-specific firm shock that drives both shorter
+Item~1A and higher subsequent volatility---cannot be ruled out
+from these regressions alone; the placebo, length-residualised,
+and lead-lag checks of Section~\ref{sec:robustness_silence} are
+designed to discriminate between the two.
+
+

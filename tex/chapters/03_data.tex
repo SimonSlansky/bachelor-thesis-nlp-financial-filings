@@ -3,44 +3,6 @@
 \label{ch:data}
 % =============================================================================
 
-% TODO: Structure
-%
-% \section{Sample Selection}
-% - Universe: top ~1,000 U.S. companies by market cap from SEC EDGAR
-% - Filters: operating entities only, exclude SIC 6000--6999 (financials)
-% - Final sample: ~540 non-financial firms, 2010--2024
-%
-% \section{Data Sources}
-% \subsection{SEC EDGAR}
-% - XBRL Company Facts API for financial statements (10-K)
-% - Full-text filings for textual analysis (Item 1A Risk Factors)
-%
-% \subsection{Stock Market Data}
-% - Source: yfinance (adjusted close prices)
-% - Volatility: annualised std of daily log returns over post-filing windows
-%   (5, 10, 30, 90, 180, 365 days)
-%
-% \section{Financial Variables}
-% - Raw XBRL metrics: total\_assets, net\_income, operating\_income, ...
-% - Derived ratios: log\_total\_assets, leverage, ROA, asset\_growth
-% - Winsorisation at 1\%/99\%
-%
-% \section{Textual Variables}
-% - Item 1A length: ln(Words^{1A}) (H1, volume channel)
-% - Item 1A risk-word density: LM uncertainty + litigious counts /
-%   total words (H2, specificity channel)
-%
-% \section{Dependent Variable}
-% - log(annualised post-filing volatility) over 5/10/30/90/180/365 day
-%   windows starting two trading days after filing
-%
-% \section{Panel Data Construction}
-% - Annual panel: ~6,300 firm-years; ~5,690 with valid Item 1A text
-%
-% \section{Descriptive Statistics}
-% - Summary statistics, correlation matrix (in Chapter 5)
-
-
 % ─────────────────────────────────────────────────────────────────────────────
 \section{Selecting the Sample}
 \label{sec:sample_selection}
@@ -171,51 +133,27 @@ differ materially.
 
 To verify this classification, we queried the SEC EDGAR Company~Facts
 API for all 550 sample firms and identified 6{,}113 firm-year periods
-in which both tags of a pair were reported simultaneously.  The two
-overlap samples support treating the pairs as interchangeable:
-%
-\begin{itemize}
-  \item \textbf{Operating cash flow} (1{,}352 overlaps): 53.5\% are
-        numerically identical and the median difference scaled by total
-        assets is practically zero. The 90th-percentile bias is
-        only 1.5~pp.
-  \item \textbf{Net income} (4{,}761 overlaps): 25.5\% are numerically identical and
-        the median ROA bias is 0.033~pp. 92.5\% of observations lie
-        below 1.0~pp.
-\end{itemize}
-%
-The few cases with meaningful differences are
-already handled by our priority rule, which prefers the parent-company
-tag whenever both are reported.
+in which both tags of a pair were reported simultaneously; the
+overlap diagnostic supports treating each pair as interchangeable
+(median ROA bias 0.033~pp; details in
+Appendix~\ref{app:variables}, Table~\ref{tab:tag_provenance}).
+The few cases with meaningful differences are handled by a
+priority rule that prefers the parent-company tag whenever both
+are reported.
 
 \paragraph{Per-firm tag locking.}
-For metrics where the alternative tags \emph{are} economically distinct
-(stockholders' equity with vs.\ without NCI;
+For metrics where the alternative tags \emph{are} economically
+distinct (stockholders' equity with vs.\ without NCI;
 \texttt{Income\-Loss\-From\-Continuing\-Operations} vs.\
-\texttt{Net\-Income\-Loss}), we apply strict
-per-firm tag locking: we keep the tag each firm uses in the most fiscal
-years and set values from other tags to missing.  Even if a firm
-switches its tag mid-sample, the locked series stays internally
-consistent at the cost of some discarded observations.  This
-within-firm consistency is what our fixed-effects regressions require.
-
-Combining equivalence groups and per-firm locking increases the
-complete-case rate for the five regression controls (\textit{roa},
-\textit{leverage}, \textit{asset\_growth},
-\textit{current\_ratio}, \textit{log\_total\_assets}) from 78.9\% to
-92.7\% of firm-year observations.  This recovers 988~operating-cash-flow
-values and 292~net-income values that would otherwise be lost.
-
-\paragraph{Residual limitation.}
-The two-part process does not eliminate every source of cross-tag noise.
-About 4\% of firms end up with a continuing-operations OCF tag paired
-with a total net-income tag.  Ratios that combine the two---such as
-the auxiliary OCF-to-assets variable used in robustness--- carry a small inconsistency.  
-We accept this trade-off in exchange for better coverage.  
-We winsorise these ratios at the 1st and 99th
-percentiles to clip the resulting extreme values, and note that the
-same kind of cross-tag mismatch is reported in comparable large-scale
-XBRL studies \parencite{chychyla2015}.
+\texttt{Net\-Income\-Loss}), we lock each firm to the tag it uses
+in the most fiscal years and set values from other tags to
+missing. Combined with the equivalence groups, this raises the
+complete-case rate for the five regression controls from 78.9\%
+to 92.7\% of firm-year observations. About 4\% of firms end up
+with a continuing-operations OCF tag paired with a total
+net-income tag, a residual mismatch we accept and clip via
+winsorisation, in line with comparable XBRL studies
+\parencite{chychyla2015}.
 
 Per-firm tag choices and the overlap diagnostic are reported in
 Appendix~\ref{app:variables}
@@ -247,229 +185,71 @@ since the XBRL pipeline already picks up the amended figures when
 available (Section~\ref{sec:xbrl_tags}).  Our extraction thus
 targets only original 10-K filings.
 
-\subsection{Section Identification}
+\subsection{Section identification and exhibit fallback}
 \label{ssec:section_id}
 
-Unlike structured XBRL data, the textual parts of 10-K filings are hidden
-inside HTML with no standardised tagging.  A raw filing can span across
-several thousands of lines, with section headers defined in many different
-ways: bold text, explicit \texttt{<font>} tags, inline uppercase text,
-or table-based layouts. Additionally, these headers are often mixed in with a 
-table of contents (TOC), running headers, and inline cross-references (e.g.\ ``see Item~1A'').
-These features make simple keyword search on plain text basically impossible,
-because it confuses TOC entries, page headers, and inline mentions
-with actual section boundaries.
-
-To achieve the best possible results, we use an HTML extraction procedure with four stages:
-
-\begin{enumerate}
-  \item \textbf{Header detection.}  We walk through the HTML at
-    the block level and test each element against a set of regex
-    patterns for the target sections (e.g.\ a pattern that matches
-    \emph{``Item 1A''} together with its common variants).
-    A candidate for correct section counts only if it meets at least one formatting rule:
-    bold styling, ALL-CAPS text, or large font size ($\geq$12\,pt).
-    This effectively filters out inline cross-references, which sit in normal
-    body-text paragraphs with no special formatting, without discarding any valid headers.  Elements that
-    are themselves hyperlinks are also rejected, as these are almost always 
-    table-of-contents entries pointing to the real section.
-
-  \item \textbf{Position marking.}  Each confirmed header is tagged
-    in place before the document is flattened to plain text, so we
-    keep track of where every header sits in the final text.
-
-  \item \textbf{Candidate selection.}  For each target section, we
-    keep only headers whose surrounding text contains an expected
-    subtitle keyword (``risk'' for Item~1A; ``management'' or
-    ``discussion'' for Item~7) and discard any header having many other Item headers near it (within 300~characters in either direction),
-    the typical signature of a table of contents.  When several candidates remain, we pick the
-    one followed by the longest stretch of text before the next
-    section header.
-
-  \item \textbf{Section boundary.}  The section text runs from the
-    selected header to the first occurrence of the next expected Item
-    header (Item~1B, 1C, or~2 for Item~1A; Item~7A or~8 for Item~7).
-    Sections shorter than 200~words are treated as stubs and trigger
-    a fallback procedure described in the next subsection.
-\end{enumerate}
-
-\subsection{Exhibit Fallback}
-\label{ssec:exhibit_fallback}
-
-A common practice in 10-K filings---especially older ones---is to replace an Item with
-a short stub such as ``This information is incorporated by reference
-from Exhibit~13.''  When the extracted section has fewer than
-200~words and the text matches an incorporation-by-reference pattern,
-the parser finds the referenced exhibit number (defaulting to
-Exhibit~13, the annual report to shareholders) and downloads the
-matching HTML document from the filing index.  The section
-identification procedure described in the previous subsection is then rerun on the exhibit.  
-Because exhibits often skip the formal ``Item~X'' prefix, the parser also
-matches patterns with titles only (e.g.\ ``Risk Factors'', ``Management's
-Discussion and Analysis'') as a backup detection layer for both the
-main document and exhibits.
+Unlike structured XBRL data, the textual parts of 10-K filings
+are buried inside HTML with no standardised tagging, mixed with
+table-of-contents entries, running headers, and inline
+cross-references. We use a four-stage HTML parser that
+(i)~detects candidate headers using regex patterns for the target
+``Item~X'' strings combined with formatting cues (bold, ALL-CAPS,
+$\geq 12$\,pt font), rejecting hyperlinks and headers surrounded
+by other Item references within 300~characters (table-of-contents
+signature); (ii)~tags confirmed headers in place before flattening
+to plain text; (iii)~picks the candidate followed by the longest
+stretch of text before the next expected Item header; and
+(iv)~bounds the section at the next Item header (Item~1B/1C/2 for
+Item~1A; Item~7A/8 for Item~7). Sections shorter than 200~words
+trigger a fallback that follows incorporation-by-reference
+stubs into the relevant exhibit (defaulting to Exhibit~13) and
+reruns the same identification procedure with title-only patterns
+(``Risk Factors'', ``Management's Discussion and Analysis'') as
+backup. Implementation in \texttt{scripts/text\_parser.py}.
 
 \subsection{Post-Processing}
 \label{ssec:text_postprocessing}
 
-After converting the HTML to plain text, several
-layout artefacts from the original filing remain.  These could potentially harm later text analysis.  Before computing any
-textual features, we perform 3 cleaning steps
-that remove three types of noise:
-
-\begin{enumerate}
-  \item \textbf{Running page headers.}  Many filings embed
-    ``\textit{$\langle$page number$\rangle$~Table of Contents}''
-    strings at page boundaries.  A simple regular expression strips any
-    line matching a one- to three-digit number followed by
-    ``Table of Contents.''
-  \item \textbf{Standalone page numbers.}  After removing the full
-    header pattern, some filings still contain page numbers on
-    empty lines.  These are also removed 
-    by deleting any line consisting solely of a one- to three-digit
-    integer.
-  \item \textbf{Non-breaking spaces.}  Non-breaking-space characters
-    introduced by the original HTML markup are normalised to standard
-    spaces, so that downstream word-count and dictionary-based
-    measures are not affected by these artefacts.
-\end{enumerate}
-
-\noindent
-The cleaning rules are intentionally conservative: they target only
-patterns that cannot realistically be part of meaningful text and are
-applied after section boundaries have already been set, so they do
-not interfere with header detection.
+After HTML-to-text conversion the parser strips three layout
+artefacts: running ``\textit{$\langle$page number$\rangle$~Table
+of Contents}'' headers, standalone page numbers on otherwise
+empty lines, and non-breaking-space characters. The cleaning
+rules target only patterns that cannot be part of meaningful text
+and are applied after section boundaries have already been set.
 
 \subsection{Coverage and Limitations}
 \label{ssec:text_coverage}
 
-Because the quality of the extraction pipeline is crucial for downstream analysis, we validated it on two samples: the 50~most
-recent filings in the panel (fiscal year 2024) and, more importantly, a stratified
-random sample of 100~filings covering all fiscal years 2010--2024
-(20~per era).  On the recent sample, the parser successfully
-extracted both sections for all 50~filings (100\%).  On the
-cross-era sample, 97~of~100 filings yielded both sections.  The
-three failures break down as follows:
-
-\begin{itemize}
-  \item Two filings whose annual report exhibit was filed as a PDF
-    rather than HTML, making it inaccessible to an HTML parser;
-  \item One filing whose 10-K used neither bold, large-font, nor
-    uppercase cues for its section headers, leaving no formatting
-    signal for the parser to use.
-\end{itemize}
-
-\noindent
-Neither failure mode is related to firm characteristics in any
-systematic way.  On the full panel, we expect a coverage rate of roughly 97\%, with missing values
-treated as missing in the textual variable construction.
+The extraction pipeline was validated on two samples: the
+50~most recent filings (fiscal year 2024, both sections recovered
+in all 50) and a stratified random sample of 100~filings covering
+2010--2024 (97/100 successful, with three failures driven by
+PDF-only exhibits or the absence of any formatting cue for the
+section header). On the full panel we expect a coverage rate of
+roughly 97\%, with missing values treated as missing in the
+textual variable construction.
 
 \paragraph{LLM-assisted quality audit.}
-%
-% DESIGN RATIONALE (n = 100 filings / 200 sections):
-%   1. Statistical precision: With ~200 evaluated sections and an
-%      expected pass rate of ~95%, the Wilson 95% CI half-width is
-%      z * sqrt(p*(1-p)/n) ≈ 1.96 * sqrt(0.95*0.05/200) ≈ 3.0 pp,
-%      yielding intervals narrow enough for a definitive claim.
-%   2. Representativeness: 100 filings = 40 sections per 5-era
-%      stratum covers the full filing-format evolution
-%      (pre-iXBRL → transition → inline XBRL),
-%      sampling ~18% of the 540-firm universe.
-%   3. Literature precedent: Manual/AI extraction validation in
-%      financial NLP typically uses 50–100 documents
-%      (cf. Loughran & McDonald spot checks; Krippendorff recommends
-%      ≥ 80 units for reliability testing).
-%
-Although the parser extracted 97/100 filings successfully, coverage
-alone says nothing about content quality.  To check whether the
-extracted sections are actually the right ones, we ran an independent
-validation using a large language model (Google Gemini~2.5~Flash, accessed
-through its OpenAI-compatible API, temperature~$= 0$ for deterministic
-results).  \textcite{gilardi2023} show that LLM-based annotation
-matches or surpasses trained crowd-workers on text-classification
-tasks, which supports using a language model as an independent
-extraction validator.
-A~stratified random sample of 100~filings was drawn---20~filings from
-each of five time periods (2010--2012, 2013--2015, 2016--2018,
-2019--2021, 2022--2024).  Both Item~1A and Item~7 were evaluated for
-every filing, giving 200~section-level evaluations in total.
-This design is in line with what \textcite{krippendorff2019} recommends
-as reliable for content-analysis studies, and large enough that
-pass-rate estimates carry a margin of error of about
-$\pm$3~percentage points.  The 100~filings also cover roughly
-19\,\% of the 539-firm panel and span the full history of SEC filing
-formats.
-
-For each filing, both extracted sections were sent to the model in a
-single prompt along with a structured evaluation rubric.  The model
-evaluated each extracted section on five criteria---correct section identity,
-start-boundary accuracy, end-boundary accuracy, content quality
-(no residual HTML tags, page headers, or distorted data), and
-completeness (full narrative, not a stub or truncated fragment)---using
-a three-level grading scale: \emph{Pass} (criterion fully met),
-\emph{Minor} (small issue that would not significantly affect NLP
-analysis), and \emph{Fail} (issue that would significantly affect NLP
-analysis).  Additionally, we report two aggregate metrics: a strict rate (only Pass) and a lenient
-rate (Pass~+~Minor), each with Wilson~95\,\% confidence intervals
-\parencite{agresti1998}.
-
-\begin{table}[htbp]
-  \centering
-  \small
-  \caption{LLM-assisted extraction validation results
-           ($n = 200$~sections, 100~per section type).}
-  \label{tab:ai_validation}
-  \begin{tabular}{l r@{/}l r r@{/}l r l}
-    \toprule
-    Criterion &
-      \multicolumn{2}{c}{Strict} & \% &
-      \multicolumn{2}{c}{Lenient} & \% &
-      95\,\% CI (lenient) \\
-    \midrule
-    Correct section   & 192 & 200 & 96.0 & 192 & 200 & 96.0 & [92.3\,--\,98.0\,\%] \\
-    Start boundary    & 191 & 200 & 95.5 & 193 & 200 & 96.5 & [93.0\,--\,98.3\,\%] \\
-    End boundary      & 192 & 200 & 96.0 & 193 & 200 & 96.5 & [93.0\,--\,98.3\,\%] \\
-    Content quality   & 191 & 200 & 95.5 & 195 & 200 & 97.5 & [94.3\,--\,98.9\,\%] \\
-    Completeness      & 189 & 200 & 94.5 & 191 & 200 & 95.5 & [91.7\,--\,97.6\,\%] \\
-    \midrule
-    Overall (all five) & 179 & 200 & 89.5 & 187 & 200 & 93.5 & [89.2\,--\,96.2\,\%] \\
-    \bottomrule
-  \end{tabular}
-\end{table}
-
-Table~\ref{tab:ai_validation} shows the results.  On every individual
-criterion, the lenient pass rate (Pass~+~Minor) is above 95\%,
-confirming that the parser finds the right section with accurate
-boundaries and produces clean, complete text.  Even under the strict
-metric, the rates stay above 94\% on
-each criterion.  The overall lenient rate across all five criteria at
-once is 93.5\% (187/200; 95\,\%~CI: 89.2--96.2\,\%).
-
-Of the 13~sections with at least one criteria resulting in Fail, five were complete
-extraction failures (empty output) caused by non-standard HTML layouts.
-Four had wrong section boundaries (content from an adjacent Item was
-included). Finally, the remaining four were flagged only for low word counts
-suggesting possible truncation, which we do not permit to enter the main analysis.
-Item~7 extractions do slightly better than Item~1A (lenient pass rates
-of 96\% vs.\ 91\%), most likely because Item~7 has an advantage in cleaner end
-boundary (Item~7A or Item~8), while Item~1A sometimes wrongly picks up text
-from the preceding Item~1.
-
-Failures clearly cluster in older filings: 5~of the 40~sections from
-2010--2012 were flagged. On the other hand, only 1~of~40 come from 2022--2024.  This
-shows expected gradual standardisation of SEC filing HTML over the
-sample period.
-
-\paragraph{Robustness of the LLM-based validation.}
-Several choices in this validation procedure support the reliability of this approach.
-First, the validation is built around clearly defined, verifiable criteria---correct
-section identity, boundary accuracy, absence of HTML artefacts, and
-word-count thresholds---that leave little room for subjective
-interpretation and ambiguity.  Second, each judgment covers a single document with a
-deterministic prompt. The model does not need to compare across
-filings or aggregate statistics.  Third, manually checking the model's
-Fail verdicts and reasons confirmed agreement in every
-case examined.
+To check that the extracted sections are actually the right ones,
+we ran an independent validation with a large language model
+(Google Gemini~2.5~Flash, temperature~$=0$). A stratified random
+sample of 100~filings was drawn (20 per five-year period over
+2010--2024) and both Item~1A and Item~7 were evaluated for every
+filing, giving 200~section-level judgments. The use of LLMs as
+independent annotators in this role is supported by
+\textcite{gilardi2023}; the sample size delivers Wilson 95\,\%
+confidence intervals of roughly $\pm 3$~percentage points
+\parencite{agresti1998, krippendorff2019}. The model graded each
+section on five criteria (correct section identity, start- and
+end-boundary accuracy, content quality, completeness) on a
+three-level scale (Pass / Minor / Fail). The detailed results are
+reported in Appendix~\ref{app:variables}
+(Table~\ref{tab:ai_validation}): on every individual criterion
+the lenient (Pass~+~Minor) pass rate is above 95\,\%, and the
+overall rate across all five criteria at once is 93.5\,\%
+(187/200; 95\,\%~CI: 89.2--96.2\,\%). Failures cluster in older
+filings (5/40 in 2010--2012 vs.\ 1/40 in 2022--2024), reflecting
+the gradual standardisation of SEC filing HTML over the sample.
 
 \paragraph{Relation to prior approaches.}
 Our extraction strategy is inspired by \textcite{dyer2017}, who

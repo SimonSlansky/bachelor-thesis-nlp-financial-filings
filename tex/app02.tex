@@ -21,8 +21,32 @@ The evaluation rubric, sampling strategy, prompt design, and statistical
 analysis (Wilson confidence intervals) were all designed by the author.
 The model's only role was applying the rubric to each extracted section.
 All Fail verdicts were manually spot-checked against the original SEC
-filings and confirmed to be correct.  Results are in
+filings and confirmed to be correct.  Results are reported in
 Table~\ref{tab:ai_validation}.
+
+\begin{table}[htbp]
+  \centering
+  \small
+  \caption{LLM-assisted extraction validation results
+           ($n = 200$~sections, 100~per section type).}
+  \label{tab:ai_validation}
+  \begin{tabular}{l r@{/}l r r@{/}l r l}
+    \toprule
+    Criterion &
+      \multicolumn{2}{c}{Strict} & \% &
+      \multicolumn{2}{c}{Lenient} & \% &
+      95\,\% CI (lenient) \\
+    \midrule
+    Correct section   & 192 & 200 & 96.0 & 192 & 200 & 96.0 & [92.3\,--\,98.0\,\%] \\
+    Start boundary    & 191 & 200 & 95.5 & 193 & 200 & 96.5 & [93.0\,--\,98.3\,\%] \\
+    End boundary      & 192 & 200 & 96.0 & 193 & 200 & 96.5 & [93.0\,--\,98.3\,\%] \\
+    Content quality   & 191 & 200 & 95.5 & 195 & 200 & 97.5 & [94.3\,--\,98.9\,\%] \\
+    Completeness      & 189 & 200 & 94.5 & 191 & 200 & 95.5 & [91.7\,--\,97.6\,\%] \\
+    \midrule
+    Overall (all five) & 179 & 200 & 89.5 & 187 & 200 & 93.5 & [89.2\,--\,96.2\,\%] \\
+    \bottomrule
+  \end{tabular}
+\end{table}
 
 % ─────────────────────────────────────────────────────────────────────────────
 \section*{Code Development}

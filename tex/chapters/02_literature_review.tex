@@ -3,288 +3,41 @@
 \label{ch:literature}
 % =============================================================================
 
-This chapter reviews the literature that informs the three questions
-addressed by the thesis. Section~\ref{sec:lit_textual} surveys the
-broader programme of textual analysis in accounting and finance and
-explains why mandatory 10-K disclosures are a natural laboratory for
-this research. Section~\ref{sec:lit_volume} reviews the strand that
-links the \emph{volume} of risk-factor disclosure to firm risk, and
-Section~\ref{sec:lit_specificity} reviews the strand that links the
-\emph{specificity} of risk-factor language to firm risk; together
-these two literatures motivate H1 and H2.
-Section~\ref{sec:lit_boilerplate} turns to the internal composition
-of the Loughran--McDonald (LM) risk lexicon and reviews the
-relatively orphaned literature on boilerplate cautionary and
-litigious language, motivating H3.
-Section~\ref{sec:lit_controls} summarises the financial determinants
-of volatility used as controls. Section~\ref{sec:hypotheses} states
-the three hypotheses tested in the rest of the thesis.
+% NOTE: Full literature review intentionally omitted from this build.
+% Section labels are retained as anchors for cross-references from
+% later chapters; the Hypotheses section below is preserved in full
+% because Chapters~\ref{ch:methodology}--\ref{ch:robustness} test
+% these statements directly.
 
-
-% ─────────────────────────────────────────────────────────────────────────────
-\section{Textual analysis of corporate filings}
-\label{sec:lit_textual}
-% ─────────────────────────────────────────────────────────────────────────────
-
-A now-extensive literature uses computational text analysis to extract
-information from corporate disclosures. The methodological turning
-point was \textcite{loughran2011}, who showed that the off-the-shelf
-Harvard~General~Inquirer dictionary is poorly suited to financial
-text---roughly three quarters of the words it labels negative are not
-negative in a financial context---and constructed six word lists
-(positive, negative, uncertainty, litigious, strong-modal, weak-modal)
-calibrated on 10-Ks. Their dictionary has become the de-facto standard
-in accounting research and underpins almost every dictionary-based
-study cited below. The same authors document that more pessimistic
-10-K tone predicts higher one-day filing-period returns, higher
-trading volume, and higher post-filing volatility, establishing tone
-as a quantifiable predictor of market outcomes.
-
-Subsequent work expanded the toolkit beyond tone. \textcite{li2008}
-shows that less readable 10-Ks are associated with lower current
-earnings and weaker earnings persistence. \textcite{li2010} estimates
-a Naive Bayes classifier on forward-looking statements and finds that
-those with a more positive tone predict higher future earnings.
-\textcite{brown2011} measure the year-on-year textual modification of
-the MD\&A section and document that firms making larger MD\&A changes
-experience larger absolute returns and trading volume around the
-filing. \textcite{dyer2017} apply Latent Dirichlet Allocation to the
-universe of 10-Ks since 1996 and document a steady increase in
-disclosure length, much of which is concentrated in boilerplate
-sections.
-
-Two features of 10-K filings make them an attractive laboratory.
-First, they are mandatory and standardised: every U.S.\ public firm
-files an annual report on essentially the same template, which removes
-the self-selection bias that complicates voluntary-disclosure studies.
-Second, the legal regime gives the language teeth: false or misleading
-statements expose management to private litigation under
-Rule~10b-5 and to enforcement action by the SEC, so the words in a
-10-K are not cheap talk. Both features apply with particular force to
-the Item~1A risk-factor section, which is the focus of this thesis.
-
-
-% ─────────────────────────────────────────────────────────────────────────────
-\section{The volume channel: more risk language, more uncertainty}
-\label{sec:lit_volume}
-% ─────────────────────────────────────────────────────────────────────────────
-
-The closest paper to the present thesis is \textcite{campbell2014}.
-They examine the Item~1A risk-factor section that the SEC made
-mandatory in 2005 and argue that managers have private information
-about firm-specific risks that they reveal in this section. Empirically
-they show that the \emph{quantity} of risk-factor disclosure---measured
-both as raw word count and as the count of risk-related words---is
-positively related to subsequent stock-return volatility, market beta,
-and bid--ask spreads. Their interpretation is essentially Bayesian:
-when management chooses to write more about risks, it is signalling
-that there are more risks, and investors update their assessment of
-firm-level uncertainty accordingly.
-
-\textcite{kravet2013} reach a similar conclusion for the universe of
-risk-related disclosures across the 10-K (not only Item~1A): firms
-with larger increases in the volume of textual risk disclosures
-experience larger increases in market-assessed risk, measured both as
-return volatility and as the volume--volatility relation around the
-filing. \textcite{kothari2009}, more broadly, document that the
-quantity and tone of disclosures by management, analysts, and the
-business press materially affect cost of capital, return volatility,
-and forecast dispersion.
-
-The takeaway from this literature is a robust positive association
-between disclosure \emph{volume} (especially of Item~1A) and
-subsequent firm-level uncertainty. This motivates Hypothesis~H1 of the
-thesis: holding industry, year, and firm fundamentals fixed, longer
-risk-factor sections should predict higher post-filing volatility.
-
-
-% ─────────────────────────────────────────────────────────────────────────────
-\section{The specificity channel: more concrete language, less uncertainty}
-\label{sec:lit_specificity}
-% ─────────────────────────────────────────────────────────────────────────────
-
-A second strand of the literature emphasises that not all words are
-equal. \textcite{hope2016} extract specific risk factors from 10-Ks
-using a named-entity-recognition pipeline and show that risk-factor
-disclosures with a higher proportion of \emph{specific}
-content---names, numbers, geographies---are associated with stronger
-analyst-forecast revisions, lower forecast dispersion, and lower
-implied cost of capital. The intuition is that boilerplate
-risk-factor language conveys little information about the firm's
-actual exposures, while specific risk-factor language pins those
-exposures down and reduces investor uncertainty about them. The two
-channels can therefore work in opposite directions: more risk
-language can indicate more risk (the volume channel) but more
-\emph{informative} risk language can also dispel uncertainty (the
-specificity channel).
-
-In a panel of large U.S.\ firms there is no clean named-entity
-counterpart to \textcite{hope2016}'s manual annotation, but the
-tension can be operationalised in dictionary terms. The
-Loughran--McDonald uncertainty and litigious word lists capture
-\emph{generic} risk vocabulary---``may'', ``could'', ``risks'',
-``litigation'', ``regulatory''---that is widely shared across firms
-and years. A risk-factor section that is dominated by such generic
-language has a high \emph{risk-word density}: a large share of its
-words come from the LM risk lists. A risk-factor section that
-discusses concrete operational risks (specific suppliers, named
-regulators, particular products) typically has a lower density of
-generic risk words, even if its overall length is similar, because
-the firm-specific nouns and numbers dilute the share of dictionary
-matches.
-
-Read against \textcite{hope2016} this gives a directional prediction.
-\emph{Holding length constant}, a higher density of generic risk
-words signals a more boilerplate, less specific section, and should
-therefore be associated with \emph{lower} post-filing volatility.
-This is the empirical content of Hypothesis~H2.
-
-The two predictions interact in an important way. The dictionary
-risk-density used in much of the prior literature
-\parencite{loughran2011, kravet2013} is the \emph{ratio}
-$(\text{risk words})/(\text{total words})$ inside Item~1A. Because
-the denominator is itself a measure of section length, this ratio
-mixes the volume channel (numerator) and the specificity channel
-(denominator inverted) into one statistic. Sorting them out requires
-entering both regressors jointly. The thesis therefore tests H1 and
-H2 in a single specification with $\ln(\text{Words}^{1A})$ and
-risk-word density as separate explanatory variables.
-
-
-% ─────────────────────────────────────────────────────────────────────────────
-\section{Inside the risk lexicon: uncertainty vs.\ litigious words}
-\label{sec:lit_boilerplate}
-% ─────────────────────────────────────────────────────────────────────────────
-
-The RiskDensity measure used to operationalise H2 collapses two
-distinct LM word lists into a single share. Following
-\textcite{loughran2011}, the uncertainty list contains words such as
-``approximate'', ``believe'', ``contingency'', ``depend'', ``may'',
-``might'', ``possible'', and ``uncertain'', which signal
-imprecise probability assessments by management. The litigious list
-contains words such as ``allegation'', ``claimant'', ``defendant'',
-``indictment'', ``litigation'', ``plaintiff'', ``settlement'', and
-``subpoena'', which are characteristic of legal-process language.
-\textcite{loughran2015} stress that these are conceptually distinct
-constructs: uncertainty terms describe \emph{what management does
-not know about its own business}, whereas litigious terms describe
-\emph{the legal apparatus that surrounds the business}.
-
-The two sub-lists also have a different production technology in
-the Item~1A context. Uncertainty language is a natural by-product
-of candid forward-looking discussion: a firm describing a genuinely
-open-ended risk uses hedging vocabulary because the underlying
-uncertainty is real. Litigious language, by contrast, is dominated
-by standardised cautionary boilerplate that legal counsel inserts
-in every 10-K of every firm in their portfolio. \textcite{nelson2007}
-show that legal advisers use ``meaningful cautionary language'' as
-a safe-harbour shield under the Private Securities Litigation
-Reform Act of 1995: dense litigious wording is itself an insurance
-policy against private securities litigation.
-\textcite{cazier2021} document that this kind of risk-factor
-boilerplate is overwhelmingly recycled across years, and that
-judicial and regulatory assessments treat lengthy boilerplate as
-an adequate safe-harbour shield even when its concrete information
-content is low. \textcite{beatty2019} reach a similar conclusion
-for the post-financial-crisis era: market reactions to risk-factor
-disclosures have weakened over time, consistent with investors
-discounting the boilerplate component of the section.
-
-Despite this conceptual separation, no panel study to our knowledge
-has estimated the LM-Litigious density of Item~1A as a stand-alone
-regressor for post-filing return volatility. \textcite{loughran2011}
-use the four LM lists individually for filing-period returns and
-trading volume but not for post-filing realised volatility;
-\textcite{kravet2013} aggregate uncertainty- and litigious-related
-risk language; \textcite{campbell2014} hand-code their own risk
-categories that do not map one-to-one onto the LM dictionary; and
-\textcite{lyle2023} focus on year-on-year changes rather than on
-the sub-list decomposition. The LM-Litigious sub-list is therefore
-an orphan in the volatility literature, even though both the
-production-side argument of \textcite{nelson2007,cazier2021} and
-the demand-side argument of \textcite{beatty2019} suggest that it
-should carry a different signal from generic uncertainty wording.
-
-Decomposing the composite RiskDensity into its UncDensity and
-LitDensity sub-components has a clear directional prediction in
-light of these papers. Uncertainty wording is a discretionary
-managerial choice that scales with the genuine ambiguity of the
-business; conditional on length, it is plausible either to be
-small in magnitude or to retain the negative sign of the composite
-RiskDensity (Section~\ref{sec:lit_specificity}). Litigious wording
-is closer to a permanent disclosure-style choice---a function of
-the legal advisers a firm retains and of the maturity of its
-compliance function---and the \textcite{nelson2007,cazier2021}
-literature suggests that firms whose Item~1A is heavier in
-litigious boilerplate are also firms that operate in more
-legally-supervised, more institutionalised environments, which is
-empirically associated with lower realised volatility. The
-prediction is that, conditional on Item~1A length, LM-Litigious
-density is the active sub-component of the composite specificity
-effect, while LM-Uncertainty density either is small in absolute
-value or absorbs the residual.
-
-
-% ─────────────────────────────────────────────────────────────────────────────
-\section{Financial determinants of volatility}
-\label{sec:lit_controls}
-% ─────────────────────────────────────────────────────────────────────────────
-
-The financial controls used in the regressions are standard. Lagged
-volatility is included to absorb the well-documented persistence of
-firm-level return variance \parencite{chi2017}. Firm size proxies
-for diversification and informational depth: larger firms have lower
-return volatility \parencite{campbell2014}. Leverage captures the
-financial-distress component of risk; return on assets summarises
-operating performance, with profitable firms exhibiting lower
-subsequent volatility \parencite{francis2005}; and asset growth
-captures the operational-uncertainty channel that follows aggressive
-expansion. The fixed-effect structure---two-digit SIC industry plus
-fiscal year---further absorbs persistent industry-level differences
-in risk and time trends such as the 2008 and 2020 market shocks.
-
-The clustering of standard errors at the firm level follows
-\textcite{petersen2009}; this is essential for inference because the
-dependent variable is itself a volatility estimate computed on
-overlapping post-filing windows.
-
+\section{Textual analysis of corporate filings}\label{sec:lit_textual}
+\section{The volume channel}\label{sec:lit_volume}
+\section{The specificity channel}\label{sec:lit_specificity}
+\section{Inside the risk lexicon: uncertainty vs.\ litigious}\label{sec:lit_boilerplate}
+\section{Strategic silence}\label{sec:lit_silence}
+\section{Financial determinants of volatility}\label{sec:lit_controls}
 
 % ─────────────────────────────────────────────────────────────────────────────
 \section{Hypotheses}
 \label{sec:hypotheses}
 % ─────────────────────────────────────────────────────────────────────────────
 
-The literature reviewed above supports three testable predictions
-that the thesis evaluates jointly on a panel of 535 large U.S.\
-firms over 2010--2024.
-
 \paragraph{H1 (Volume).} Holding firm fundamentals, industry, and
 year fixed, the natural log of the Item~1A word count is positively
-associated with post-filing return volatility. This is the
-\textcite{campbell2014} prediction translated to the joint
-specification.
+associated with post-filing return volatility
+\parencite{campbell2014}.
 
 \paragraph{H2 (Specificity).} Holding length and the same controls
 fixed, the LM risk-word density of Item~1A is \emph{negatively}
-associated with post-filing return volatility. This is the
-\textcite{hope2016} prediction translated into dictionary terms:
-once the volume channel is controlled for, a higher share of
-generic risk vocabulary signals a less specific, more boilerplate
-section that conveys less new information.
+associated with post-filing return volatility \parencite{hope2016}.
+The composite RiskDensity is also decomposed into LM-Uncertainty
+and LM-Litigious sub-densities; the negative effect is predicted to
+load on the litigious sub-list, consistent with the
+\textcite{nelson2007,cazier2021} reading of litigious language as
+cautionary boilerplate.
 
-\paragraph{H3 (Boilerplate decomposition).} Conditional on Item~1A
-length and the same controls, the LM-Litigious density of Item~1A
-carries the entire negative effect attributed to the composite
-RiskDensity in H2: $\beta^{\text{lit}} < 0$ at the 5\%~level, while
-the LM-Uncertainty density is small in absolute value and not
-statistically distinguishable from zero. The prediction follows from
-the \textcite{nelson2007} and \textcite{cazier2021} reading of
-litigious wording as cautionary boilerplate that is recycled across
-filings and that proxies for an institutionalised, legally-supervised
-firm-level disclosure environment.
-
-The three hypotheses are deliberately disciplined by prior work.
-H1 and H2 settle, in a single specification, an apparent tension
-between two existing channels (volume vs.\ specificity) of the
-risk-factor literature; H3 looks inside the LM risk lexicon to
-identify which of its two sub-lists is doing the work in H2.
+\paragraph{H3 (Strategic silence).} Holding Item~1A length,
+RiskDensity, and the same controls fixed, the share of
+SIC2-and-year peer disclosure mass that the focal firm omits
+(Section~\ref{ssec:silence}) is positively associated with
+post-filing return volatility, following
+\textcite{verrecchia1983,dye1985}.
