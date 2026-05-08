@@ -77,16 +77,15 @@ quarterly filings when ``material changes'' have occurred since the
 last 10-K.  In practice, only about half the 10-Q filings in our pilot
 sample (15~firms, 90~filings) contained a legitimate risk-factor section.
 The rest had only a reference back to the annual report
-(Table~\ref{tab:text_availability}).  This held across sectors---technology,
-healthcare, consumer goods, energy---with few exceptions.  Constructing the
-year-on-year text variables that the headline specifications require
-is therefore not feasible at a quarterly frequency.
+(Table~\ref{tab:text_availability}). Constructing the
+year-on-year text variables that our specifications require
+is because of this not feasible at a quarterly frequency.
 
 \input{tables/text_availability}
 
 \paragraph{Chosen frequency.}
 For these reasons---and following prior textual-analysis work based on
-10-K filings \parencite{loughran2011,li2008,blankespoor2020}---we use
+10-K filings \parencite{loughran2011,li2008}---we use
 an annual panel. The XBRL coverage comparison
 (Table~\ref{tab:xbrl_coverage}) and a consolidated summary
 (Table~\ref{tab:annual_vs_quarterly}) are in
@@ -182,7 +181,7 @@ exhibit and do not contain the full narrative sections of the
 original 10-K making them unusable for further analysis.  
 Financial data for amended fiscal years are kept,
 since the XBRL pipeline already picks up the amended figures when
-available (Section~\ref{sec:xbrl_tags}).  Our extraction thus
+available (Section~\ref{sec:xbrl_tags}).  Our extraction
 targets only original 10-K filings.
 
 \subsection{Section identification and exhibit fallback}
@@ -200,20 +199,20 @@ signature); (ii)~tags confirmed headers in place before flattening
 to plain text; (iii)~picks the candidate followed by the longest
 stretch of text before the next expected Item header; and
 (iv)~bounds the section at the next Item header (Item~1B/1C/2 for
-Item~1A; Item~7A/8 for Item~7). Sections shorter than 200~words
-trigger a fallback that follows incorporation-by-reference
-stubs into the relevant exhibit (defaulting to Exhibit~13) and
-reruns the same identification procedure with title-only patterns
-(``Risk Factors'', ``Management's Discussion and Analysis'') as
-backup. Implementation in \texttt{scripts/text\_parser.py}.
+Item~1A; Item~7A/8 for Item~7). If the recovered section is
+shorter than 200~words, the parser follows any reference
+pointing to an external exhibit (typically Exhibit~13) and
+reruns the same procedure with title-only
+patterns (``Risk Factors'', ``Management's Discussion and
+Analysis'').
 
 \subsection{Post-Processing}
 \label{ssec:text_postprocessing}
 
 After HTML-to-text conversion the parser strips three layout
-artefacts: running ``\textit{$\langle$page number$\rangle$~Table
-of Contents}'' headers, standalone page numbers on otherwise
-empty lines, and non-breaking-space characters. The cleaning
+artefacts: ``\textit{$\langle$page number$\rangle$~Table
+of Contents}'' headers, standalone page numbers on
+lines that do not contain any other text, and non-breaking-space characters. The cleaning
 rules target only patterns that cannot be part of meaningful text
 and are applied after section boundaries have already been set.
 
@@ -232,14 +231,14 @@ textual variable construction.
 \paragraph{LLM-assisted quality audit.}
 To check that the extracted sections are actually the right ones,
 we ran an independent validation with a large language model
-(Google Gemini~2.5~Flash, temperature~$=0$). A stratified random
+(Google Gemini~2.5~Flash). A stratified random
 sample of 100~filings was drawn (20 per five-year period over
 2010--2024) and both Item~1A and Item~7 were evaluated for every
 filing, giving 200~section-level judgments. The use of LLMs as
-independent annotators in this role is supported by
+independent validators in this role is supported by
 \textcite{gilardi2023}; the sample size delivers Wilson 95\,\%
 confidence intervals of roughly $\pm 3$~percentage points
-\parencite{agresti1998, krippendorff2019}. The model graded each
+\parencite{agresti1998}. The model graded each
 section on five criteria (correct section identity, start- and
 end-boundary accuracy, content quality, completeness) on a
 three-level scale (Pass / Minor / Fail). The detailed results are

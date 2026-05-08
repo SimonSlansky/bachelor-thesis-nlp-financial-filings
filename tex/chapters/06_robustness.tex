@@ -5,15 +5,13 @@
 
 This chapter checks that the headline results of
 Chapter~\ref{ch:results} survive plausible variations in the
-specification. Section~\ref{sec:robustness_horizons} reviews the
-multi-horizon evidence already documented in
-Section~\ref{sec:horizons_results} from a robustness angle.
-Section~\ref{sec:robustness_subperiods} re-estimates the H1+H2
-decomposition specification on the pre-COVID and COVID-era
-sub-samples. Section~\ref{sec:robustness_firmfe} replaces industry
-fixed effects with firm fixed effects, which absorbs all
-time-invariant firm-level heterogeneity and isolates the
-within-firm year-to-year variation in the three text variables.
+specification. Section~\ref{sec:robustness_horizons} re-estimates
+the H1+H2 decomposition specification at five additional
+post-filing horizons.
+Section~\ref{sec:robustness_subperiods} re-estimates the same
+specification on the pre-COVID and COVID-era sub-samples.
+Section~\ref{sec:robustness_firmfe} replaces industry fixed
+effects with firm fixed effects.
 Section~\ref{sec:robustness_silence} reports the placebo,
 length-residualised, large-cell, decile-rank, and prior-year
 specifications of the H3 strategic-silence result.
@@ -28,16 +26,12 @@ rejected before settling on the LM-list decomposition.
 % ─────────────────────────────────────────────────────────────────────────────
 
 The headline specification measures post-filing volatility over a
-30-day window. One month is short enough to capture the bulk of the
-post-filing reaction documented by \textcite{loughran2011} but long
-enough that the volatility estimate is built on roughly 21~trading
-days of returns. To check the choice of window we re-estimate the
+30-day window. To check the choice of window we re-estimate the
 H1+H2 specification of equation~\ref{eq:decomposition_model} at
-five additional horizons (5, 10, 90, 180, and 365~days) and inspect
-the resulting series of coefficients. Table~\ref{tab:horizons}
-reports all six columns side by side; the discussion in
-Section~\ref{sec:horizons_results} is repeated here from a
-robustness angle.
+five additional horizons (5, 10, 90, 180, and 365~days).
+Table~\ref{tab:horizons} reports all six columns side by side.
+
+\input{tables/horizons}
 
 The pattern is consistent in three respects. First, all three text
 coefficients keep the predicted sign at every horizon---positive
@@ -114,33 +108,21 @@ reports the result at the 30-day horizon.
 
 \input{tables/firm_fe}
 
-The volume channel survives the firmer specification:
+The volume channel survives:
 $\hat{\beta}^{\text{len}} = +0.084$ ($t = +3.31$, $p < 0.001$).
-A within-firm one-standard-deviation rise in
-$\ln(\text{Words}^{1A})$ still predicts a meaningful rise in
-post-filing volatility, so the H1 result is not a cross-sectional
-artefact---firms that grow their Item~1A from year to year do
-experience higher subsequent volatility.
-
-Both LM sub-densities, by contrast, are absorbed by firm fixed
-effects: $\hat{\beta}^{\text{unc}} = -1.46$ ($t = -0.55$) and
+Firms that grow their Item~1A from year to year do experience
+higher subsequent volatility. Both LM sub-densities, by contrast,
+are absorbed: $\hat{\beta}^{\text{unc}} = -1.46$ ($t = -0.55$) and
 $\hat{\beta}^{\text{lit}} = +0.96$ ($t = +0.35$). Risk-vocabulary
 composition has very little within-firm variation across years
 because Item~1A is largely recycled from one filing to the next
-\parencite{cazier2021}; the firm-FE specification therefore has
-almost no remaining variance to identify a sub-density coefficient
-from. This is consistent with the production-side reading of
-\textcite{nelson2007,cazier2021,beatty2019}, in which cautionary
-boilerplate is a quasi-permanent firm-level disclosure-style
-trait. The thesis reports both findings and reads the headline
-result as a between-firm regularity, without claiming a within-firm
+\parencite{cazier2021}, so the firm-FE specification has almost
+no remaining variance to identify a sub-density coefficient from.
+This is consistent with the \textcite{nelson2007,cazier2021,beatty2019}
+reading of cautionary boilerplate as a quasi-permanent firm-level
+disclosure-style trait. The headline H2 result is therefore read
+as a between-firm regularity, without claiming a within-firm
 causal channel.
-
-\paragraph{Bottom line.} H1 clears all robustness checks including
-firm-FE; the H2 composite and its LM sub-components clear the
-cross-sectional and sub-period checks but are absorbed by firm-FE
-because both RiskDensity and the two LM sub-densities are
-quasi-permanent firm-level traits.
 
 
 % ─────────────────────────────────────────────────────────────────────────────\section{Robustness of the strategic-silence result (H3)}

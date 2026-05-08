@@ -16,7 +16,7 @@
 \input{makra}
 
 %%% Thesis title (exact according to assignment)
-\def\NazevPrace{Volume, Specificity, and Boilerplate: A Decomposition of 10-K Risk-Factor Language and Post-Filing Stock Return Volatility}
+\def\NazevPrace{A Decomposition of 10-K Risk-Factor Language and Post-Filing Stock Return Volatility}
 
 %%% Author's name
 \def\AutorPrace{Šimon Slanský}
@@ -58,7 +58,11 @@ Tato práce dekomponuje měření na dvě nezávislé proměnné~---
 logaritmus počtu slov v~Item~1A a~hustotu rizikových slov dle
 slovníku Loughran--McDonald~--- a~vstupuje s~nimi společně do regrese
 log-volatility po zveřejnění s~odvětvovými a~ročními fixními efekty
-a~clustrovanými chybami na úrovni firmy.
+a~clustrovanými chybami na úrovni firmy. Vedle toho zkoumá, zda
+záleží i~na~tom, co~firma \emph{nezmíní}: konstruuje
+peer-relativní mezeru v~pokrytí rizikových témat, která pro každou
+firmu a~rok zachycuje podíl témat zveřejněných konkurenty z~téhož
+odvětví, jež však daná firma ve~své Item~1A vynechává.
 %
 Na nevyváženém panelu 535 velkých amerických firem za fiskální
 roky 2010--2024 (5\,691 pozorování při 30denním horizontu) je
@@ -76,41 +80,62 @@ fungují, ale opačnými směry~--- a~ukazují, že
 slovníková hustota rizikových slov, používaná v~předchozí praxi,
 podhodnocuje signál o~specifičnosti, protože jej míchá s~objemovým
 kanálem skrze společný jmenovatel.
+%
+V~souladu s~tím je~peer-relativní mezera v~pokrytí rizikových témat
+v~průřezu nulová, ale po~přidání firemních fixních efektů se~stává
+kladnou a~významnou ($\hat{\beta}^{\text{om}} = +1{,}345$;
+$t = +2{,}93$ na~30denním horizontu): firmy, které vynechají to,
+co~konkurenti zveřejňují, mají vyšší následnou volatilitu. Kanál
+strategického mlčení tedy funguje pouze uvnitř firmy, jakmile jsou
+trvalé firemní styly zveřejňování absorbovány.
 }
 
 %%% Abstract in English
 \def\AbstraktEN{%
-The Item~1A risk-factor section of the U.S.\ 10-K is the subject of
-two parallel literatures whose predictions point in opposite
-directions. One, represented by \textcite{campbell2014}, links a
-larger \emph{volume} of risk discussion to higher subsequent
-volatility. The other, represented by \textcite{hope2016}, links a
-higher \emph{specificity} of risk discussion to lower volatility.
+Corporate 10-K filings contain both audited financial data
+and narrative disclosures written by management, yet most
+empirical models use these two information channels separately.
+The Item~1A risk-factor section is itself
+the subject of two parallel literatures which predict effects
+in opposite directions: one, represented by \textcite{campbell2014},
+connects a larger \emph{volume} of risk discussion to higher
+subsequent volatility, while the other, represented by
+\textcite{hope2016}, links a higher \emph{specificity} of risk
+discussion to lower volatility.
 %
-This thesis takes the question through three layers. It first
-separates the volume measurement (the log word count of Item~1A)
-from the specificity measurement (the Loughran--McDonald risk-word
-density) and enters them jointly in a panel regression of
-post-filing log-volatility. It then decomposes the composite LM
-risk-density into its two sub-lists---uncertainty wording and
-litigious wording---each normalised by Item~1A length, and enters
-them separately. All specifications use two-digit SIC industry and
-fiscal-year fixed effects and firm-clustered standard errors.
+This thesis proceeds in three steps. It first separates volume
+(the log word count of Item~1A) from specificity (the
+Loughran--McDonald risk-word density) and enters them jointly in
+a panel regression of post-filing log-volatility. It then splits
+the composite risk-density into its two sub-lists---uncertainty
+and litigious wording---each normalised by Item~1A length.
+Finally, it asks whether what a firm \emph{omits} also matters,
+measuring for each firm-year the share of risk topics disclosed
+by industry peers but absent from its own Item~1A. All
+specifications use two-digit SIC industry and fiscal-year fixed
+effects with firm-clustered standard errors; the omission
+specification adds firm fixed effects to absorb permanent
+disclosure styles.
 %
 On an unbalanced panel of 535 large U.S.\ firms over fiscal years
 2010--2024 (5{,}691 firm-years at the 30-day horizon), longer
 Item~1A sections predict higher post-filing volatility
 ($\hat{\beta} = +0.130$, $t = +7.70$), while denser Item~1A
 sections, holding length constant, predict \emph{lower} post-filing
-volatility ($\hat{\beta} = -3.88$, $t = -2.74$). The LM
+volatility ($\hat{\beta} = -3.88$, $t = -2.74$). The
 decomposition reveals that the entire negative effect is carried
 by the LM-Litigious sub-list ($\hat{\beta}^{\text{lit}} = -6.16$,
-$t = -3.35$), while the LM-Uncertainty sub-list is statistically
-indistinguishable from zero. The pattern survives at every horizon
+$t = -3.35$), while the Uncertainty sub-list is statistically
+almost zero. The pattern survives at every horizon
 from 5 to 365~days and on both COVID-era and pre-COVID
-sub-samples; we read it in light of the literature on
-standardised cautionary boilerplate
-\parencite{nelson2007, cazier2021, beatty2019}.
+sub-samples.
+%
+Consistent with this, the peer-relative omission gap is null in
+the cross-section but turns positive and significant under firm
+fixed effects ($\hat{\beta}^{\text{om}} = +1.345$, $t = +2.93$ at
+the 30-day horizon): firms that skip topics their peers do report
+have higher subsequent volatility. The channel operates only
+within-firm, once permanent section styles are absorbed.
 }
 
 %%% Keywords in Czech

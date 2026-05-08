@@ -11,9 +11,9 @@ defines the regression variables and Section~\ref{sec:models}
 formalises the joint specification used for H1 and H2, the
 LM-list-decomposition specification used as the second-stage test of
 H2, and the
-peripheral-silence specification used for H3.
+silence specification used for H3.
 Section~\ref{sec:estimation} describes estimation and inference.
-The robustness battery is reported
+The robustness procedures are reported
 in Chapter~\ref{ch:robustness}.
 
 
@@ -26,22 +26,22 @@ The thesis tests two competing predictions about the same section
 of the 10-K---Item~1A, the mandatory risk-factor disclosure---in a
 single regression specification. The volume channel
 \parencite{campbell2014} predicts that longer risk-factor sections
-indicate more risk and therefore higher post-filing volatility; the
+indicate more risk and therefore higher post-filing volatility. The
 specificity channel \parencite{hope2016} predicts that, holding
 length constant, a higher share of generic risk vocabulary
-indicates a more boilerplate, less informative section and is
+indicates a less informative section and is
 associated with \emph{lower} post-filing volatility. Because the
 dictionary risk-density commonly used in prior work has section
 length in its denominator, separating the two channels requires
 entering log word count and risk-word density jointly. As a
-second stage, the composite RiskDensity is decomposed into the
-LM uncertainty- and litigious-list densities to identify which
+second stage, the RiskDensity is decomposed into the
+uncertainty- and litigious-list densities to identify which
 sub-list carries the H2 effect.
 
 The dependent variable is the natural log of post-filing
-annualised volatility, which symmetrises the right-skewed raw
-distribution and makes coefficients interpretable as
-semi-elasticities.
+annualised volatility. The log transformation makes the
+right-skewed distribution roughly symmetric and lets us read
+coefficients as percentage changes in volatility.
 
 
 % ─────────────────────────────────────────────────────────────────────────────
@@ -68,7 +68,7 @@ firm~$i$ and $W_{i,t}^{[h]}$ is the post-filing window of length~$h$
 calendar days for filing year~$t$. The two-day lag avoids the
 same-day price reaction to the filing; the $\sqrt{252}$ factor
 rescales the daily standard deviation to an annualised figure.
-The headline horizon is $h = 30$~days; robustness checks at
+The main horizon is $h = 30$~days. Robustness checks at
 $h \in \{5, 10, 90, 180, 365\}$ trace the temporal decay of the
 signal (Chapter~\ref{ch:robustness}).
 
@@ -86,15 +86,15 @@ on assets} (net income over total assets), and \emph{asset growth}
 (year-on-year change in total assets divided by lagged total
 assets). All ratios are winsorised at the 1st and 99th percentiles
 within the regression sample to bound the influence of extreme
-values without discarding economically meaningful observations.
+values without discarding meaningful observations.
 
 \subsection{Text variables: Item~1A length and risk-word density}
 \label{ssec:textual_features}
 
-Two text variables operationalise the volume and specificity
+Two text variables capture the volume and specificity
 channels.
 
-\paragraph{Item~1A length (H1).} The volume channel is captured by
+\paragraph{Item~1A length (H1).} The volume channel is expressed by
 the natural logarithm of the cleaned word count of Item~1A:
 \begin{equation}
 \text{Words}^{1A}_{i,t} \;=\; \text{number of tokens in Item~1A
@@ -108,7 +108,7 @@ Across the sample the median Item~1A contains roughly $8{,}800$~words,
 with a long right tail (Section~\ref{sec:descriptive}).
 
 \paragraph{Item~1A risk-word density (H2) and its LM-list decomposition.}
-The specificity channel is captured by the share of words in
+The specificity channel is expressed by the share of words in
 Item~1A that match the \textcite{loughran2011} uncertainty or
 litigious word lists:
 \begin{equation}
@@ -122,10 +122,9 @@ n^{\text{unc}}_{i,t} + n^{\text{lit}}_{i,t}
 where $n^{\text{unc}}$ and $n^{\text{lit}}$ are the per-section
 counts of uncertainty- and litigious-list words. Higher values
 indicate that a larger share of the section consists of generic
-risk vocabulary; lower values indicate a section in which the
+risk vocabulary. Lower values indicate a section in which the
 narrative is dominated by firm-specific or non-dictionary
-content---names, numbers, geographies, products---that the
-\textcite{hope2016} reading associates with greater specificity.
+content that the \textcite{hope2016} associates with greater specificity.
 
 For the second-stage test of H2 the same composite is decomposed into its two LM sub-lists,
 each normalised by Item~1A length:
@@ -137,24 +136,23 @@ each normalised by Item~1A length:
   {\text{Words}^{1A}_{i,t}},
 \label{eq:lit_density}
 \end{align}
-with the algebraic identity
+with the identity
 $\text{RiskDensity} = \text{UncDensity} + \text{LitDensity}$. The
-two sub-densities operationalise the conceptually distinct
+two sub-densities capture the conceptually distinct
 uncertainty and litigious constructs:
 $\text{UncDensity}$ captures
 hedging vocabulary about what management does not know about its
-own business, while $\text{LitDensity}$ captures the cautionary
-legal-process boilerplate that legal advisers insert under the
+own business, while $\text{LitDensity}$ captures the cautious
+legal processes that legal advisers insert under the
 safe-harbour regime of \textcite{nelson2007}.
 
 \subsection{Peer-relative omission gap (H3)}
 \label{ssec:silence}
 
-To test H3 we construct a peer-relative measure of strategic
-silence. For each fiscal year $t$ we form a TF--IDF representation
+To test H3 we construct a peer-relative measure of omission. For each fiscal year $t$ we form a TF--IDF representation
 of every Item~1A in the panel, restricting the vocabulary to terms
 appearing in at least five filings overall (\texttt{min\_df}~$=5$)
-and at most $95\%$ of filings (\texttt{max\_df}~$=0.95$); rows are
+and at most $95\%$ of filings (\texttt{max\_df}~$=0.95$). Rows are
 $\ell_2$-normalised. Let $\mathbf{x}_{i,t}$ denote the TF--IDF row
 vector for firm~$i$ in year~$t$. For each two-digit SIC industry
 $j$ in year~$t$ with at least six panel filings, we compute the
@@ -185,45 +183,29 @@ small share of what its peers chose to discuss. Firm-years in
 SIC2-year cells with fewer than five peers are dropped because the
 peer aggregate is too noisy to support inference.
 
-The measure has two properties that make it complementary to the
-H1--H2 text variables. First, the peer aggregate
-$\mathbf{p}_{i,t}$ is a function of \emph{other} firms' choices and
-varies non-trivially within firm-year as the composition and
-content of industry-year peers change over time. The within-firm
-standard deviation of $\textsc{Omission}^{1A}$ is $0.054$ in the
-regression sample, $46\%$ of the cross-sectional standard
-deviation of $0.117$, so the firm-fixed-effects test of H3 has
-real variance to exploit (in contrast to the LM sub-densities
-used in the H2 decomposition,
-which are largely absorbed by firm fixed effects;
+The measure has two useful properties. First, because
+$\mathbf{p}_{i,t}$ depends on \emph{other} firms' choices, it
+varies within firm over time as peers change what they disclose.
+Its within-firm standard deviation is $0.054$, about $46\%$ of
+the cross-sectional standard deviation of $0.117$, leaving enough
+variation for the firm-fixed-effects test of H3 (unlike the LM
+sub-densities, which are largely absorbed by firm fixed effects;
 Section~\ref{sec:robustness_firmfe}). Second, the measure is
-mechanically negatively correlated with Item~1A length: a longer
-Item~1A trivially mentions more peer-disclosed terms. The Pearson
-correlation between $\textsc{Omission}^{1A}$ and
-$\ln(\text{Words}^{1A})$ is $-0.85$ in the regression sample. The
-H3 specification therefore enters $\ln(\text{Words}^{1A})$ as a
-control alongside $\textsc{Omission}^{1A}$, so that the
-omission coefficient is interpreted holding length fixed. A
-length-residualised version of the variable is reported as a
-robustness check in Section~\ref{sec:robustness_silence}.
+mechanically negatively correlated with Item~1A length, since a
+longer section trivially covers more peer terms (Pearson
+$r = -0.85$). The H3 specification therefore controls for
+$\ln(\text{Words}^{1A})$ so that the omission coefficient is read
+holding length fixed; a length-residualised version is reported
+as a robustness check in Section~\ref{sec:robustness_silence}.
 
-The peer-relative construction requires the SIC2 cell to be both
-the relevant comparison set and a non-degenerate one. SIC2 is the
-standard peer benchmark in the disclosure-similarity literature
-\parencite{brown2011, dyer2017}; the cell-size median is 35~peers
-(P25 = 14). Section~\ref{sec:robustness_silence} reports a
-placebo specification in which SIC2 cell labels are randomly
-permuted within fiscal year before recomputing the omission gap.
-The H3 specification replaces \emph{asset growth} with two
+SIC2 is the standard peer benchmark in the disclosure-similarity
+literature \parencite{brown2011, dyer2017}, and the cell-size
+median is 35~peers (P25~=~14). Section~\ref{sec:robustness_silence}
+also reports a placebo in which SIC2 labels are randomly permuted
+within fiscal year before the omission gap is recomputed. Finally,
+the H3 specification replaces \emph{asset growth} with two
 liquidity proxies---the \emph{current ratio} and \emph{operating
-cash flow over assets}---in the financial control vector. The
-substitution follows the disclosure-cost logic of
-\textcite{verrecchia1983,dye1985}: the incentive to withhold an
-industry-relevant risk topic should be increasing in the firm's
-proprietary or financing costs of disclosure, for which short-term
-liquidity is the standard empirical proxy. Asset growth, which
-captures the volume channel for H1 and H2, plays no analogous role
-in the silence equilibrium.
+cash flow over assets}---in the financial control vector.
 
 % ─────────────────────────────────────────────────────────────────────────────
 \section{Model specifications}
