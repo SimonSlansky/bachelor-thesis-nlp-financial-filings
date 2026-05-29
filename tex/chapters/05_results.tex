@@ -15,16 +15,18 @@ Table~\ref{tab:summary} reports summary statistics for the 30-day
 regression sample. The dependent variable has mean
 $\ln \sigma_{i,t+1}^{[30]} \approx -1.34$, corresponding to a
 typical annualised post-filing volatility around $0.26$. Median
-Item~1A length is roughly $8{,}800$~words, and the LM uncertainty
-and litigious sub-shares are essentially uncorrelated
-($r \approx -0.05$).
+Item~1A length is $\exp(9.079) \approx 8{,}800$~words.
+The mean RiskDensity of $0.051$ implies that about one in every 20
+words in Item~1A is a risk word.
+The LM-uncertainty sub-list is approximately twice as dense as the
+LM-litigious sub-list.
 
 \input{tables/summary_statistics}
 
 Table~\ref{tab:correlation} reports pairwise correlations. The two
 text variables are correlated at $r = -0.30$: longer Item~1A
 sections tend to have lower risk-word density, consistent with
-length being padded by firm-specific text rather than by extra
+length being driven by firm-specific text rather than by extra
 generic risk vocabulary. The correlation is moderate enough to
 leave both signals separately identifiable in the joint
 specification.
@@ -60,10 +62,10 @@ Replacing the composite RiskDensity by its two LM sub-densities
 carried almost entirely by the LM-Litigious sub-list:
 $\hat{\beta}^{\text{lit}} = -6.16$ ($t = -3.38$, $p < 0.001$),
 while $\hat{\beta}^{\text{unc}} = -1.28$ is not statistically
-distinguishable from zero. A Wald test of equality yields
+significant. A Wald test of equality results in
 $z = +1.91$ ($p = 0.056$), borderline at the $5\%$~level. The
 pattern is consistent with
-\textcite{nelson2007,cazier2021,beatty2019}: litigious-list
+	extcite{cazier2021,beatty2019}: litigious-list
 language is standardised cautionary boilerplate, and once it is
 isolated from the uncertainty sub-list it does most of the H2
 work. Adjusted~$R^2$ rises only modestly across the five columns
@@ -104,5 +106,5 @@ peer-relative omission gap---which by construction varies with
 what \emph{other} firms write each year---survives the firm-FE
 filter. \textbf{H3 is supported within-firm at the 30-day
 horizon}, with the placebo, length-orthogonalisation, large-cell,
-decile-rank, and lead-lag qualifications discussed in
+decile-rank, and lead-lag robustness checks discussed in
 Section~\ref{sec:robustness_silence}.

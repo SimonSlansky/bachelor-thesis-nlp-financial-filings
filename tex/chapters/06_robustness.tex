@@ -4,20 +4,8 @@
 % =============================================================================
 
 This chapter checks that the headline results of
-Chapter~\ref{ch:results} survive plausible variations in the
-specification. Section~\ref{sec:robustness_horizons} re-estimates
-the H1+H2 decomposition specification at five additional
-post-filing horizons.
-Section~\ref{sec:robustness_subperiods} re-estimates the same
-specification on the pre-COVID and COVID-era sub-samples.
-Section~\ref{sec:robustness_firmfe} replaces industry fixed
-effects with firm fixed effects.
-Section~\ref{sec:robustness_silence} reports the placebo,
-length-residualised, large-cell, decile-rank, and prior-year
-specifications of the H3 strategic-silence result.
-Section~\ref{sec:robustness_failed} closes with a brief note on
-alternative specificity-channel candidates that were tested and
-rejected before settling on the LM-list decomposition.
+Chapter~\ref{ch:results} survive several variations in the
+specification.
 
 
 % ─────────────────────────────────────────────────────────────────────────────
@@ -33,23 +21,22 @@ Table~\ref{tab:horizons} reports all six columns side by side.
 
 \input{tables/horizons}
 
-The pattern is consistent in three respects. First, all three text
+The pattern is consistent in three respects. All three text
 coefficients keep the predicted sign at every horizon---positive
-for $\ln(\text{Words}^{1A})$, negative for LitDensity, and
-statistically indistinguishable from zero for UncDensity---so
+for $\ln(\text{Words}^{1A})$, negative for LitDensity, and not
+statistically significant from zero for UncDensity---so
 neither H1 nor the LM-list decomposition reverses for any plausible choice of window.
-Second, the LitDensity coefficient is significant at the 1\%~level
+furthermore, the LitDensity coefficient is significant at the 1\%~level
 from 10~days onward, with $|t|$ between $2.88$ (10~days) and
-$4.02$ (180~days). Third, the UncDensity coefficient never
+$4.02$ (180~days). Finally, the UncDensity coefficient never
 approaches statistical significance, with $|t| \leq 1.1$ at every
 window. The 30-day choice for the headline specification is
-therefore not a window in which the results happen to be
-sharpest---they are sharp at every horizon the data admit.
+therefore not a window in which the results happen to be strongest;
+the pattern is consistent across a wide range of plausible post-filing horizons.
 
-Both coefficient series also decline approximately monotonically
-in $h$, the empirical signature of an event-driven signal that is
-incorporated into prices over weeks rather than years
-\parencite{loughran2011, tetlock2007}. No formal half-life is
+Both coefficient series also decline approximately the same way
+in $h$, consistent with an event-driven signal that is
+incorporated over weeks rather than years. No formal half-life is
 fitted because the across-horizon error terms are correlated
 through the shared underlying daily returns.
 
@@ -59,7 +46,7 @@ through the shared underlying daily returns.
 % ─────────────────────────────────────────────────────────────────────────────
 
 The 2020 fiscal year and its aftermath were a structural shock for
-both equity volatility and corporate disclosure: average annualised
+both equity volatility and corporate disclosure. Average annualised
 volatility roughly doubled in the spring of 2020 and Item~1A
 sections grew systematically longer as firms added pandemic and
 supply-chain language. To check that the headline results are not
@@ -80,7 +67,7 @@ significant at the 1\% level in both ($\beta = +0.103$, $t = +6.06$
 pre-COVID; $\beta = +0.172$, $t = +8.92$ COVID era). LitDensity is
 negative and significant in both ($\beta = -5.49$, $t = -2.55$
 pre-COVID; $\beta = -9.88$, $t = -4.85$ COVID era). UncDensity is
-statistically indistinguishable from zero in both samples,
+statistically insignificant in both samples,
 consistent with the headline finding that uncertainty wording adds
 no explanatory power once length and litigious wording are
 controlled for. The two active coefficients (length and LitDensity)
@@ -118,7 +105,7 @@ composition has very little within-firm variation across years
 because Item~1A is largely recycled from one filing to the next
 \parencite{cazier2021}, so the firm-FE specification has almost
 no remaining variance to identify a sub-density coefficient from.
-This is consistent with the \textcite{nelson2007,cazier2021,beatty2019}
+This is consistent with the \textcite{cazier2021,beatty2019}
 reading of cautionary boilerplate as a quasi-permanent firm-level
 disclosure-style trait. The headline H2 result is therefore read
 as a between-firm regularity, without claiming a within-firm
@@ -204,35 +191,7 @@ large-cell restriction, and the one-year-lag specification, with
 the right sign in every column. Two qualifications apply: the
 decile-rank specification is not significant at the 5\%~level,
 and the fully length-orthogonalised reformulation (Column~3) is
-borderline rather than significant. The thesis reads the H3
+borderline rather than significant. The thesis interprets the H3
 evidence as supportive of a within-firm strategic-silence channel
 with these stated qualifications, and does not extend the claim
 to a causal interpretation.
-
-
-% ────────────────────────────────────────────────────────────────────────────
-\section{What did not work}
-\label{sec:robustness_failed}
-% ─────────────────────────────────────────────────────────────────────────────
-
-Seven alternative specificity-channel candidates were estimated
-on the same panel and rejected before the LM-list decomposition
-was adopted: (i)~year-on-year TF--IDF similarity of Item~1A in
-the spirit of \textcite{brown2011}; (ii)~MD\&A LM-Negativity;
-(iii)~the first difference $\Delta \ln(\text{Words}^{1A})$
-following \textcite{lyle2023}; and (iv)--(vii)~four functional
-forms of FinBERT-tone
-(\texttt{yiyanghkust/finbert-tone}) aggregated from the
-per-sentence probabilities ($P(\text{neg})$, the signed
-$P(\text{pos})-P(\text{neg})$, $P(\text{neutral})$, and the
-intensity $1-P(\text{neutral})$). Each candidate was added as a
-third text variable to the H1+H2 joint specification of
-equation~\ref{eq:joint_model}; none added statistically
-significant explanatory power for $\ln \sigma_{i,t+1}^{[30]}$
-($|t| < 1.5$ in every case). The TF--IDF and FinBERT signals
-capture firm-specific narrative changes whose informational
-content is, on this panel, dominated by the much stronger length
-signal of H1. The LM-list decomposition succeeds where these
-alternatives fail because it identifies a structural composition
-of the H2 specificity effect rather than an additional
-firm-specific signal that competes with H1.

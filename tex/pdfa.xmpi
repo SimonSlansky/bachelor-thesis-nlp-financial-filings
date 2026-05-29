@@ -62,16 +62,19 @@
   </rdf:Description> 
   <rdf:Description rdf:about="" xmlns:dc="http://purl.org/dc/elements/1.1/"> 
    <dc:format>application/pdf</dc:format> 
-   <dc:title><rdf:Alt><rdf:li xml:lang="x-default">Textual-Financial Divergence and Stock Return Volatility: Evidence from U.S. Corporate Filings</rdf:li></rdf:Alt></dc:title>
+   <dc:title><rdf:Alt><rdf:li xml:lang="x-default">Volume, Specificity, and Boilerplate: A Decomposition of 10-K Risk-Factor Language and Post-Filing Stock Return Volatility</rdf:li></rdf:Alt></dc:title>
    <dc:creator><rdf:Seq><rdf:li>Šimon Slanský</rdf:li></rdf:Seq></dc:creator>
    <dc:publisher><rdf:Bag><rdf:li>Prague University of Economics and Business, Faculty of Informatics and Statistics</rdf:li></rdf:Bag></dc:publisher>
-   <dc:description><rdf:Alt><rdf:li xml:lang="x-default">This thesis investigates whether textual-financial divergence in 10-K filings predicts future stock return volatility beyond financial variables and textual features alone.</rdf:li></rdf:Alt></dc:description>
+   <dc:description><rdf:Alt><rdf:li xml:lang="x-default">This thesis decomposes the dictionary-based risk measure of Item 1A first into Item 1A length and risk-word density (volume vs. specificity) and then into the two LM sub-lists of uncertainty and litigious words, showing that the entire negative specificity effect on post-filing stock return volatility is carried by the litigious sub-list.</rdf:li></rdf:Alt></dc:description>
    <dc:subject><rdf:Bag><rdf:li>textual analysis</rdf:li>
      <rdf:li>10-K filings</rdf:li>
      <rdf:li>SEC EDGAR</rdf:li>
      <rdf:li>volatility</rdf:li>
-     <rdf:li>information uncertainty</rdf:li>
-     <rdf:li>narrative divergence</rdf:li></rdf:Bag></dc:subject>
+     <rdf:li>risk factors</rdf:li>
+     <rdf:li>Item 1A</rdf:li>
+     <rdf:li>Loughran-McDonald</rdf:li>
+     <rdf:li>LM-Litigious</rdf:li>
+     <rdf:li>boilerplate disclosure</rdf:li></rdf:Bag></dc:subject>
   </rdf:Description> 
   <rdf:Description rdf:about="" xmlns:prism="http://prismstandard.org/namespaces/basic/2.2/"> 
   </rdf:Description> 
@@ -83,15 +86,15 @@
   </rdf:Description> 
   <rdf:Description rdf:about="" xmlns:xmp="http://ns.adobe.com/xap/1.0/"> 
    <xmp:CreatorTool>LaTeX with hyperref</xmp:CreatorTool> 
-   <xmp:ModifyDate>2026-04-07T10:28:53+02:00</xmp:ModifyDate> 
-   <xmp:CreateDate>2026-04-07T10:28:53+02:00</xmp:CreateDate> 
-   <xmp:MetadataDate>2026-04-07T10:28:53+02:00</xmp:MetadataDate> 
+   <xmp:ModifyDate>2026-05-08T18:37:00+02:00</xmp:ModifyDate> 
+   <xmp:CreateDate>2026-05-08T18:37:00+02:00</xmp:CreateDate> 
+   <xmp:MetadataDate>2026-05-08T18:37:00+02:00</xmp:MetadataDate> 
   </rdf:Description> 
   <rdf:Description rdf:about="" xmlns:xmpRights = "http://ns.adobe.com/xap/1.0/rights/"> 
   </rdf:Description> 
   <rdf:Description rdf:about="" xmlns:xmpMM="http://ns.adobe.com/xap/1.0/mm/"> 
    <xmpMM:DocumentID>uuid:E471EDA9-0143-B4EC-2929-27CBFE26697B</xmpMM:DocumentID> 
-   <xmpMM:InstanceID>uuid:32287CC0-99AD-3998-8201-A25D1AE2F976</xmpMM:InstanceID> 
+   <xmpMM:InstanceID>uuid:E9236967-BEA2-2CE0-A1E1-2FDF9AD33C9D</xmpMM:InstanceID> 
   </rdf:Description> 
  </rdf:RDF> 
 </x:xmpmeta> 

@@ -12,9 +12,9 @@ We start with the sample of 1{,}000 largest U.S.\ public companies by market
 capitalisation, taken from the SEC EDGAR company-tickers file, and
 apply three filters.  First, we keep only entities the SEC classifies
 as ``operating,'' which removes exchange-traded funds, closed-end funds,
-blank-cheque companies, and shell entities.  Second, we exclude firms 
-in SIC codes 6000–6999 (finance, insurance, and real estate), following 
-common sample-selection practice in prior accounting research \parencite{sloan1996,francis2005}. 
+blank-cheque companies, and shell entities.  Second, we exclude firms
+in SIC codes 6000–6999 (finance, insurance, and real estate), following
+common sample-selection practice in empirical accounting and finance research.
 Third, we require at least five years of readable XBRL data from
 10-K filings and 90\% valid stock-return coverage, so that there is
 enough within-firm variation for fixed-effects estimation.
@@ -178,7 +178,7 @@ to the primary documents of its 10-K filings.  From the panel of
 about 6{,}700 firm-year observations, we drop 10-K/A amendments.
 These typically consist of a cover page and a restated
 exhibit and do not contain the full narrative sections of the
-original 10-K making them unusable for further analysis.  
+original 10-K making them unusable for further analysis.
 Financial data for amended fiscal years are kept,
 since the XBRL pipeline already picks up the amended figures when
 available (Section~\ref{sec:xbrl_tags}).  Our extraction
