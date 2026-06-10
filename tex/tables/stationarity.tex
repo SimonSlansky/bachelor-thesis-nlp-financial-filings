@@ -1,0 +1,29 @@
+\begin{table}[htbp]
+\centering
+\caption{Stationarity Tests (Augmented Dickey--Fuller)}
+\label{tab:stationarity}
+\footnotesize
+\setlength{\tabcolsep}{8pt}
+\begin{tabular}{l c c c c}
+\toprule
+ & $\hat\rho$ & ADF $\bar t$ & Reject & Fisher \\
+ & {\scriptsize (AR1 coef.)} & {\scriptsize (mean)} & {\scriptsize (\% firms)} & {\scriptsize $p$-value} \\
+\midrule
+$\ln \sigma_{i,t}$ (outcome) & $-0.07$ & $-2.40$ & $23\%$ & $<0.001$ \\
+$\ln(\text{Total Assets})$ & $0.58$ & $-1.87$ & $18\%$ & $<0.001$ \\
+Leverage & $0.63$ & $-1.72$ & $12\%$ & $<0.001$ \\
+ROA & $0.33$ & $-2.01$ & $16\%$ & $<0.001$ \\
+Asset Growth & $0.00$ & $-2.59$ & $30\%$ & $<0.001$ \\
+Current Ratio & $0.36$ & $-2.03$ & $18\%$ & $<0.001$ \\
+OCF/Assets & $0.32$ & $-2.01$ & $16\%$ & $<0.001$ \\
+$\ln(\text{Words}^{\text{1A}})$ & $0.64$ & $-2.23$ & $14\%$ & $<0.001$ \\
+RiskDensity & $0.58$ & $-1.74$ & $12\%$ & $<0.001$ \\
+UncDensity & $0.59$ & $-1.77$ & $11\%$ & $<0.001$ \\
+LitDensity & $0.59$ & $-1.61$ & $11\%$ & $<0.001$ \\
+Omission$^{\text{1A}}$ & $0.64$ & $-1.68$ & $10\%$ & $<0.001$ \\
+\bottomrule
+\end{tabular}
+\par\smallskip
+\noindent\footnotesize 
+\textit{Note:} Stationarity tests for every variable that enters the regressions of Chapters~\ref{ch:results}--\ref{ch:robustness}; lagged log-volatility is the lag of the outcome and is covered by the first row. Each variable is a panel of short annual firm-level series ($T \leq 15$). Before testing, each year's cross-sectional mean is subtracted to remove the market-wide shocks shared by all firms, mirroring the year fixed effects in the regressions. For every firm with at least 8 annual observations we run an augmented Dickey--Fuller regression \parencite{dickeyfuller1979} with an intercept and one lag. $\hat\rho$ is the average estimated first-order autoregressive coefficient across firms; a unit root would imply $\hat\rho = 1$, so values well below one indicate mean reversion. ADF~$\bar t$ is the mean ADF statistic (the $5\%$ critical value with an intercept is about $-2.9$), and ``Reject'' is the share of firms rejecting the unit-root null at $5\%$. Because each firm's series is short and individually low-powered, the last column combines the per-firm ADF $p$-values across firms with Fisher's method \parencite{maddala1999}; the combined $p$-value is below $0.001$ for every variable, so the unit-root null is rejected for all of them. Plain Dickey--Fuller without the augmentation lag gives the same conclusion. The most persistent variables (Leverage and the risk-word densities) are bounded ratios and shares, which cannot follow a unit-root process---whose variance grows without bound---so their persistence is mean reversion, not a unit root. Every variable is therefore treated as stationary, $I(0)$.
+\end{table}

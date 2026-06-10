@@ -195,3 +195,90 @@ borderline rather than significant. The thesis interprets the H3
 evidence as supportive of a within-firm strategic-silence channel
 with these stated qualifications, and does not extend the claim
 to a causal interpretation.
+
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Stationarity of the panel}
+\label{sec:robustness_stationarity}
+% ─────────────────────────────────────────────────────────────────────────────
+
+Every specification in this thesis is a dynamic panel: lagged
+log-volatility enters equation~\ref{eq:joint_model} and its
+extensions with its own coefficient $\phi$. If the outcome or any
+regressor carried a unit root, that lagged-level regression could
+be spurious---a coefficient that looks significant only because two
+unrelated, slowly drifting series happen to move together. Before
+the headline results can be read as genuine predictive
+relationships, every variable that enters the regressions must be
+shown to be stationary, $I(0)$. This section checks all twelve of
+them with the (augmented) Dickey--Fuller test.
+
+\paragraph{How the test is applied.}
+Each variable is not a single time series but a panel: one short
+annual series per firm, with at most fifteen yearly observations.
+Two simple steps adapt the standard \textcite{dickeyfuller1979}
+test to this structure. First, because all firms are exposed to the
+same market-wide shocks---the 2020 volatility spike above all---we
+subtract each year's cross-sectional mean from every variable
+before testing. This removes the common component, which is exactly
+the role the year fixed effects play in the regressions, and leaves
+the firm-specific variation whose stationarity actually matters.
+Second, we run an augmented Dickey--Fuller regression (intercept,
+one lag) on each firm's series and combine the resulting per-firm
+$p$-values across all firms with Fisher's method
+\parencite{maddala1999}. The pooling step is needed because a
+single fifteen-year series carries very little power on its own;
+combining the evidence from several hundred firms turns many
+individually weak tests into one decisive statement.
+Table~\ref{tab:stationarity} reports, for each variable, the
+average estimated autoregressive coefficient, the average ADF
+statistic, the share of firms that reject the unit root on their
+own, and Fisher's combined $p$-value.
+
+\input{tables/stationarity}
+
+\paragraph{The coefficients are far from a unit root.}
+The clearest evidence is the autoregressive coefficient $\hat\rho$
+in the first column. A unit root means $\rho = 1$; the estimates
+range from $-0.07$ for the (demeaned) outcome to at most $0.64$ for
+the most persistent variables. None is anywhere near one. Once the
+common market factor is removed, the firm-specific part of
+log-volatility is almost serially uncorrelated
+($\hat\rho \approx 0$), and even the stickiest variables---leverage,
+Item~1A length, and the risk-word densities---mean-revert with
+$\hat\rho$ below two-thirds.
+
+\paragraph{Single firms are low-powered, but the panel is decisive.}
+The average ADF statistic lies between $-1.6$ and $-2.6$, short of
+the $-2.9$ that a single series needs to reject the unit root at
+$5\%$, and only $10$--$30\%$ of firms reject on their own. This is
+the expected consequence of testing a fifteen-year series: the
+Dickey--Fuller test simply has little power in so short a sample,
+which is the whole reason it is pooled across firms. Once the
+per-firm evidence is combined with Fisher's method, the unit-root
+null is rejected overwhelmingly---the combined $p$-value is below
+$0.001$ for every one of the twelve variables. The plain
+Dickey--Fuller test without the augmentation lag rejects even more
+strongly (the share of firms rejecting roughly doubles), so the
+conclusion does not depend on the lag choice.
+
+\paragraph{The persistent variables are bounded anyway.}
+The variables with the highest $\hat\rho$---leverage and the
+risk-word densities---are the only ones an examiner might still
+question, and they need no special treatment: all are bounded by
+construction. Leverage is a ratio between zero and one, and the
+densities are word-frequency shares with sample maxima below
+$0.05$. A unit-root process has a variance that grows without bound
+and eventually leaves any fixed range, so a series confined to a
+bounded interval cannot contain one. Their persistence reflects the
+fact that Item~1A is largely recycled from one filing to the next
+\parencite{cazier2021}---a slow-moving but mean-reverting firm
+trait, the same pattern seen in the firm fixed-effects result of
+Section~\ref{sec:robustness_firmfe}---not an integrated process.
+
+\paragraph{Bottom line.} Every regression variable has an
+autoregressive coefficient well below one, and Fisher's pooled
+Dickey--Fuller test rejects the unit-root null for all twelve at
+the $0.1\%$ level. The panel is stationary, $I(0)$, the dynamic
+specifications are balanced, and the headline associations are not
+spurious regressions.
