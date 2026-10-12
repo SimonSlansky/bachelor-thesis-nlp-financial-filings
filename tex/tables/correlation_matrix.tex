@@ -2,7 +2,9 @@
 \centering
 \caption{Pearson Correlation Matrix}
 \label{tab:correlation}
-\begin{tabular}{lcccccccccc}
+\scriptsize
+\setlength{\tabcolsep}{0pt}
+\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lcccccccccc@{}}
 \toprule
  & (1) & (2) & (3) & (4) & (5) & (6) & (7) & (8) & (9) & (10) \\
 \midrule
@@ -17,8 +19,9 @@
 (9) UncDensity & -0.09*** & -0.08*** & -0.18*** & -0.06*** & 0.14*** & -0.05*** & -0.43*** & 0.71*** & 1 &  \\
 (10) LitDensity & -0.06*** & -0.08*** & 0.18*** & 0.04*** & -0.06*** & -0.06*** & 0.03** & 0.66*** & -0.06*** & 1 \\
 \bottomrule
-\end{tabular}
+\end{tabular*}
 \par\smallskip
-\noindent\footnotesize 
+\begin{flushleft}\footnotesize
 \textit{Note:} Pairwise Pearson correlation coefficients on the 30-day-horizon regression sample. ***, **, * denote significance at the 1\%, 5\%, and 10\% levels.
+\end{flushleft}
 \end{table}

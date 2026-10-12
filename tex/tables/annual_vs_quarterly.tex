@@ -2,7 +2,8 @@
 \centering
 \caption{Annual vs.\ Quarterly Approach: Summary Comparison}
 \label{tab:annual_vs_quarterly}
-\begin{tabular}{p{5.5cm}p{4.5cm}p{4.5cm}}
+\small
+\begin{tabularx}{\textwidth}{lXX}
 \toprule
 Criterion & Annual (10-K) & Quarterly (10-Q) \\
 \midrule
@@ -19,9 +20,9 @@ Item~1A risk-word density (H2) & Feasible (annual LM ratio) & Limited (52\% subs
 Literature alignment & Standard & Uncommon \\
 Expected observations & $\sim$6{,}400 firm-years & $\sim$19{,}000 firm-quarters \\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \par\smallskip
-\noindent\footnotesize
+\begin{flushleft}\footnotesize
 \textit{Note:} Summary based on diagnostic tests of 30 non-financial companies
 (XBRL, Q4 tests) and 15 companies (textual tests). Risk Factors in 10-Q filings
 are required by SEC Regulation S-K Item 1A only when there are ``material changes''
@@ -29,4 +30,5 @@ from the most recent 10-K; roughly half of companies include substantive risk
 disclosures, while the rest provide only a boilerplate reference. See
 Tables~\ref{tab:xbrl_coverage},~\ref{tab:q4_reliability},
 and~\ref{tab:text_availability} for detailed results.
+\end{flushleft}
 \end{table}

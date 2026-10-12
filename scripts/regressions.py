@@ -305,7 +305,9 @@ def horizons_to_latex(runs, path: Path | None = None) -> str:
     lines.append(r"\centering")
     lines.append(r"\caption{Post-Filing Volatility at Alternative Horizons}")
     lines.append(r"\label{tab:horizons}")
-    lines.append(r"\begin{tabular}{l" + "c" * n_cols + "}")
+    lines.append(r"\footnotesize")
+    lines.append(r"\setlength{\tabcolsep}{5pt}")
+    lines.append(r"\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}l" + "c" * n_cols + r"@{}}")
     lines.append(r"\toprule")
     header = " & ".join(f"({i+1}) {label}" for i, (label, _, _) in enumerate(runs))
     lines.append(f" & {header} \\\\")
@@ -335,9 +337,9 @@ def horizons_to_latex(runs, path: Path | None = None) -> str:
     lines.append("Firms & "        + firms + r" \\")
     lines.append(r"Adj.\ $R^2$ & " + r2    + r" \\")
     lines.append(r"\bottomrule")
-    lines.append(r"\end{tabular}")
+    lines.append(r"\end{tabular*}")
     lines.append(r"\par\smallskip")
-    lines.append(r"\noindent\footnotesize ")
+    lines.append(r"\begin{flushleft}\footnotesize ")
     lines.append(
         r"\textit{Note:} "
         r"Each column re-estimates the H1 + LM-list decomposition specification "
@@ -354,6 +356,7 @@ def horizons_to_latex(runs, path: Path | None = None) -> str:
         r"standard errors. ***, **, * denote significance at the 1\%, 5\%, "
         r"and 10\% levels."
     )
+    lines.append(r"\end{flushleft}")
     lines.append(r"\end{table}")
 
     tex = "\n".join(lines)
@@ -437,8 +440,10 @@ def correlation_to_latex(df: pd.DataFrame,
     lines.append(r"\centering")
     lines.append(r"\caption{Pearson Correlation Matrix}")
     lines.append(r"\label{tab:correlation}")
+    lines.append(r"\scriptsize")
+    lines.append(r"\setlength{\tabcolsep}{0pt}")
     col_spec = "l" + "c" * n
-    lines.append(r"\begin{tabular}{" + col_spec + "}")
+    lines.append(r"\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}" + col_spec + r"@{}}")
     lines.append(r"\toprule")
     header = " & ".join([f"({i+1})" for i in range(n)])
     lines.append(f" & {header} \\\\")
@@ -457,15 +462,16 @@ def correlation_to_latex(df: pd.DataFrame,
                 cells.append(f"{r:.2f}{_stars(p)}")
         lines.append(f"({i+1}) {label} & " + " & ".join(cells) + r" \\")
     lines.append(r"\bottomrule")
-    lines.append(r"\end{tabular}")
+    lines.append(r"\end{tabular*}")
     lines.append(r"\par\smallskip")
-    lines.append(r"\noindent\footnotesize ")
+    lines.append(r"\begin{flushleft}\footnotesize ")
     lines.append(
         r"\textit{Note:} "
         r"Pairwise Pearson correlation coefficients on the 30-day-horizon "
         r"regression sample. ***, **, * denote significance at the 1\%, 5\%, "
         r"and 10\% levels."
     )
+    lines.append(r"\end{flushleft}")
     lines.append(r"\end{table}")
 
     tex = "\n".join(lines)
