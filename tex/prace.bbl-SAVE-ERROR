@@ -1,0 +1,1333 @@
+% $ biblatex auxiliary file $
+% $ biblatex bbl format version 3.3 $
+% Do not modify the above lines!
+%
+% This is an auxiliary file used by the 'biblatex' package.
+% This file may safely be deleted. It will be recreated by
+% biber as required.
+%
+\begingroup
+\makeatletter
+\@ifundefined{ver@biblatex.sty}
+  {\@latex@error
+     {Missing 'biblatex' package}
+     {The bibliography requires the 'biblatex' package.}
+      \aftergroup\endinput}
+  {}
+\endgroup
+
+
+\refsection{0}
+  \datalist[entry]{apa/apasortcite//global/global/global}
+    \entry{agresti1998}{article}{}{}
+      \name{author}{2}{}{%
+        {{un=0,uniquepart=base,hash=15bf0ecf9d6116f7eafc37298364beca}{%
+           family={Agresti},
+           familyi={A\bibinitperiod},
+           given={Alan},
+           giveni={A\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=8e26d8393e79ffc53d178661e549591e}{%
+           family={Coull},
+           familyi={C\bibinitperiod},
+           given={Brent\bibnamedelima A.},
+           giveni={B\bibinitperiod\bibinitdelim A\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{916f9576071e36bc424075c9da0d825a}
+      \strng{fullhash}{916f9576071e36bc424075c9da0d825a}
+      \strng{fullhashraw}{916f9576071e36bc424075c9da0d825a}
+      \strng{bibnamehash}{916f9576071e36bc424075c9da0d825a}
+      \strng{authorbibnamehash}{916f9576071e36bc424075c9da0d825a}
+      \strng{authornamehash}{916f9576071e36bc424075c9da0d825a}
+      \strng{authorfullhash}{916f9576071e36bc424075c9da0d825a}
+      \strng{authorfullhashraw}{916f9576071e36bc424075c9da0d825a}
+      \field{sortinit}{A}
+      \field{sortinithash}{2f401846e2029bad6b3ecc16d50031e2}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{The American Statistician}
+      \field{number}{2}
+      \field{title}{Approximate Is Better than ``Exact'' for Interval Estimation of Binomial Proportions}
+      \field{volume}{52}
+      \field{year}{1998}
+      \field{pages}{119\bibrangedash 126}
+      \range{pages}{8}
+    \endentry
+    \entry{beatty2019}{article}{}{}
+      \name{author}{3}{}{%
+        {{un=0,uniquepart=base,hash=3fd127ddf7112b6f1b1d127a3461efa7}{%
+           family={Beatty},
+           familyi={B\bibinitperiod},
+           given={Anne},
+           giveni={A\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=b6821df5befbb13e494f84d9b04a49c2}{%
+           family={Cheng},
+           familyi={C\bibinitperiod},
+           given={Lin},
+           giveni={L\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=1326aec82d1af8e6c96f5196eccfd391}{%
+           family={Zhang},
+           familyi={Z\bibinitperiod},
+           given={Haiwen},
+           giveni={H\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{889f8975f7a4f8de9969790f085c961a}
+      \strng{fullhash}{ff8a174aa7951debc19415a1d6090507}
+      \strng{fullhashraw}{ff8a174aa7951debc19415a1d6090507}
+      \strng{bibnamehash}{ff8a174aa7951debc19415a1d6090507}
+      \strng{authorbibnamehash}{ff8a174aa7951debc19415a1d6090507}
+      \strng{authornamehash}{889f8975f7a4f8de9969790f085c961a}
+      \strng{authorfullhash}{ff8a174aa7951debc19415a1d6090507}
+      \strng{authorfullhashraw}{ff8a174aa7951debc19415a1d6090507}
+      \field{sortinit}{B}
+      \field{sortinithash}{d7095fff47cda75ca2589920aae98399}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Contemporary Accounting Research}
+      \field{number}{2}
+      \field{title}{Are Risk Factor Disclosures Still Relevant? Evidence from Market Reactions to Risk Factor Disclosures Before and After the Financial Crisis}
+      \field{volume}{36}
+      \field{year}{2019}
+      \field{pages}{805\bibrangedash 838}
+      \range{pages}{34}
+    \endentry
+    \entry{brown2011}{article}{}{}
+      \name{author}{2}{}{%
+        {{un=0,uniquepart=base,hash=cd343d1307b28e5dda7534fc733979f2}{%
+           family={Brown},
+           familyi={B\bibinitperiod},
+           given={Stephen\bibnamedelima V.},
+           giveni={S\bibinitperiod\bibinitdelim V\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=2badc24722ab88eb6bca7f33cd9eae77}{%
+           family={Tucker},
+           familyi={T\bibinitperiod},
+           given={Jennifer\bibnamedelima Wu},
+           giveni={J\bibinitperiod\bibinitdelim W\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{505711fc184dd5ede0c49767f39bbe41}
+      \strng{fullhash}{505711fc184dd5ede0c49767f39bbe41}
+      \strng{fullhashraw}{505711fc184dd5ede0c49767f39bbe41}
+      \strng{bibnamehash}{505711fc184dd5ede0c49767f39bbe41}
+      \strng{authorbibnamehash}{505711fc184dd5ede0c49767f39bbe41}
+      \strng{authornamehash}{505711fc184dd5ede0c49767f39bbe41}
+      \strng{authorfullhash}{505711fc184dd5ede0c49767f39bbe41}
+      \strng{authorfullhashraw}{505711fc184dd5ede0c49767f39bbe41}
+      \field{sortinit}{B}
+      \field{sortinithash}{d7095fff47cda75ca2589920aae98399}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Journal of Accounting Research}
+      \field{number}{2}
+      \field{title}{Large-Sample Evidence on Firms' Year-over-Year {MD\&A} Modifications}
+      \field{volume}{49}
+      \field{year}{2011}
+      \field{pages}{309\bibrangedash 346}
+      \range{pages}{38}
+    \endentry
+    \entry{cameron2011robust}{article}{}{}
+      \name{author}{3}{}{%
+        {{un=0,uniquepart=base,hash=dab37900e0b3d1bbd6b945d99fef4b06}{%
+           family={Cameron},
+           familyi={C\bibinitperiod},
+           given={A.\bibnamedelimi Colin},
+           giveni={A\bibinitperiod\bibinitdelim C\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=d037e69d793c2bd3f19e61d52dd15337}{%
+           family={Gelbach},
+           familyi={G\bibinitperiod},
+           given={Jonah\bibnamedelima B.},
+           giveni={J\bibinitperiod\bibinitdelim B\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=666ff5de6a44e31611322ad1b6ddf9d3}{%
+           family={Miller},
+           familyi={M\bibinitperiod},
+           given={Douglas\bibnamedelima L.},
+           giveni={D\bibinitperiod\bibinitdelim L\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{de66073caceeddc66c6b6d44411fcfe3}
+      \strng{fullhash}{8ab93612723c51a9a5e7e7030929186a}
+      \strng{fullhashraw}{8ab93612723c51a9a5e7e7030929186a}
+      \strng{bibnamehash}{8ab93612723c51a9a5e7e7030929186a}
+      \strng{authorbibnamehash}{8ab93612723c51a9a5e7e7030929186a}
+      \strng{authornamehash}{de66073caceeddc66c6b6d44411fcfe3}
+      \strng{authorfullhash}{8ab93612723c51a9a5e7e7030929186a}
+      \strng{authorfullhashraw}{8ab93612723c51a9a5e7e7030929186a}
+      \field{sortinit}{C}
+      \field{sortinithash}{4d103a86280481745c9c897c925753c0}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Journal of Business \& Economic Statistics}
+      \field{number}{2}
+      \field{title}{Robust Inference with Multiway Clustering}
+      \field{volume}{29}
+      \field{year}{2011}
+      \field{pages}{238\bibrangedash 249}
+      \range{pages}{12}
+    \endentry
+    \entry{campbell2014}{article}{}{}
+      \name{author}{5}{}{%
+        {{un=0,uniquepart=base,hash=996e40995fd8cc25b8e2c92578f7ba97}{%
+           family={Campbell},
+           familyi={C\bibinitperiod},
+           given={John\bibnamedelima L.},
+           giveni={J\bibinitperiod\bibinitdelim L\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=2a511487aaae1f782f9d575405bc818c}{%
+           family={Chen},
+           familyi={C\bibinitperiod},
+           given={Hsinchun},
+           giveni={H\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=3e5c815ae1f5ff1a529c5f862b003803}{%
+           family={Dhaliwal},
+           familyi={D\bibinitperiod},
+           given={Dan\bibnamedelima S.},
+           giveni={D\bibinitperiod\bibinitdelim S\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=023195e2864e4d501fd31b2e8001aa31}{%
+           family={Lu},
+           familyi={L\bibinitperiod},
+           given={Hsin-min},
+           giveni={H\bibinithyphendelim m\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=a2bdbb20bfe8f1ff78953c8ef2835855}{%
+           family={Steele},
+           familyi={S\bibinitperiod},
+           given={Logan\bibnamedelima B.},
+           giveni={L\bibinitperiod\bibinitdelim B\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{46a8e3a905d538e3837e3609d00d60f6}
+      \strng{fullhash}{0dc3ef1fcde8dfe7d4888945c609670c}
+      \strng{fullhashraw}{0dc3ef1fcde8dfe7d4888945c609670c}
+      \strng{bibnamehash}{0dc3ef1fcde8dfe7d4888945c609670c}
+      \strng{authorbibnamehash}{0dc3ef1fcde8dfe7d4888945c609670c}
+      \strng{authornamehash}{46a8e3a905d538e3837e3609d00d60f6}
+      \strng{authorfullhash}{0dc3ef1fcde8dfe7d4888945c609670c}
+      \strng{authorfullhashraw}{0dc3ef1fcde8dfe7d4888945c609670c}
+      \field{sortinit}{C}
+      \field{sortinithash}{4d103a86280481745c9c897c925753c0}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Review of Accounting Studies}
+      \field{number}{1}
+      \field{title}{The Information Content of Mandatory Risk Factor Disclosures in Corporate Filings}
+      \field{volume}{19}
+      \field{year}{2014}
+      \field{pages}{396\bibrangedash 455}
+      \range{pages}{60}
+    \endentry
+    \entry{cazier2021}{article}{}{}
+      \name{author}{3}{}{%
+        {{un=0,uniquepart=base,hash=47990a2e9359070b7045f3d27c989e5c}{%
+           family={Cazier},
+           familyi={C\bibinitperiod},
+           given={Richard\bibnamedelima A.},
+           giveni={R\bibinitperiod\bibinitdelim A\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=4c5585b728be0a6f090053b98fe8e996}{%
+           family={McMullin},
+           familyi={M\bibinitperiod},
+           given={Jeff\bibnamedelima L.},
+           giveni={J\bibinitperiod\bibinitdelim L\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=0bcefad2768757cea1899e7e2dcaca42}{%
+           family={Treu},
+           familyi={T\bibinitperiod},
+           given={John\bibnamedelima S.},
+           giveni={J\bibinitperiod\bibinitdelim S\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{b02c13c9a31b066abfad0bdf0f8c9034}
+      \strng{fullhash}{4941ebef60c2b4ef842f5143db246412}
+      \strng{fullhashraw}{4941ebef60c2b4ef842f5143db246412}
+      \strng{bibnamehash}{4941ebef60c2b4ef842f5143db246412}
+      \strng{authorbibnamehash}{4941ebef60c2b4ef842f5143db246412}
+      \strng{authornamehash}{b02c13c9a31b066abfad0bdf0f8c9034}
+      \strng{authorfullhash}{4941ebef60c2b4ef842f5143db246412}
+      \strng{authorfullhashraw}{4941ebef60c2b4ef842f5143db246412}
+      \field{sortinit}{C}
+      \field{sortinithash}{4d103a86280481745c9c897c925753c0}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{The Accounting Review}
+      \field{number}{4}
+      \field{title}{Are Lengthy and Boilerplate Risk Factor Disclosures Inadequate? An Examination of Judicial and Regulatory Assessments of Risk Factor Language}
+      \field{volume}{96}
+      \field{year}{2021}
+      \field{pages}{131\bibrangedash 155}
+      \range{pages}{25}
+    \endentry
+    \entry{chychyla2015}{article}{}{}
+      \name{author}{2}{}{%
+        {{un=0,uniquepart=base,hash=895759c87d7d5f912907e8e711f30a21}{%
+           family={Chychyla},
+           familyi={C\bibinitperiod},
+           given={Roman},
+           giveni={R\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=ad11954cedf3536fecdcd2841e993267}{%
+           family={Kogan},
+           familyi={K\bibinitperiod},
+           given={Alexander},
+           giveni={A\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{581184f2427f715bb2e9f2c00c6a8173}
+      \strng{fullhash}{581184f2427f715bb2e9f2c00c6a8173}
+      \strng{fullhashraw}{581184f2427f715bb2e9f2c00c6a8173}
+      \strng{bibnamehash}{581184f2427f715bb2e9f2c00c6a8173}
+      \strng{authorbibnamehash}{581184f2427f715bb2e9f2c00c6a8173}
+      \strng{authornamehash}{581184f2427f715bb2e9f2c00c6a8173}
+      \strng{authorfullhash}{581184f2427f715bb2e9f2c00c6a8173}
+      \strng{authorfullhashraw}{581184f2427f715bb2e9f2c00c6a8173}
+      \field{sortinit}{C}
+      \field{sortinithash}{4d103a86280481745c9c897c925753c0}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Journal of Information Systems}
+      \field{number}{1}
+      \field{title}{Using {XBRL} to Conduct a Large-Scale Study of Discrepancies Between the Accounting Numbers in {Compustat} and {SEC} 10-{K} Filings}
+      \field{volume}{29}
+      \field{year}{2015}
+      \field{pages}{37\bibrangedash 72}
+      \range{pages}{36}
+      \verb{doi}
+      \verb 10.2308/isys-50922
+      \endverb
+    \endentry
+    \entry{dickeyfuller1979}{article}{}{}
+      \name{author}{2}{}{%
+        {{un=0,uniquepart=base,hash=f71b803d01236b0fcd2bb3e25e740864}{%
+           family={Dickey},
+           familyi={D\bibinitperiod},
+           given={David\bibnamedelima A.},
+           giveni={D\bibinitperiod\bibinitdelim A\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=c387dbcd083b0685a01bb3f63c78387a}{%
+           family={Fuller},
+           familyi={F\bibinitperiod},
+           given={Wayne\bibnamedelima A.},
+           giveni={W\bibinitperiod\bibinitdelim A\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{bcf86ed68621816d8a6e135ace8b77cc}
+      \strng{fullhash}{bcf86ed68621816d8a6e135ace8b77cc}
+      \strng{fullhashraw}{bcf86ed68621816d8a6e135ace8b77cc}
+      \strng{bibnamehash}{bcf86ed68621816d8a6e135ace8b77cc}
+      \strng{authorbibnamehash}{bcf86ed68621816d8a6e135ace8b77cc}
+      \strng{authornamehash}{bcf86ed68621816d8a6e135ace8b77cc}
+      \strng{authorfullhash}{bcf86ed68621816d8a6e135ace8b77cc}
+      \strng{authorfullhashraw}{bcf86ed68621816d8a6e135ace8b77cc}
+      \field{sortinit}{D}
+      \field{sortinithash}{6f385f66841fb5e82009dc833c761848}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Journal of the American Statistical Association}
+      \field{number}{366}
+      \field{title}{Distribution of the Estimators for Autoregressive Time Series with a Unit Root}
+      \field{volume}{74}
+      \field{year}{1979}
+      \field{pages}{427\bibrangedash 431}
+      \range{pages}{5}
+    \endentry
+    \entry{dyer2017}{article}{}{}
+      \name{author}{3}{}{%
+        {{un=0,uniquepart=base,hash=f8217c8a5e20fb4800931ec1e25e1cda}{%
+           family={Dyer},
+           familyi={D\bibinitperiod},
+           given={Travis},
+           giveni={T\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=9a39afababc5469869eb13304950b247}{%
+           family={Lang},
+           familyi={L\bibinitperiod},
+           given={Mark},
+           giveni={M\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=1edf86bfa3c29f4f44f5e37f7b87e378}{%
+           family={Stice-Lawrence},
+           familyi={S\bibinithyphendelim L\bibinitperiod},
+           given={Lorien},
+           giveni={L\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{e6bd0824bfd9ce7e2f5d541dab8984be}
+      \strng{fullhash}{cf95afa4314e785624dc34ca76f14748}
+      \strng{fullhashraw}{cf95afa4314e785624dc34ca76f14748}
+      \strng{bibnamehash}{cf95afa4314e785624dc34ca76f14748}
+      \strng{authorbibnamehash}{cf95afa4314e785624dc34ca76f14748}
+      \strng{authornamehash}{e6bd0824bfd9ce7e2f5d541dab8984be}
+      \strng{authorfullhash}{cf95afa4314e785624dc34ca76f14748}
+      \strng{authorfullhashraw}{cf95afa4314e785624dc34ca76f14748}
+      \field{sortinit}{D}
+      \field{sortinithash}{6f385f66841fb5e82009dc833c761848}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Journal of Accounting and Economics}
+      \field{number}{2--3}
+      \field{title}{The Evolution of 10-{K} Textual Disclosure: Evidence from {L}atent {D}irichlet {A}llocation}
+      \field{volume}{64}
+      \field{year}{2017}
+      \field{pages}{221\bibrangedash 245}
+      \range{pages}{25}
+    \endentry
+    \entry{gilardi2023}{article}{}{}
+      \name{author}{3}{}{%
+        {{un=0,uniquepart=base,hash=42a4e15ad87c60bc88a71df1348bd4e2}{%
+           family={Gilardi},
+           familyi={G\bibinitperiod},
+           given={Fabrizio},
+           giveni={F\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=56ea0634b107a7ddd6896367aef2ada5}{%
+           family={Alizadeh},
+           familyi={A\bibinitperiod},
+           given={Meysam},
+           giveni={M\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=0e52669eb7da2e5579871c93f8c8129b}{%
+           family={Kubli},
+           familyi={K\bibinitperiod},
+           given={Maël},
+           giveni={M\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{ca303398eb5efdf788d5bf1f44bee484}
+      \strng{fullhash}{0cb15cf82c954c430d43b8c515e70bbd}
+      \strng{fullhashraw}{0cb15cf82c954c430d43b8c515e70bbd}
+      \strng{bibnamehash}{0cb15cf82c954c430d43b8c515e70bbd}
+      \strng{authorbibnamehash}{0cb15cf82c954c430d43b8c515e70bbd}
+      \strng{authornamehash}{ca303398eb5efdf788d5bf1f44bee484}
+      \strng{authorfullhash}{0cb15cf82c954c430d43b8c515e70bbd}
+      \strng{authorfullhashraw}{0cb15cf82c954c430d43b8c515e70bbd}
+      \field{sortinit}{G}
+      \field{sortinithash}{32d67eca0634bf53703493fb1090a2e8}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Proceedings of the National Academy of Sciences}
+      \field{number}{30}
+      \field{title}{{ChatGPT} Outperforms Crowd-Workers for Text-Annotation Tasks}
+      \field{volume}{120}
+      \field{year}{2023}
+      \field{pages}{e2305016120}
+      \range{pages}{-1}
+    \endentry
+    \entry{hope2016}{article}{}{}
+      \name{author}{3}{}{%
+        {{un=0,uniquepart=base,hash=9846e48c5ab7b2596771e56dd997165e}{%
+           family={Hope},
+           familyi={H\bibinitperiod},
+           given={Ole-Kristian},
+           giveni={O\bibinithyphendelim K\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=d20778e5d8c64fbcb15b095bdc431f9b}{%
+           family={Hu},
+           familyi={H\bibinitperiod},
+           given={Danqi},
+           giveni={D\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=474e86d156b0c187ee342b23e15bbdc9}{%
+           family={Lu},
+           familyi={L\bibinitperiod},
+           given={Hai},
+           giveni={H\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{775c70a78d2784824e5a1438c9f9e72a}
+      \strng{fullhash}{62d526629e11cbf63b6e00f902f416ee}
+      \strng{fullhashraw}{62d526629e11cbf63b6e00f902f416ee}
+      \strng{bibnamehash}{62d526629e11cbf63b6e00f902f416ee}
+      \strng{authorbibnamehash}{62d526629e11cbf63b6e00f902f416ee}
+      \strng{authornamehash}{775c70a78d2784824e5a1438c9f9e72a}
+      \strng{authorfullhash}{62d526629e11cbf63b6e00f902f416ee}
+      \strng{authorfullhashraw}{62d526629e11cbf63b6e00f902f416ee}
+      \field{sortinit}{H}
+      \field{sortinithash}{23a3aa7c24e56cfa16945d55545109b5}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Review of Accounting Studies}
+      \field{number}{4}
+      \field{title}{The Benefits of Specific Risk-Factor Disclosures}
+      \field{volume}{21}
+      \field{year}{2016}
+      \field{pages}{1005\bibrangedash 1045}
+      \range{pages}{41}
+    \endentry
+    \entry{kravet2013}{article}{}{}
+      \name{author}{2}{}{%
+        {{un=0,uniquepart=base,hash=bfb54ce212af43c930147601c87b368e}{%
+           family={Kravet},
+           familyi={K\bibinitperiod},
+           given={Todd},
+           giveni={T\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=0b688fdcad73cec888c0f2d985c837ef}{%
+           family={Muslu},
+           familyi={M\bibinitperiod},
+           given={Volkan},
+           giveni={V\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{b1ea3ca9b256329c8cf31b774b26bedc}
+      \strng{fullhash}{b1ea3ca9b256329c8cf31b774b26bedc}
+      \strng{fullhashraw}{b1ea3ca9b256329c8cf31b774b26bedc}
+      \strng{bibnamehash}{b1ea3ca9b256329c8cf31b774b26bedc}
+      \strng{authorbibnamehash}{b1ea3ca9b256329c8cf31b774b26bedc}
+      \strng{authornamehash}{b1ea3ca9b256329c8cf31b774b26bedc}
+      \strng{authorfullhash}{b1ea3ca9b256329c8cf31b774b26bedc}
+      \strng{authorfullhashraw}{b1ea3ca9b256329c8cf31b774b26bedc}
+      \field{sortinit}{K}
+      \field{sortinithash}{c02bf6bff1c488450c352b40f5d853ab}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Review of Accounting Studies}
+      \field{number}{4}
+      \field{title}{Textual Risk Disclosures and Investors' Risk Perceptions}
+      \field{volume}{18}
+      \field{year}{2013}
+      \field{pages}{1088\bibrangedash 1122}
+      \range{pages}{35}
+    \endentry
+    \entry{li2008}{article}{}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=89b23cce0bb40099f7b69f6577f665fe}{%
+           family={Li},
+           familyi={L\bibinitperiod},
+           given={Feng},
+           giveni={F\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{89b23cce0bb40099f7b69f6577f665fe}
+      \strng{fullhash}{89b23cce0bb40099f7b69f6577f665fe}
+      \strng{fullhashraw}{89b23cce0bb40099f7b69f6577f665fe}
+      \strng{bibnamehash}{89b23cce0bb40099f7b69f6577f665fe}
+      \strng{authorbibnamehash}{89b23cce0bb40099f7b69f6577f665fe}
+      \strng{authornamehash}{89b23cce0bb40099f7b69f6577f665fe}
+      \strng{authorfullhash}{89b23cce0bb40099f7b69f6577f665fe}
+      \strng{authorfullhashraw}{89b23cce0bb40099f7b69f6577f665fe}
+      \field{sortinit}{L}
+      \field{sortinithash}{7c47d417cecb1f4bd38d1825c427a61a}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Journal of Accounting and Economics}
+      \field{number}{2--3}
+      \field{title}{Annual Report Readability, Current Earnings, and Earnings Persistence}
+      \field{volume}{45}
+      \field{year}{2008}
+      \field{pages}{221\bibrangedash 247}
+      \range{pages}{27}
+    \endentry
+    \entry{loughran2011}{article}{}{}
+      \name{author}{2}{}{%
+        {{un=0,uniquepart=base,hash=e29b48c3b17cf53e834d55eac5dbef23}{%
+           family={Loughran},
+           familyi={L\bibinitperiod},
+           given={Tim},
+           giveni={T\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=43057d4d67299a36b7bff8107c6cb71d}{%
+           family={McDonald},
+           familyi={M\bibinitperiod},
+           given={Bill},
+           giveni={B\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{07b6082ec1f45421d1ee53b762c257d0}
+      \strng{fullhash}{07b6082ec1f45421d1ee53b762c257d0}
+      \strng{fullhashraw}{07b6082ec1f45421d1ee53b762c257d0}
+      \strng{bibnamehash}{07b6082ec1f45421d1ee53b762c257d0}
+      \strng{authorbibnamehash}{07b6082ec1f45421d1ee53b762c257d0}
+      \strng{authornamehash}{07b6082ec1f45421d1ee53b762c257d0}
+      \strng{authorfullhash}{07b6082ec1f45421d1ee53b762c257d0}
+      \strng{authorfullhashraw}{07b6082ec1f45421d1ee53b762c257d0}
+      \field{sortinit}{L}
+      \field{sortinithash}{7c47d417cecb1f4bd38d1825c427a61a}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{The Journal of Finance}
+      \field{number}{1}
+      \field{title}{When Is a Liability Not a Liability? {T}extual Analysis, Dictionaries, and 10-{K}s}
+      \field{volume}{66}
+      \field{year}{2011}
+      \field{pages}{35\bibrangedash 65}
+      \range{pages}{31}
+    \endentry
+    \entry{maddala1999}{article}{}{}
+      \name{author}{2}{}{%
+        {{un=0,uniquepart=base,hash=a98db231b54fe50345b5549f19432f7b}{%
+           family={Maddala},
+           familyi={M\bibinitperiod},
+           given={G.\bibnamedelimi S.},
+           giveni={G\bibinitperiod\bibinitdelim S\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=d4b52e0ad6102278454307977af02f0e}{%
+           family={Wu},
+           familyi={W\bibinitperiod},
+           given={Shaowen},
+           giveni={S\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{f7a21bfd5c5e923887a896cdea6053ce}
+      \strng{fullhash}{f7a21bfd5c5e923887a896cdea6053ce}
+      \strng{fullhashraw}{f7a21bfd5c5e923887a896cdea6053ce}
+      \strng{bibnamehash}{f7a21bfd5c5e923887a896cdea6053ce}
+      \strng{authorbibnamehash}{f7a21bfd5c5e923887a896cdea6053ce}
+      \strng{authornamehash}{f7a21bfd5c5e923887a896cdea6053ce}
+      \strng{authorfullhash}{f7a21bfd5c5e923887a896cdea6053ce}
+      \strng{authorfullhashraw}{f7a21bfd5c5e923887a896cdea6053ce}
+      \field{sortinit}{M}
+      \field{sortinithash}{4625c616857f13d17ce56f7d4f97d451}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Oxford Bulletin of Economics and Statistics}
+      \field{number}{S1}
+      \field{title}{A Comparative Study of Unit Root Tests with Panel Data and a New Simple Test}
+      \field{volume}{61}
+      \field{year}{1999}
+      \field{pages}{631\bibrangedash 652}
+      \range{pages}{22}
+    \endentry
+    \entry{petersen2009}{article}{}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=08926815ae98f639309fe932e76eb82f}{%
+           family={Petersen},
+           familyi={P\bibinitperiod},
+           given={Mitchell\bibnamedelima A.},
+           giveni={M\bibinitperiod\bibinitdelim A\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{08926815ae98f639309fe932e76eb82f}
+      \strng{fullhash}{08926815ae98f639309fe932e76eb82f}
+      \strng{fullhashraw}{08926815ae98f639309fe932e76eb82f}
+      \strng{bibnamehash}{08926815ae98f639309fe932e76eb82f}
+      \strng{authorbibnamehash}{08926815ae98f639309fe932e76eb82f}
+      \strng{authornamehash}{08926815ae98f639309fe932e76eb82f}
+      \strng{authorfullhash}{08926815ae98f639309fe932e76eb82f}
+      \strng{authorfullhashraw}{08926815ae98f639309fe932e76eb82f}
+      \field{sortinit}{P}
+      \field{sortinithash}{ff3bcf24f47321b42cb156c2cc8a8422}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{The Review of Financial Studies}
+      \field{number}{1}
+      \field{title}{Estimating Standard Errors in Finance Panel Data Sets: Comparing Approaches}
+      \field{volume}{22}
+      \field{year}{2009}
+      \field{pages}{435\bibrangedash 480}
+      \range{pages}{46}
+    \endentry
+  \enddatalist
+  \datalist[entry]{apa/global//global/global/global}
+    \entry{agresti1998}{article}{}{}
+      \name{author}{2}{}{%
+        {{un=0,uniquepart=base,hash=15bf0ecf9d6116f7eafc37298364beca}{%
+           family={Agresti},
+           familyi={A\bibinitperiod},
+           given={Alan},
+           giveni={A\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=8e26d8393e79ffc53d178661e549591e}{%
+           family={Coull},
+           familyi={C\bibinitperiod},
+           given={Brent\bibnamedelima A.},
+           giveni={B\bibinitperiod\bibinitdelim A\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{916f9576071e36bc424075c9da0d825a}
+      \strng{fullhash}{916f9576071e36bc424075c9da0d825a}
+      \strng{fullhashraw}{916f9576071e36bc424075c9da0d825a}
+      \strng{bibnamehash}{916f9576071e36bc424075c9da0d825a}
+      \strng{authorbibnamehash}{916f9576071e36bc424075c9da0d825a}
+      \strng{authornamehash}{916f9576071e36bc424075c9da0d825a}
+      \strng{authorfullhash}{916f9576071e36bc424075c9da0d825a}
+      \strng{authorfullhashraw}{916f9576071e36bc424075c9da0d825a}
+      \field{sortinit}{A}
+      \field{sortinithash}{2f401846e2029bad6b3ecc16d50031e2}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{The American Statistician}
+      \field{number}{2}
+      \field{title}{Approximate Is Better than ``Exact'' for Interval Estimation of Binomial Proportions}
+      \field{volume}{52}
+      \field{year}{1998}
+      \field{pages}{119\bibrangedash 126}
+      \range{pages}{8}
+    \endentry
+    \entry{beatty2019}{article}{}{}
+      \name{author}{3}{}{%
+        {{un=0,uniquepart=base,hash=3fd127ddf7112b6f1b1d127a3461efa7}{%
+           family={Beatty},
+           familyi={B\bibinitperiod},
+           given={Anne},
+           giveni={A\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=b6821df5befbb13e494f84d9b04a49c2}{%
+           family={Cheng},
+           familyi={C\bibinitperiod},
+           given={Lin},
+           giveni={L\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=1326aec82d1af8e6c96f5196eccfd391}{%
+           family={Zhang},
+           familyi={Z\bibinitperiod},
+           given={Haiwen},
+           giveni={H\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{889f8975f7a4f8de9969790f085c961a}
+      \strng{fullhash}{ff8a174aa7951debc19415a1d6090507}
+      \strng{fullhashraw}{ff8a174aa7951debc19415a1d6090507}
+      \strng{bibnamehash}{ff8a174aa7951debc19415a1d6090507}
+      \strng{authorbibnamehash}{ff8a174aa7951debc19415a1d6090507}
+      \strng{authornamehash}{889f8975f7a4f8de9969790f085c961a}
+      \strng{authorfullhash}{ff8a174aa7951debc19415a1d6090507}
+      \strng{authorfullhashraw}{ff8a174aa7951debc19415a1d6090507}
+      \field{sortinit}{B}
+      \field{sortinithash}{d7095fff47cda75ca2589920aae98399}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Contemporary Accounting Research}
+      \field{number}{2}
+      \field{title}{Are Risk Factor Disclosures Still Relevant? Evidence from Market Reactions to Risk Factor Disclosures Before and After the Financial Crisis}
+      \field{volume}{36}
+      \field{year}{2019}
+      \field{pages}{805\bibrangedash 838}
+      \range{pages}{34}
+    \endentry
+    \entry{brown2011}{article}{}{}
+      \name{author}{2}{}{%
+        {{un=0,uniquepart=base,hash=cd343d1307b28e5dda7534fc733979f2}{%
+           family={Brown},
+           familyi={B\bibinitperiod},
+           given={Stephen\bibnamedelima V.},
+           giveni={S\bibinitperiod\bibinitdelim V\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=2badc24722ab88eb6bca7f33cd9eae77}{%
+           family={Tucker},
+           familyi={T\bibinitperiod},
+           given={Jennifer\bibnamedelima Wu},
+           giveni={J\bibinitperiod\bibinitdelim W\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{505711fc184dd5ede0c49767f39bbe41}
+      \strng{fullhash}{505711fc184dd5ede0c49767f39bbe41}
+      \strng{fullhashraw}{505711fc184dd5ede0c49767f39bbe41}
+      \strng{bibnamehash}{505711fc184dd5ede0c49767f39bbe41}
+      \strng{authorbibnamehash}{505711fc184dd5ede0c49767f39bbe41}
+      \strng{authornamehash}{505711fc184dd5ede0c49767f39bbe41}
+      \strng{authorfullhash}{505711fc184dd5ede0c49767f39bbe41}
+      \strng{authorfullhashraw}{505711fc184dd5ede0c49767f39bbe41}
+      \field{sortinit}{B}
+      \field{sortinithash}{d7095fff47cda75ca2589920aae98399}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Journal of Accounting Research}
+      \field{number}{2}
+      \field{title}{Large-Sample Evidence on Firms' Year-over-Year {MD\&A} Modifications}
+      \field{volume}{49}
+      \field{year}{2011}
+      \field{pages}{309\bibrangedash 346}
+      \range{pages}{38}
+    \endentry
+    \entry{cameron2011robust}{article}{}{}
+      \name{author}{3}{}{%
+        {{un=0,uniquepart=base,hash=dab37900e0b3d1bbd6b945d99fef4b06}{%
+           family={Cameron},
+           familyi={C\bibinitperiod},
+           given={A.\bibnamedelimi Colin},
+           giveni={A\bibinitperiod\bibinitdelim C\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=d037e69d793c2bd3f19e61d52dd15337}{%
+           family={Gelbach},
+           familyi={G\bibinitperiod},
+           given={Jonah\bibnamedelima B.},
+           giveni={J\bibinitperiod\bibinitdelim B\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=666ff5de6a44e31611322ad1b6ddf9d3}{%
+           family={Miller},
+           familyi={M\bibinitperiod},
+           given={Douglas\bibnamedelima L.},
+           giveni={D\bibinitperiod\bibinitdelim L\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{de66073caceeddc66c6b6d44411fcfe3}
+      \strng{fullhash}{8ab93612723c51a9a5e7e7030929186a}
+      \strng{fullhashraw}{8ab93612723c51a9a5e7e7030929186a}
+      \strng{bibnamehash}{8ab93612723c51a9a5e7e7030929186a}
+      \strng{authorbibnamehash}{8ab93612723c51a9a5e7e7030929186a}
+      \strng{authornamehash}{de66073caceeddc66c6b6d44411fcfe3}
+      \strng{authorfullhash}{8ab93612723c51a9a5e7e7030929186a}
+      \strng{authorfullhashraw}{8ab93612723c51a9a5e7e7030929186a}
+      \field{sortinit}{C}
+      \field{sortinithash}{4d103a86280481745c9c897c925753c0}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Journal of Business \& Economic Statistics}
+      \field{number}{2}
+      \field{title}{Robust Inference with Multiway Clustering}
+      \field{volume}{29}
+      \field{year}{2011}
+      \field{pages}{238\bibrangedash 249}
+      \range{pages}{12}
+    \endentry
+    \entry{campbell2014}{article}{}{}
+      \name{author}{5}{}{%
+        {{un=0,uniquepart=base,hash=996e40995fd8cc25b8e2c92578f7ba97}{%
+           family={Campbell},
+           familyi={C\bibinitperiod},
+           given={John\bibnamedelima L.},
+           giveni={J\bibinitperiod\bibinitdelim L\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=2a511487aaae1f782f9d575405bc818c}{%
+           family={Chen},
+           familyi={C\bibinitperiod},
+           given={Hsinchun},
+           giveni={H\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=3e5c815ae1f5ff1a529c5f862b003803}{%
+           family={Dhaliwal},
+           familyi={D\bibinitperiod},
+           given={Dan\bibnamedelima S.},
+           giveni={D\bibinitperiod\bibinitdelim S\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=023195e2864e4d501fd31b2e8001aa31}{%
+           family={Lu},
+           familyi={L\bibinitperiod},
+           given={Hsin-min},
+           giveni={H\bibinithyphendelim m\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=a2bdbb20bfe8f1ff78953c8ef2835855}{%
+           family={Steele},
+           familyi={S\bibinitperiod},
+           given={Logan\bibnamedelima B.},
+           giveni={L\bibinitperiod\bibinitdelim B\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{46a8e3a905d538e3837e3609d00d60f6}
+      \strng{fullhash}{0dc3ef1fcde8dfe7d4888945c609670c}
+      \strng{fullhashraw}{0dc3ef1fcde8dfe7d4888945c609670c}
+      \strng{bibnamehash}{0dc3ef1fcde8dfe7d4888945c609670c}
+      \strng{authorbibnamehash}{0dc3ef1fcde8dfe7d4888945c609670c}
+      \strng{authornamehash}{46a8e3a905d538e3837e3609d00d60f6}
+      \strng{authorfullhash}{0dc3ef1fcde8dfe7d4888945c609670c}
+      \strng{authorfullhashraw}{0dc3ef1fcde8dfe7d4888945c609670c}
+      \field{sortinit}{C}
+      \field{sortinithash}{4d103a86280481745c9c897c925753c0}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Review of Accounting Studies}
+      \field{number}{1}
+      \field{title}{The Information Content of Mandatory Risk Factor Disclosures in Corporate Filings}
+      \field{volume}{19}
+      \field{year}{2014}
+      \field{pages}{396\bibrangedash 455}
+      \range{pages}{60}
+    \endentry
+    \entry{cazier2021}{article}{}{}
+      \name{author}{3}{}{%
+        {{un=0,uniquepart=base,hash=47990a2e9359070b7045f3d27c989e5c}{%
+           family={Cazier},
+           familyi={C\bibinitperiod},
+           given={Richard\bibnamedelima A.},
+           giveni={R\bibinitperiod\bibinitdelim A\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=4c5585b728be0a6f090053b98fe8e996}{%
+           family={McMullin},
+           familyi={M\bibinitperiod},
+           given={Jeff\bibnamedelima L.},
+           giveni={J\bibinitperiod\bibinitdelim L\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=0bcefad2768757cea1899e7e2dcaca42}{%
+           family={Treu},
+           familyi={T\bibinitperiod},
+           given={John\bibnamedelima S.},
+           giveni={J\bibinitperiod\bibinitdelim S\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{b02c13c9a31b066abfad0bdf0f8c9034}
+      \strng{fullhash}{4941ebef60c2b4ef842f5143db246412}
+      \strng{fullhashraw}{4941ebef60c2b4ef842f5143db246412}
+      \strng{bibnamehash}{4941ebef60c2b4ef842f5143db246412}
+      \strng{authorbibnamehash}{4941ebef60c2b4ef842f5143db246412}
+      \strng{authornamehash}{b02c13c9a31b066abfad0bdf0f8c9034}
+      \strng{authorfullhash}{4941ebef60c2b4ef842f5143db246412}
+      \strng{authorfullhashraw}{4941ebef60c2b4ef842f5143db246412}
+      \field{sortinit}{C}
+      \field{sortinithash}{4d103a86280481745c9c897c925753c0}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{The Accounting Review}
+      \field{number}{4}
+      \field{title}{Are Lengthy and Boilerplate Risk Factor Disclosures Inadequate? An Examination of Judicial and Regulatory Assessments of Risk Factor Language}
+      \field{volume}{96}
+      \field{year}{2021}
+      \field{pages}{131\bibrangedash 155}
+      \range{pages}{25}
+    \endentry
+    \entry{chychyla2015}{article}{}{}
+      \name{author}{2}{}{%
+        {{un=0,uniquepart=base,hash=895759c87d7d5f912907e8e711f30a21}{%
+           family={Chychyla},
+           familyi={C\bibinitperiod},
+           given={Roman},
+           giveni={R\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=ad11954cedf3536fecdcd2841e993267}{%
+           family={Kogan},
+           familyi={K\bibinitperiod},
+           given={Alexander},
+           giveni={A\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{581184f2427f715bb2e9f2c00c6a8173}
+      \strng{fullhash}{581184f2427f715bb2e9f2c00c6a8173}
+      \strng{fullhashraw}{581184f2427f715bb2e9f2c00c6a8173}
+      \strng{bibnamehash}{581184f2427f715bb2e9f2c00c6a8173}
+      \strng{authorbibnamehash}{581184f2427f715bb2e9f2c00c6a8173}
+      \strng{authornamehash}{581184f2427f715bb2e9f2c00c6a8173}
+      \strng{authorfullhash}{581184f2427f715bb2e9f2c00c6a8173}
+      \strng{authorfullhashraw}{581184f2427f715bb2e9f2c00c6a8173}
+      \field{sortinit}{C}
+      \field{sortinithash}{4d103a86280481745c9c897c925753c0}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Journal of Information Systems}
+      \field{number}{1}
+      \field{title}{Using {XBRL} to Conduct a Large-Scale Study of Discrepancies Between the Accounting Numbers in {Compustat} and {SEC} 10-{K} Filings}
+      \field{volume}{29}
+      \field{year}{2015}
+      \field{pages}{37\bibrangedash 72}
+      \range{pages}{36}
+      \verb{doi}
+      \verb 10.2308/isys-50922
+      \endverb
+    \endentry
+    \entry{dickeyfuller1979}{article}{}{}
+      \name{author}{2}{}{%
+        {{un=0,uniquepart=base,hash=f71b803d01236b0fcd2bb3e25e740864}{%
+           family={Dickey},
+           familyi={D\bibinitperiod},
+           given={David\bibnamedelima A.},
+           giveni={D\bibinitperiod\bibinitdelim A\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=c387dbcd083b0685a01bb3f63c78387a}{%
+           family={Fuller},
+           familyi={F\bibinitperiod},
+           given={Wayne\bibnamedelima A.},
+           giveni={W\bibinitperiod\bibinitdelim A\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{bcf86ed68621816d8a6e135ace8b77cc}
+      \strng{fullhash}{bcf86ed68621816d8a6e135ace8b77cc}
+      \strng{fullhashraw}{bcf86ed68621816d8a6e135ace8b77cc}
+      \strng{bibnamehash}{bcf86ed68621816d8a6e135ace8b77cc}
+      \strng{authorbibnamehash}{bcf86ed68621816d8a6e135ace8b77cc}
+      \strng{authornamehash}{bcf86ed68621816d8a6e135ace8b77cc}
+      \strng{authorfullhash}{bcf86ed68621816d8a6e135ace8b77cc}
+      \strng{authorfullhashraw}{bcf86ed68621816d8a6e135ace8b77cc}
+      \field{sortinit}{D}
+      \field{sortinithash}{6f385f66841fb5e82009dc833c761848}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Journal of the American Statistical Association}
+      \field{number}{366}
+      \field{title}{Distribution of the Estimators for Autoregressive Time Series with a Unit Root}
+      \field{volume}{74}
+      \field{year}{1979}
+      \field{pages}{427\bibrangedash 431}
+      \range{pages}{5}
+    \endentry
+    \entry{dyer2017}{article}{}{}
+      \name{author}{3}{}{%
+        {{un=0,uniquepart=base,hash=f8217c8a5e20fb4800931ec1e25e1cda}{%
+           family={Dyer},
+           familyi={D\bibinitperiod},
+           given={Travis},
+           giveni={T\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=9a39afababc5469869eb13304950b247}{%
+           family={Lang},
+           familyi={L\bibinitperiod},
+           given={Mark},
+           giveni={M\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=1edf86bfa3c29f4f44f5e37f7b87e378}{%
+           family={Stice-Lawrence},
+           familyi={S\bibinithyphendelim L\bibinitperiod},
+           given={Lorien},
+           giveni={L\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{e6bd0824bfd9ce7e2f5d541dab8984be}
+      \strng{fullhash}{cf95afa4314e785624dc34ca76f14748}
+      \strng{fullhashraw}{cf95afa4314e785624dc34ca76f14748}
+      \strng{bibnamehash}{cf95afa4314e785624dc34ca76f14748}
+      \strng{authorbibnamehash}{cf95afa4314e785624dc34ca76f14748}
+      \strng{authornamehash}{e6bd0824bfd9ce7e2f5d541dab8984be}
+      \strng{authorfullhash}{cf95afa4314e785624dc34ca76f14748}
+      \strng{authorfullhashraw}{cf95afa4314e785624dc34ca76f14748}
+      \field{sortinit}{D}
+      \field{sortinithash}{6f385f66841fb5e82009dc833c761848}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Journal of Accounting and Economics}
+      \field{number}{2--3}
+      \field{title}{The Evolution of 10-{K} Textual Disclosure: Evidence from {L}atent {D}irichlet {A}llocation}
+      \field{volume}{64}
+      \field{year}{2017}
+      \field{pages}{221\bibrangedash 245}
+      \range{pages}{25}
+    \endentry
+    \entry{gilardi2023}{article}{}{}
+      \name{author}{3}{}{%
+        {{un=0,uniquepart=base,hash=42a4e15ad87c60bc88a71df1348bd4e2}{%
+           family={Gilardi},
+           familyi={G\bibinitperiod},
+           given={Fabrizio},
+           giveni={F\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=56ea0634b107a7ddd6896367aef2ada5}{%
+           family={Alizadeh},
+           familyi={A\bibinitperiod},
+           given={Meysam},
+           giveni={M\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=0e52669eb7da2e5579871c93f8c8129b}{%
+           family={Kubli},
+           familyi={K\bibinitperiod},
+           given={Maël},
+           giveni={M\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{ca303398eb5efdf788d5bf1f44bee484}
+      \strng{fullhash}{0cb15cf82c954c430d43b8c515e70bbd}
+      \strng{fullhashraw}{0cb15cf82c954c430d43b8c515e70bbd}
+      \strng{bibnamehash}{0cb15cf82c954c430d43b8c515e70bbd}
+      \strng{authorbibnamehash}{0cb15cf82c954c430d43b8c515e70bbd}
+      \strng{authornamehash}{ca303398eb5efdf788d5bf1f44bee484}
+      \strng{authorfullhash}{0cb15cf82c954c430d43b8c515e70bbd}
+      \strng{authorfullhashraw}{0cb15cf82c954c430d43b8c515e70bbd}
+      \field{sortinit}{G}
+      \field{sortinithash}{32d67eca0634bf53703493fb1090a2e8}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Proceedings of the National Academy of Sciences}
+      \field{number}{30}
+      \field{title}{{ChatGPT} Outperforms Crowd-Workers for Text-Annotation Tasks}
+      \field{volume}{120}
+      \field{year}{2023}
+      \field{pages}{e2305016120}
+      \range{pages}{-1}
+    \endentry
+    \entry{hope2016}{article}{}{}
+      \name{author}{3}{}{%
+        {{un=0,uniquepart=base,hash=9846e48c5ab7b2596771e56dd997165e}{%
+           family={Hope},
+           familyi={H\bibinitperiod},
+           given={Ole-Kristian},
+           giveni={O\bibinithyphendelim K\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=d20778e5d8c64fbcb15b095bdc431f9b}{%
+           family={Hu},
+           familyi={H\bibinitperiod},
+           given={Danqi},
+           giveni={D\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=474e86d156b0c187ee342b23e15bbdc9}{%
+           family={Lu},
+           familyi={L\bibinitperiod},
+           given={Hai},
+           giveni={H\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{775c70a78d2784824e5a1438c9f9e72a}
+      \strng{fullhash}{62d526629e11cbf63b6e00f902f416ee}
+      \strng{fullhashraw}{62d526629e11cbf63b6e00f902f416ee}
+      \strng{bibnamehash}{62d526629e11cbf63b6e00f902f416ee}
+      \strng{authorbibnamehash}{62d526629e11cbf63b6e00f902f416ee}
+      \strng{authornamehash}{775c70a78d2784824e5a1438c9f9e72a}
+      \strng{authorfullhash}{62d526629e11cbf63b6e00f902f416ee}
+      \strng{authorfullhashraw}{62d526629e11cbf63b6e00f902f416ee}
+      \field{sortinit}{H}
+      \field{sortinithash}{23a3aa7c24e56cfa16945d55545109b5}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Review of Accounting Studies}
+      \field{number}{4}
+      \field{title}{The Benefits of Specific Risk-Factor Disclosures}
+      \field{volume}{21}
+      \field{year}{2016}
+      \field{pages}{1005\bibrangedash 1045}
+      \range{pages}{41}
+    \endentry
+    \entry{kravet2013}{article}{}{}
+      \name{author}{2}{}{%
+        {{un=0,uniquepart=base,hash=bfb54ce212af43c930147601c87b368e}{%
+           family={Kravet},
+           familyi={K\bibinitperiod},
+           given={Todd},
+           giveni={T\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=0b688fdcad73cec888c0f2d985c837ef}{%
+           family={Muslu},
+           familyi={M\bibinitperiod},
+           given={Volkan},
+           giveni={V\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{b1ea3ca9b256329c8cf31b774b26bedc}
+      \strng{fullhash}{b1ea3ca9b256329c8cf31b774b26bedc}
+      \strng{fullhashraw}{b1ea3ca9b256329c8cf31b774b26bedc}
+      \strng{bibnamehash}{b1ea3ca9b256329c8cf31b774b26bedc}
+      \strng{authorbibnamehash}{b1ea3ca9b256329c8cf31b774b26bedc}
+      \strng{authornamehash}{b1ea3ca9b256329c8cf31b774b26bedc}
+      \strng{authorfullhash}{b1ea3ca9b256329c8cf31b774b26bedc}
+      \strng{authorfullhashraw}{b1ea3ca9b256329c8cf31b774b26bedc}
+      \field{sortinit}{K}
+      \field{sortinithash}{c02bf6bff1c488450c352b40f5d853ab}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Review of Accounting Studies}
+      \field{number}{4}
+      \field{title}{Textual Risk Disclosures and Investors' Risk Perceptions}
+      \field{volume}{18}
+      \field{year}{2013}
+      \field{pages}{1088\bibrangedash 1122}
+      \range{pages}{35}
+    \endentry
+    \entry{li2008}{article}{}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=89b23cce0bb40099f7b69f6577f665fe}{%
+           family={Li},
+           familyi={L\bibinitperiod},
+           given={Feng},
+           giveni={F\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{89b23cce0bb40099f7b69f6577f665fe}
+      \strng{fullhash}{89b23cce0bb40099f7b69f6577f665fe}
+      \strng{fullhashraw}{89b23cce0bb40099f7b69f6577f665fe}
+      \strng{bibnamehash}{89b23cce0bb40099f7b69f6577f665fe}
+      \strng{authorbibnamehash}{89b23cce0bb40099f7b69f6577f665fe}
+      \strng{authornamehash}{89b23cce0bb40099f7b69f6577f665fe}
+      \strng{authorfullhash}{89b23cce0bb40099f7b69f6577f665fe}
+      \strng{authorfullhashraw}{89b23cce0bb40099f7b69f6577f665fe}
+      \field{sortinit}{L}
+      \field{sortinithash}{7c47d417cecb1f4bd38d1825c427a61a}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Journal of Accounting and Economics}
+      \field{number}{2--3}
+      \field{title}{Annual Report Readability, Current Earnings, and Earnings Persistence}
+      \field{volume}{45}
+      \field{year}{2008}
+      \field{pages}{221\bibrangedash 247}
+      \range{pages}{27}
+    \endentry
+    \entry{loughran2011}{article}{}{}
+      \name{author}{2}{}{%
+        {{un=0,uniquepart=base,hash=e29b48c3b17cf53e834d55eac5dbef23}{%
+           family={Loughran},
+           familyi={L\bibinitperiod},
+           given={Tim},
+           giveni={T\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=43057d4d67299a36b7bff8107c6cb71d}{%
+           family={McDonald},
+           familyi={M\bibinitperiod},
+           given={Bill},
+           giveni={B\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{07b6082ec1f45421d1ee53b762c257d0}
+      \strng{fullhash}{07b6082ec1f45421d1ee53b762c257d0}
+      \strng{fullhashraw}{07b6082ec1f45421d1ee53b762c257d0}
+      \strng{bibnamehash}{07b6082ec1f45421d1ee53b762c257d0}
+      \strng{authorbibnamehash}{07b6082ec1f45421d1ee53b762c257d0}
+      \strng{authornamehash}{07b6082ec1f45421d1ee53b762c257d0}
+      \strng{authorfullhash}{07b6082ec1f45421d1ee53b762c257d0}
+      \strng{authorfullhashraw}{07b6082ec1f45421d1ee53b762c257d0}
+      \field{sortinit}{L}
+      \field{sortinithash}{7c47d417cecb1f4bd38d1825c427a61a}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{The Journal of Finance}
+      \field{number}{1}
+      \field{title}{When Is a Liability Not a Liability? {T}extual Analysis, Dictionaries, and 10-{K}s}
+      \field{volume}{66}
+      \field{year}{2011}
+      \field{pages}{35\bibrangedash 65}
+      \range{pages}{31}
+    \endentry
+    \entry{maddala1999}{article}{}{}
+      \name{author}{2}{}{%
+        {{un=0,uniquepart=base,hash=a98db231b54fe50345b5549f19432f7b}{%
+           family={Maddala},
+           familyi={M\bibinitperiod},
+           given={G.\bibnamedelimi S.},
+           giveni={G\bibinitperiod\bibinitdelim S\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=d4b52e0ad6102278454307977af02f0e}{%
+           family={Wu},
+           familyi={W\bibinitperiod},
+           given={Shaowen},
+           giveni={S\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{f7a21bfd5c5e923887a896cdea6053ce}
+      \strng{fullhash}{f7a21bfd5c5e923887a896cdea6053ce}
+      \strng{fullhashraw}{f7a21bfd5c5e923887a896cdea6053ce}
+      \strng{bibnamehash}{f7a21bfd5c5e923887a896cdea6053ce}
+      \strng{authorbibnamehash}{f7a21bfd5c5e923887a896cdea6053ce}
+      \strng{authornamehash}{f7a21bfd5c5e923887a896cdea6053ce}
+      \strng{authorfullhash}{f7a21bfd5c5e923887a896cdea6053ce}
+      \strng{authorfullhashraw}{f7a21bfd5c5e923887a896cdea6053ce}
+      \field{sortinit}{M}
+      \field{sortinithash}{4625c616857f13d17ce56f7d4f97d451}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Oxford Bulletin of Economics and Statistics}
+      \field{number}{S1}
+      \field{title}{A Comparative Study of Unit Root Tests with Panel Data and a New Simple Test}
+      \field{volume}{61}
+      \field{year}{1999}
+      \field{pages}{631\bibrangedash 652}
+      \range{pages}{22}
+    \endentry
+    \entry{petersen2009}{article}{}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=08926815ae98f639309fe932e76eb82f}{%
+           family={Petersen},
+           familyi={P\bibinitperiod},
+           given={Mitchell\bibnamedelima A.},
+           giveni={M\bibinitperiod\bibinitdelim A\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{08926815ae98f639309fe932e76eb82f}
+      \strng{fullhash}{08926815ae98f639309fe932e76eb82f}
+      \strng{fullhashraw}{08926815ae98f639309fe932e76eb82f}
+      \strng{bibnamehash}{08926815ae98f639309fe932e76eb82f}
+      \strng{authorbibnamehash}{08926815ae98f639309fe932e76eb82f}
+      \strng{authornamehash}{08926815ae98f639309fe932e76eb82f}
+      \strng{authorfullhash}{08926815ae98f639309fe932e76eb82f}
+      \strng{authorfullhashraw}{08926815ae98f639309fe932e76eb82f}
+      \field{sortinit}{P}
+      \field{sortinithash}{ff3bcf24f47321b42cb156c2cc8a8422}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{The Review of Financial Studies}
+      \field{number}{1}
+      \field{title}{Estimating Standard Errors in Finance Panel Data Sets: Comparing Approaches}
+      \field{volume}{22}
+      \field{year}{2009}
+      \field{pages}{435\bibrangedash 480}
+      \range{pages}{46}
+    \endentry
+  \enddatalist
+\endrefsection
+\endinput
+
