@@ -4,9 +4,7 @@
 \usepackage{ifpdf}
 \usepackage{ifxetex}
 \usepackage{ifluatex}
-
-%%% Bibliography setup (biblatex with APA style)
-\input biblatex-setup
+\usepackage{ifthen}
 
 %% Fonts and language setup
 \ifthenelse{\boolean{xetex}\OR\boolean{luatex}}
@@ -29,6 +27,9 @@
 \let\pdfstrcmp\pdf@strcmp
 \makeatother
 \fi
+
+%%% Bibliography setup (biblatex with APA style)
+\input biblatex-setup
 
 \usepackage[a-2u]{pdfx}     % resulting PDF will be in the PDF/A-2u standard
 
