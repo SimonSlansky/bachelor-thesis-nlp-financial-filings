@@ -1,0 +1,21 @@
+# latexmkrc: put intermediate and output files in /tmp to avoid OneDrive fileprovider issues
+$out_dir = '/tmp/latex_build_bakalarka';
+
+# Ensure output directory exists
+if ( ! -d $out_dir ) {
+    system("mkdir -p $out_dir");
+}
+
+# Keep standard clean behavior but target the output directory
+$aux_dir = $out_dir;
+
+# After a successful build, run the post-build helper script to perform an
+# atomic copy back into the workspace and also copy to the Desktop. We use
+# a relative path to the helper script (scripts/post_build_fix.sh) placed
+# at the repository root sibling to tex/.
+# The script will clear extended attributes and set permissions.
+$workspace_pdf = '/Users/simon2/Library/CloudStorage/OneDrive-Personal/UČENÍ/Bakalarka/tex/prace.pdf';
+$success_cmd = '../scripts/post_build_fix.sh ' . "$out_dir/prace.pdf" . ' ' . $workspace_pdf;
+
+# Provide a short message so users running latexmk see the copy step
+$success_cmd = $success_cmd . " && echo 'post-build: copied prace.pdf to workspace and Desktop'";
