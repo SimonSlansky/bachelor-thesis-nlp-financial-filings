@@ -124,9 +124,16 @@ n^{\text{unc}}_{i,t} + n^{\text{lit}}_{i,t}
 \end{equation}
 where $n^{\text{unc}}$ and $n^{\text{lit}}$ are the per-section
 counts of uncertainty- and litigious-list words. Higher values
-mean a larger share of the section consists of generic risk
-vocabulary. Lower values mean the narrative is dominated by
-firm-specific or non-dictionary content.
+mean a larger share of the section consists of standardised risk
+vocabulary. RiskDensity should therefore be interpreted as an
+indirect proxy for disclosure specificity rather than a direct
+measure of the Hope et al. construct. It captures the relative
+prevalence of dictionary-based wording in Item~1A: terms such as
+``litigation'', ``regulatory'', and ``investigation'' can be
+highly firm-specific in substance even when they raise the
+dictionary count. Lower values therefore indicate that a larger
+share of the narrative lies outside the standardised risk lexicon,
+rather than a definitive claim that the section is less specific.
 
 H2 is tested through the coefficient $\beta^{\text{dens}}$ in the
 joint specification of equation~\ref{eq:joint_model}, with the
@@ -181,7 +188,12 @@ sub-list rather than from generic uncertainty hedging.
 
 H3 asks whether what a firm \emph{leaves out} of Item~1A relative
 to its industry peers carries information about future volatility,
-beyond what length and density already capture.
+beyond what length and density already capture. Throughout the
+thesis the \emph{omission gap} is the measure (the share of peer
+vocabulary a firm leaves out), and the \emph{strategic-silence
+hypothesis} is the interpretation tested by H3: that a larger
+omission gap reflects a firm staying quiet on risks its peers
+disclose.
 
 \paragraph{Construction.}
 For each fiscal year $t$ we build a TF--IDF representation of every
@@ -249,8 +261,12 @@ industry fixed effect, and a stricter within-firm version in which
 $\mu_j$ is replaced by a firm fixed effect $\mu_i$. The within-firm
 version is more demanding because it uses only year-to-year
 variation in omission driven by changes in peer disclosure.
-H3 is supported if $\beta^{\text{om}} > 0$ at the headline
-$h = 30$~days under both structures. Horizons run over
+H3 is \emph{fully} supported if $\beta^{\text{om}} > 0$ at the
+headline $h = 30$~days under both structures. If the sign is
+positive and significant only under the stricter firm-FE
+structure, H3 receives \emph{partial} support: the
+strategic-silence channel is then identified within firms but not
+as a between-firm regularity. Horizons run over
 $h \in \{5, 10, 30, 90, 180\}$~days. $h = 365$~days is dropped
 because the post-filing window for fiscal years $2023$--$2024$
 extends past the data cut-off.
@@ -277,6 +293,19 @@ conditional association between Item~1A disclosure choices and
 \emph{subsequent} realised volatility, in the spirit of
 \textcite{campbell2014}, and should not be read as the effect of
 disclosure on volatility.
+
+\paragraph{Limitation: anticipated volatility.}
+Item~1A is written when management already knows current
+volatility conditions, so expected volatility could shape the
+wording (reverse causality). The design mitigates this only
+partly: the outcome window starts two trading days after filing,
+lagged log-volatility is controlled for, fixed effects absorb
+persistent firm and industry differences, and the lead-lag check
+in Section~\ref{sec:robustness_silence} tests the timing. It does
+not rule out that management anticipates \emph{future}
+volatility not captured by lagged volatility, so the results are
+read as predictive associations, not as evidence that disclosure
+drives volatility.
 
 \paragraph{Primary horizon.}
 The headline horizon is $h = 30$~days. The primary test of H1--H3

@@ -3,6 +3,15 @@
 \label{ch:data}
 % =============================================================================
 
+Figure~\ref{fig:data_pipeline} gives a high-level overview of the
+complete data-preparation process before the component steps are
+described in detail. The pipeline starts from the raw SEC sources,
+applies the sample filters, and then runs two parallel branches---a
+financial (XBRL) branch and a textual (10-K narrative) branch---that
+are merged into the final regression-ready firm-year panel.
+
+\input{figures/fig_data_pipeline}
+
 % ─────────────────────────────────────────────────────────────────────────────
 \section{Selecting the Sample}
 \label{sec:sample_selection}
@@ -35,7 +44,10 @@ errors, and thinner trading, all of which add noise to financial
 ratios and return-based variables.
 
 The sample size is in line with prior work combining textual and
-financial analysis of annual filings.
+financial analysis of annual filings. Intermediate stages of the
+pipeline contain between 548 and 550 firms; the final regression
+sample contains 535 firms after all coverage and completeness
+requirements are imposed.
 \textcite{campbell2014} study about 9{,}000 firm-years of risk-factor
 disclosures from large U.S.\ firms; \textcite{loughran2011} use a
 broader set of roughly 50{,}000 firm-years, but their goal---validating

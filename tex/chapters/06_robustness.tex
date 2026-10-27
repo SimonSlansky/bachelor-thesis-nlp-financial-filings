@@ -40,6 +40,25 @@ incorporated over weeks rather than years. No formal half-life is
 fitted because the across-horizon error terms are correlated
 through the shared underlying daily returns.
 
+Figure~\ref{fig:horizon} plots the two headline coefficients with
+their 95\% confidence intervals across all six horizons. The
+length effect (left) is positive and significant throughout, while
+the litigious-density effect (right) is negative throughout and
+significant from 10~days onward; both taper towards longer windows,
+the signature of an event-driven signal.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{img/fig_horizon_profile.pdf}
+\caption{Length (H1, left) and LM-Litigious density (H2, right)
+coefficients with 95\% confidence intervals across the six
+post-filing horizons ($h = 5$, 10, 30, 90, 180, and 365~days;
+horizons are displayed at equal spacing for readability). Both
+effects keep their sign at every horizon and decay towards longer
+windows.}
+\label{fig:horizon}
+\end{figure}
+
 % ─────────────────────────────────────────────────────────────────────────────
 \section{Pre-COVID and COVID-era sub-samples}
 \label{sec:robustness_subperiods}
@@ -111,6 +130,26 @@ disclosure-style trait. The headline H2 result is therefore read
 as a between-firm regularity, without claiming a within-firm
 causal channel.
 
+Figure~\ref{fig:coef_fe} makes the contrast visual. Under industry
+and year fixed effects the length coefficient is positive and both
+density coefficients are tightly estimated, with LitDensity clearly
+below zero. Switching to firm and year fixed effects leaves the
+length effect essentially unchanged but widens the density
+intervals so that both straddle zero: the density result does not
+survive within firms.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.85\textwidth]{img/fig_coef_fe.pdf}
+\caption{H1 and H2 coefficients at the 30-day horizon with 95\%
+confidence intervals, under industry$+$year fixed effects (circles)
+versus firm$+$year fixed effects (squares). The length effect is
+stable across the two designs; the density coefficients lose
+significance once firm fixed effects absorb permanent disclosure
+styles.}
+\label{fig:coef_fe}
+\end{figure}
+
 
 % ─────────────────────────────────────────────────────────────────────────────\section{Robustness of the strategic-silence result (H3)}
 \label{sec:robustness_silence}
@@ -122,8 +161,8 @@ features of the construction make further robustness checks
 essential before reading the result as evidence for strategic
 silence rather than for some confounding artefact:
 (i)~the omission gap is mechanically negatively correlated with
-Item~1A length ($r = -0.85$), so any insufficiently strong control
-for length would let omission proxy for length;
+Item~1A length ($r = -0.93$), so any insufficiently strong control
+for length would let the omission gap proxy for length;
 (ii)~the SIC2 peer benchmark is one of several plausible reference
 sets, and the result might be specific to that choice;
 (iii)~the contemporaneous design has a partial overlap between the
@@ -134,6 +173,30 @@ subsequent volatility for unrelated reasons.
 Table~\ref{tab:silence_robust} reports six robustness specifications
 designed to address these concerns; a placebo test is reported
 separately below.
+
+Figure~\ref{fig:omission_length} makes the first concern concrete.
+Longer Item~1A sections almost mechanically cover more of the peer
+vocabulary, so the omission gap falls steeply with length: the two
+are correlated at $r = -0.93$. This is why a weak length control
+would let the omission gap stand in for length, and why
+Column~(3) of Table~\ref{tab:silence_robust}---which strips the
+length component out of the omission gap by orthogonalising it on
+$\ln(\textsc{Words}_{1A})$---is the pivotal check for H3.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.8\textwidth]{img/fig_omission_length.pdf}
+\caption{Item~1A omission gap against Item~1A length, one point per
+firm-year, with the OLS fit line. The strong negative association
+($r = -0.93$) is the central identification concern for H3 and
+motivates the length-orthogonalised specification in Column~(3) of
+Table~\ref{tab:silence_robust}. Firm-years with non-recoverable
+Item~1A text ($\textsc{Words}_{1A} = 0$, $n = 63$) are excluded from
+the figure: these observations mechanically take
+$\textsc{Omission}_{1A} = 1$ and do not enter any regression because
+the LM-density variables are undefined for them.}
+\label{fig:omission_length}
+\end{figure}
 
 \input{tables/silence_robust}
 
@@ -269,8 +332,11 @@ question, and they need no special treatment: all are bounded by
 construction. Leverage is a ratio between zero and one, and the
 densities are word-frequency shares with sample maxima below
 $0.05$. A unit-root process has a variance that grows without bound
-and eventually leaves any fixed range, so a series confined to a
-bounded interval cannot contain one. Their persistence reflects the
+and eventually leaves any fixed range, so boundedness provides
+strong evidence against a unit-root interpretation. It is not a
+proof of stationarity, but together with the rejections of the
+unit-root null above it makes an integrated process implausible.
+Their persistence reflects the
 fact that Item~1A is largely recycled from one filing to the next
 \parencite{cazier2021}---a slow-moving but mean-reverting firm
 trait, the same pattern seen in the firm fixed-effects result of

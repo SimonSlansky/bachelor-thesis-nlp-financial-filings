@@ -1,0 +1,16 @@
+% Data-preparation pipeline flowchart.
+% Authored in TikZ (figures/src_fig_data_pipeline.tex) and compiled to a
+% standalone PDF, because inline TikZ conflicts with the PDF/A (pdfx) driver.
+% Regenerate after editing the source:
+%   cd tex/figures && pdflatex src_fig_data_pipeline.tex \
+%     && mv -f src_fig_data_pipeline.pdf ../img/fig_data_pipeline.pdf
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{img/fig_data_pipeline.pdf}
+\caption{Operational pipeline for the complete data preparation.
+The workflow runs top-to-bottom from the raw SEC sources through sample
+selection, then splits into a financial (XBRL) branch and a textual
+(10-K narrative) branch that are merged into the final regression-ready
+firm-year panel. Own processing.}
+\label{fig:data_pipeline}
+\end{figure}

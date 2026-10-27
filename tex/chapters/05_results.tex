@@ -23,6 +23,24 @@ LM-litigious sub-list.
 
 \input{tables/summary_statistics}
 
+Figure~\ref{fig:vol_time} plots the median annualised 30-day
+post-filing volatility by fiscal year, together with the
+inter-quartile band. Two features stand out: the pronounced spike
+in 2020 and the otherwise stable level in between. These common
+shocks are exactly what the fiscal-year fixed effects
+remove, and they motivate the pre-COVID / COVID-era split in
+Section~\ref{sec:robustness_subperiods}.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.85\textwidth]{img/fig_volatility_time.pdf}
+\caption{Median annualised 30-day post-filing volatility
+$\sigma_{i,t+1}$ by fiscal year, with the inter-quartile range
+(shaded). The 2020 spike is the market-wide shock absorbed by the
+year fixed effects.}
+\label{fig:vol_time}
+\end{figure}
+
 Table~\ref{tab:correlation} reports pairwise correlations. The two
 text variables are correlated at $r = -0.30$: longer Item~1A
 sections tend to have lower risk-word density, consistent with
@@ -57,6 +75,20 @@ specification was in fact the volume effect operating through the
 section's word-count denominator. \textbf{H1 and H2 are both
 supported.}
 
+To see how big these effects are, note that the dependent variable
+is in logs, so a coefficient $\beta$ and a change $\Delta x$ in the
+regressor give a change of about $100\,(e^{\beta\Delta x}-1)\%$ in
+volatility. For length, one standard deviation ($0.637$ log points,
+roughly a $90\%$ longer section) raises volatility by about $8\%$.
+A smaller $10\%$ increase in length ($0.095$ log points) raises it
+by about $1.2\%$. At the typical volatility of $0.26$, the
+one-SD effect is about $2$~percentage points of annualised
+volatility. For density, a one-SD rise in RiskDensity ($0.006$)
+lowers volatility by about $2.3\%$. In the decomposition
+(Column~5), a one-SD rise in LitDensity ($0.005$) lowers it by
+about $3.0\%$. So the length effect is the larger of the two, and
+the density effects are real but modest.
+
 Replacing the composite RiskDensity by its two LM sub-densities
 (Column~5) shows that the negative specificity association is
 carried almost entirely by the LM-Litigious sub-list:
@@ -65,10 +97,16 @@ while $\hat{\beta}^{\text{unc}} = -1.28$ is not statistically
 significant. A Wald test of equality results in
 $z = +1.91$ ($p = 0.056$), borderline at the $5\%$~level. The
 pattern is consistent with
-	extcite{cazier2021,beatty2019}: litigious-list
+\textcite{cazier2021,beatty2019}: litigious-list
 language is standardised cautionary boilerplate, and once it is
 isolated from the uncertainty sub-list it does most of the H2
-work. Adjusted~$R^2$ rises only modestly across the five columns
+work. This H2 result is a between-firm regularity: firms that
+\emph{systematically} use more litigious vocabulary have lower
+subsequent volatility. It does not show that a firm which
+\emph{increases} its litigious language experiences lower
+volatility, since both sub-densities lose significance under
+firm fixed effects (Section~\ref{sec:robustness_firmfe}).
+Adjusted~$R^2$ rises only modestly across the five columns
 ($0.492 \to 0.507$) because the financial baseline already
 captures the bulk of predictable volatility. Table~\ref{tab:main_365d}
 reproduces the same five columns with the dependent variable
@@ -79,7 +117,7 @@ and magnitudes shrink to roughly half of the 30-day estimates.
 
 
 % ────────────────────────────────────────────────────────────────────────────
-\section{Strategic silence and within-firm post-filing volatility}
+\section{Strategic-silence hypothesis and within-firm post-filing volatility}
 \label{sec:silence_results}
 % ────────────────────────────────────────────────────────────────────────────
 
@@ -104,7 +142,13 @@ H1 length effect. The reading is that permanent firm-level
 disclosure styles absorb the cross-section, while the
 peer-relative omission gap---which by construction varies with
 what \emph{other} firms write each year---survives the firm-FE
-filter. \textbf{H3 is supported within-firm at the 30-day
-horizon}, with the placebo, length-orthogonalisation, large-cell,
+filter. Because the pre-specified criterion in
+Chapter~\ref{ch:methodology} required a positive $\beta^{\text{om}}$
+under \emph{both} structures, and Panel~A is positive
+($+0.098$) but statistically indistinguishable from zero
+($t = +0.28$), \textbf{H3 receives only partial support: it is
+supported within-firm at the 30-day horizon but not in the
+industry-FE cross-section}. The within-firm result is
+supported by the placebo, length-orthogonalisation, large-cell,
 decile-rank, and lead-lag robustness checks discussed in
 Section~\ref{sec:robustness_silence}.
