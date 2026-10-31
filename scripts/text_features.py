@@ -33,6 +33,7 @@ import pandas as pd
 
 from config import DATA_DIR
 from lm_loader import load_lm_dictionary
+from panel import consecutive_lag
 
 # A word is a lowercase run of letters of length >= 2.  This matches the
 # tokenisation implicit in the Loughran-McDonald dictionary (which has
@@ -161,9 +162,13 @@ def compute_textsim(text_df: pd.DataFrame, verbose: bool = True) -> pd.DataFrame
         idx = list(idx)
         if len(idx) < 2:
             continue
+        fys = df["fiscal_year"].to_numpy()
         # Years are already sorted within firm by the prior sort_values.
+        # Only compare against fiscal year t-1 (no multi-year gaps).
         for j in range(1, len(idx)):
             cur, prev = idx[j], idx[j - 1]
+            if fys[cur] - fys[prev] != 1:
+                continue
             sim = float(cosine_similarity(X[cur], X[prev])[0, 0])
             sims[cur] = sim
 
@@ -187,9 +192,8 @@ def merge_text_features(panel: pd.DataFrame,
     p = p.merge(scores, on=["ticker", "fiscal_year"], how="left")
     p = p.merge(sims, on=["ticker", "fiscal_year"], how="left")
     p = p.sort_values(["ticker", "fiscal_year"]).reset_index(drop=True)
-    g = p.groupby("ticker", sort=False)
-    p["delta_sentiment"] = g["sentiment_mda"].diff()
-    p["delta_risk"] = g["risk_1a"].diff()
+    p["delta_sentiment"] = consecutive_lag(p, "sentiment_mda", diff=True)
+    p["delta_risk"] = consecutive_lag(p, "risk_1a", diff=True)
     return p
 
 
@@ -253,7 +257,7 @@ def add_divergence(panel: pd.DataFrame, lambda_: float) -> pd.DataFrame:
 def add_delta_roa(panel: pd.DataFrame) -> pd.DataFrame:
     """Add ``delta_roa`` as the within-firm year-on-year change in ROA."""
     p = panel.sort_values(["ticker", "fiscal_year"]).reset_index(drop=True)
-    p["delta_roa"] = p.groupby("ticker", sort=False)["roa"].diff()
+    p["delta_roa"] = consecutive_lag(p, "roa", diff=True)
     return p
 
 

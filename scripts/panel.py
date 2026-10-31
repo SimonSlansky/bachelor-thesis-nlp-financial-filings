@@ -140,17 +140,36 @@ def compute_missing_components(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def impute_balance_sheet(df: pd.DataFrame, date_col: str, limit: int = 1) -> pd.DataFrame:
-    """Forward- then backward-fill balance-sheet metrics within each firm."""
+    """Forward-fill balance-sheet metrics within each firm (past values only).
+
+    Backward filling was removed: it copied the year t+1 balance sheet, which
+    is published ~one year after the year-t filing, into year-t controls
+    (look-ahead).  Only an immediately preceding fiscal year is used.
+    """
     df = df.sort_values(["ticker", date_col]).reset_index(drop=True)
+    consecutive = df.groupby("ticker")["fiscal_year"].diff() == 1
     for col in ("total_assets", "total_liabilities"):
         if col in df.columns:
             before = df[col].isna().sum()
-            df[col] = df.groupby("ticker")[col].ffill(limit=limit)
-            df[col] = df.groupby("ticker")[col].bfill(limit=limit)
+            prev = df.groupby("ticker")[col].shift(1)
+            fill = df[col].isna() & consecutive & prev.notna()
+            df.loc[fill, col] = prev[fill]
             filled = before - df[col].isna().sum()
             if filled:
-                print(f"  {col}: imputed {filled} values (±{limit} period)")
+                print(f"  {col}: forward-filled {filled} values from year t-1")
     return df
+
+
+def consecutive_lag(df: pd.DataFrame, col: str, by: str = "ticker",
+                    time: str = "fiscal_year", diff: bool = False) -> pd.Series:
+    """Within-firm lag (or first difference) of *col* that is NaN unless the
+    previous row is exactly fiscal year t-1.  Index-aligned to *df*."""
+    order = df.sort_values([by, time])
+    prev = order.groupby(by)[col].shift(1)
+    ok = order.groupby(by)[time].diff() == 1
+    lag = prev.where(ok)
+    res = order[col] - lag if diff else lag
+    return res.reindex(df.index)
 
 
 # ── derived financial ratios ──────────────────────────────────────────────
@@ -199,10 +218,14 @@ WINSORIZE_COLS = ("leverage", "roa", "asset_growth", "current_ratio",
                   "ocf_to_assets")
 
 
-def winsorize_ratios(df: pd.DataFrame) -> pd.DataFrame:
-    """Clip ratio columns at configured percentiles on the FINAL sample."""
+def winsorize_ratios(df: pd.DataFrame, cols=WINSORIZE_COLS) -> pd.DataFrame:
+    """Clip ratio columns at the 1st/99th percentiles of *df*.
+
+    Must be called on the REGRESSION sample (after all dropna filters), as
+    stated in the methodology; the stored panels are left unwinsorised.
+    """
     df = df.copy()
-    for col in WINSORIZE_COLS:
+    for col in cols:
         if col not in df.columns:
             continue
         s = df[col].dropna()
@@ -288,9 +311,13 @@ def cap_fiscal_year(df: pd.DataFrame, max_fy: int) -> pd.DataFrame:
 # ── lagged volatility ─────────────────────────────────────────────────────
 
 def add_lagged_volatility(df: pd.DataFrame, vol_col: str, date_col: str) -> pd.DataFrame:
-    """Create ``lagged_vol`` as previous-period realised volatility per firm."""
+    """Deprecated: ``lagged_vol`` is now produced by returns.py from prices
+    (t-1 window truncated before the current filing).  Kept as a fallback
+    that at least enforces strictly consecutive fiscal years."""
+    if "lagged_vol" in df.columns:
+        return df
     df = df.sort_values(["ticker", date_col]).reset_index(drop=True)
-    df["lagged_vol"] = df.groupby("ticker")[vol_col].shift(1)
+    df["lagged_vol"] = consecutive_lag(df, vol_col)
     return df
 
 

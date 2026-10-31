@@ -8,25 +8,25 @@
 \toprule
  & (1) 5d & (2) 10d & (3) 30d & (4) 90d & (5) 180d & (6) 365d \\
 \midrule
-$\ln(\sigma_{i,t})$ & $+0.1008$*** & $+0.1249$*** & $+0.1321$* & $+0.2122$** & $+0.3533$*** & $+0.5657$*** \\
- & $(+3.62)$ & $(+4.55)$ & $(+1.75)$ & $(+2.24)$ & $(+4.19)$ & $(+12.25)$ \\[4pt]
-$\ln(\text{Words}^{\text{1A}})$ & $+0.1953$*** & $+0.1524$*** & $+0.1298$*** & $+0.1155$*** & $+0.0962$*** & $+0.0607$*** \\
- & $(+8.78)$ & $(+6.72)$ & $(+7.16)$ & $(+5.93)$ & $(+5.11)$ & $(+4.93)$ \\[4pt]
-UncDensity & $+0.9530$ & $-2.1555$ & $-1.2779$ & $-0.7636$ & $-0.6946$ & $-0.8552$ \\
- & $(+0.27)$ & $(-1.04)$ & $(-0.62)$ & $(-0.45)$ & $(-0.55)$ & $(-1.08)$ \\[4pt]
-LitDensity & $-7.0957$*** & $-6.6115$*** & $-6.1591$*** & $-6.5495$*** & $-5.1636$*** & $-3.3905$*** \\
- & $(-3.76)$ & $(-2.88)$ & $(-3.38)$ & $(-3.94)$ & $(-4.02)$ & $(-3.91)$ \\[4pt]
+$\ln(\sigma_{i,t})$ & $+0.0417$* & $+0.1173$*** & $+0.1353$* & $+0.2187$** & $+0.3549$*** & $+0.5556$*** \\
+ & $(+1.73)$ & $(+3.79)$ & $(+1.81)$ & $(+2.38)$ & $(+4.35)$ & $(+11.53)$ \\[4pt]
+$\ln(\text{Words}^{\text{1A}})$ & $+0.1697$*** & $+0.1415$*** & $+0.1243$*** & $+0.1130$*** & $+0.0937$*** & $+0.0652$*** \\
+ & $(+5.67)$ & $(+7.20)$ & $(+7.07)$ & $(+6.09)$ & $(+5.18)$ & $(+5.17)$ \\[4pt]
+UncDensity & $-4.2493$ & $-1.5255$ & $-1.8778$ & $-0.8084$ & $-0.7444$ & $-0.8748$ \\
+ & $(-1.21)$ & $(-0.72)$ & $(-0.93)$ & $(-0.47)$ & $(-0.58)$ & $(-1.05)$ \\[4pt]
+LitDensity & $-4.1523$ & $-6.6835$*** & $-6.5541$*** & $-6.7992$*** & $-5.2998$*** & $-3.5079$*** \\
+ & $(-1.36)$ & $(-2.76)$ & $(-3.83)$ & $(-4.13)$ & $(-4.19)$ & $(-3.95)$ \\[4pt]
 \midrule
 Financial controls & Yes & Yes & Yes & Yes & Yes & Yes \\
 Industry FE & Yes & Yes & Yes & Yes & Yes & Yes \\
 Year FE & Yes & Yes & Yes & Yes & Yes & Yes \\
-Observations & 5,690 & 5,648 & 5,691 & 5,691 & 5,691 & 6,172 \\
-Firms & 535 & 535 & 535 & 535 & 535 & 535 \\
-Adj.\ $R^2$ & 0.156 & 0.354 & 0.507 & 0.575 & 0.643 & 0.735 \\
+Observations & 5,234 & 6,032 & 6,048 & 6,048 & 6,048 & 6,038 \\
+Firms & 523 & 526 & 526 & 526 & 526 & 526 \\
+Adj.\ $R^2$ & 0.216 & 0.367 & 0.513 & 0.583 & 0.645 & 0.734 \\
 \bottomrule
 \end{tabular*}
 \par\smallskip
-\begin{flushleft}\footnotesize
+\begin{flushleft}\footnotesize 
 \textit{Note:} Each column re-estimates the H1 + LM-list decomposition specification replacing the dependent variable with $\ln(\sigma_{i,t+1}^{[h]})$ measured over a post-filing window of length $h$. The lagged dependent variable is the same firm's log-volatility computed over the prior filing year's window of identical length. UncDensity and LitDensity are the LM-Uncertainty and LM-Litigious word densities on Item~1A; together they sum to RiskDensity (H2). Financial controls (size, leverage, ROA, asset growth) are included but suppressed. Industry and year fixed effects are absorbed; $t$-statistics in parentheses use two-way (firm and fiscal-year) clustered standard errors. ***, **, * denote significance at the 1\%, 5\%, and 10\% levels.
 \end{flushleft}
 \end{table}

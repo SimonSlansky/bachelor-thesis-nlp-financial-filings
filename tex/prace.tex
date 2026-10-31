@@ -58,22 +58,22 @@ Tato práce dekomponuje měření na dvě nezávislé proměnné~---
 logaritmus počtu slov v~Item~1A a~hustotu rizikových slov dle
 slovníku Loughran--McDonald~--- a~vstupuje s~nimi společně do regrese
 log-volatility po zveřejnění s~odvětvovými a~ročními fixními efekty
-a~clustrovanými chybami na úrovni firmy. Vedle toho zkoumá, zda
+a~clustrovanými chybami na úrovni firmy a~fiskálního roku. Vedle toho zkoumá, zda
 záleží i~na~tom, co~firma \emph{nezmíní}: konstruuje
 peer-relativní mezeru v~pokrytí rizikových témat, která pro každou
 firmu a~rok zachycuje podíl témat zveřejněných konkurenty z~téhož
 odvětví, jež však daná firma ve~své Item~1A vynechává.
 %
-Na nevyváženém panelu 535 velkých amerických firem za fiskální
-roky 2010--2024 (5\,691 pozorování při 30denním horizontu) je
-delší Item~1A spojen s~vyšší volatilitou (koeficient $+0{,}121$;
-$t=+7{,}35$), zatímco hustší Item~1A je při kontrolované délce
-spojen s~\emph{nižší} volatilitou (koeficient $-3{,}88$;
-$t=-2{,}74$). Oba znaménka i~významnost jsou potvrzeny při všech
-šesti horizontech od~5 do~365~dní a~přežívají dělení vzorku na
-období před~COVID a~během~COVID. Implikovaný poločas signálu, fitovaný
-exponenciálním modelem, činí přibližně 256 dní pro objemový kanál
-a~386 dní pro specifický kanál.
+Na nevyváženém panelu 526 velkých amerických firem za fiskální
+roky 2010--2024 (6\,048 pozorování při 30denním horizontu) je
+delší Item~1A spojen s~vyšší volatilitou (koeficient $+0{,}116$;
+$t=+7{,}26$), zatímco hustší Item~1A je při kontrolované délce
+spojen s~\emph{nižší} volatilitou (koeficient $-4{,}36$;
+$t=-3{,}17$). Záporný efekt nese slovník soudní agendy
+(LM-Litigious, koeficient $-6{,}55$; $t=-3{,}83$). Efekt délky
+platí na všech horizontech od~5 do~365~dní, efekt slovníku soudní
+agendy na horizontech od~10 do~365~dní. Oba výsledky platí
+v~obdobích před~COVID i~během~COVID.
 %
 Výsledky podporují obě teoretické literatury současně~--- kanály
 fungují, ale opačnými směry~--- a~ukazují, že
@@ -83,11 +83,11 @@ kanálem skrze společný jmenovatel.
 %
 V~souladu s~tím je~peer-relativní mezera v~pokrytí rizikových témat
 v~průřezu nulová, ale po~přidání firemních fixních efektů se~stává
-kladnou a~významnou ($\hat{\beta}^{\text{om}} = +1{,}345$;
-$t = +2{,}93$ na~30denním horizontu): firmy, které vynechají to,
-co~konkurenti zveřejňují, mají vyšší následnou volatilitu. Kanál
-strategického mlčení tedy funguje pouze uvnitř firmy, jakmile jsou
-trvalé firemní styly zveřejňování absorbovány.
+kladnou a~významnou ($\hat{\beta}^{\text{om}} = +1{,}247$;
+$t = +2{,}58$ na~30denním horizontu): firmy, které vynechají to,
+co~konkurenti zveřejňují, mají vyšší následnou volatilitu. Tento
+výsledek je v~některých testech robustnosti slabší, proto jej
+považujeme pouze za~náznak.
 }
 
 %%% Abstract in English
@@ -118,28 +118,29 @@ year; the omission
 specification adds firm fixed effects to absorb permanent
 disclosure styles.
 %
-On an unbalanced panel of 535 large U.S.\ firms over fiscal years
-2010--2024 (5{,}691 firm-years at the 30-day horizon), longer
+On an unbalanced panel of 526 large U.S.\ firms over fiscal years
+2010--2024 (6{,}048 firm-years at the 30-day horizon), longer
 Item~1A sections predict higher post-filing volatility
-($\hat{\beta} = +0.130$, $t = +7.70$), while denser Item~1A
+($\hat{\beta} = +0.116$, $t = +7.26$), while denser Item~1A
 sections, holding length constant, predict \emph{lower} post-filing
-volatility ($\hat{\beta} = -3.88$, $t = -2.74$). The
-decomposition reveals that the entire negative effect is carried
-by the LM-Litigious sub-list ($\hat{\beta}^{\text{lit}} = -6.16$,
-$t = -3.35$), while the Uncertainty sub-list is statistically
-almost zero. The pattern survives at every horizon
-from 5 to 365~days and on both COVID-era and pre-COVID
-sub-samples. It is a between-firm regularity: under firm fixed
+volatility ($\hat{\beta} = -4.36$, $t = -3.17$). The
+decomposition shows that the negative effect comes from
+the LM-Litigious sub-list ($\hat{\beta}^{\text{lit}} = -6.55$,
+$t = -3.83$), while the Uncertainty sub-list is not
+significant. The length effect holds at every horizon from 5 to
+365~days, and the litigious effect at every horizon from 10 to
+365~days. Both hold in the pre-COVID and COVID-era sub-samples.
+The density result is a between-firm pattern: under firm fixed
 effects the density coefficients vanish, so firms that
-systematically use more litigious wording have lower volatility,
+always use more litigious wording have lower volatility,
 but a firm that raises its litigious wording does not.
 %
-Consistent with this, the peer-relative omission gap is null in
-the cross-section but turns positive and significant under firm
-fixed effects ($\hat{\beta}^{\text{om}} = +1.345$, $t = +2.93$ at
-the 30-day horizon): firms that skip topics their peers do report
-have higher subsequent volatility. The channel operates only
-within-firm, once permanent section styles are absorbed.
+The peer-relative omission gap is not significant in
+the cross-section but is positive and significant under firm
+fixed effects ($\hat{\beta}^{\text{om}} = +1.247$, $t = +2.58$ at
+the 30-day horizon): firms that skip topics their peers report
+have higher subsequent volatility. This result is weaker in some
+robustness checks, so we read it as suggestive.
 }
 
 %%% Keywords in Czech

@@ -1,12 +1,11 @@
-"""Compute post-filing log stock returns and realised volatility via yfinance."""
+"""Compute post-filing log stock returns, realised volatility and the lagged
+(previous-fiscal-year) volatility control.  Window alignment lives in
+``volatility.py``."""
 
 import numpy as np
 import pandas as pd
-import yfinance as yf
 
-from config import POST_FILING_LAG_DAYS
-
-ANNUALISATION_FACTOR = np.sqrt(252)
+from volatility import load_closes, current_and_lagged
 
 
 def compute_returns_and_volatility(
@@ -16,95 +15,33 @@ def compute_returns_and_volatility(
     vol_col: str,
     window_days: int,
     min_trading_days: int,
+    lag_col: str = "lagged_vol",
 ) -> pd.DataFrame:
-    """Add *return_col* and *vol_col* to *df* from yfinance prices.
+    """Add *return_col*, *vol_col* and *lag_col* to *df*.
 
-    Parameters
-    ----------
-    df : Panel with columns ``ticker``, ``filing_date``, and *date_col*.
-    date_col : Column used for the merge key (``year_end`` or ``quarter_end``).
-    return_col : Name of the log-return column to create.
-    vol_col : Name of the annualised-volatility column to create.
-    window_days : Calendar-day window after filing.
-    min_trading_days : Minimum trading days required for valid output.
-
-    Returns
-    -------
-    A copy of *df* with *return_col* and *vol_col* merged in.
+    ``lag_col`` is the volatility of the same-length window after the
+    fiscal-year t-1 filing, truncated before the current filing date (NaN if
+    year t-1 is absent).  *date_col* is kept for API compatibility only.
     """
+    df = df.copy()
+    for c in (return_col, vol_col, lag_col):
+        df[c] = np.nan
     if df.empty:
-        df[return_col] = np.nan
-        df[vol_col] = np.nan
         return df
 
-    min_date = pd.to_datetime(df[date_col].min())
-    max_filing = pd.to_datetime(df["filing_date"]).max()
-    download_end = max_filing + pd.Timedelta(days=POST_FILING_LAG_DAYS + window_days + 10)
-
-    results: list[dict] = []
-
+    min_returns = max(min_trading_days - 1, 2)
     for ticker in sorted(df["ticker"].unique()):
-        prices = yf.download(
-            ticker,
-            start=min_date,
-            end=download_end,
-            progress=False,
-            auto_adjust=True,
-        )
-        if prices.empty:
+        closes = load_closes(ticker)
+        firm = df.loc[df["ticker"] == ticker]
+        if closes is None:
             print(f"  {ticker}: no price data")
             continue
+        recs = current_and_lagged(closes, firm, window_days, min_returns)
+        for r in recs:
+            df.loc[r["_ix"], [return_col, vol_col, lag_col]] = (
+                r["ret"], r["vol"], r["lag_vol"])
+        usable = sum(np.isfinite(r["vol"]) for r in recs)
+        print(f"  {ticker}: {usable}/{len(firm)} periods")
 
-        # yfinance ≥1.2 returns MultiIndex columns even for a single ticker;
-        # flatten to simple column names so .iloc[] returns scalars.
-        if isinstance(prices.columns, pd.MultiIndex):
-            prices = prices.droplevel("Ticker", axis=1)
-
-        if "Close" not in prices.columns:
-            print(f"  {ticker}: no Close column")
-            continue
-
-        closes = prices[["Close"]].dropna()
-        firm = df.loc[df["ticker"] == ticker]
-        usable = 0
-
-        for _, row in firm.iterrows():
-            fd = pd.to_datetime(row["filing_date"], errors="coerce")
-            if pd.isna(fd):
-                continue
-            start = fd + pd.Timedelta(days=POST_FILING_LAG_DAYS)
-            end = start + pd.Timedelta(days=window_days)
-            w = closes.loc[start:end]
-            if len(w) < min_trading_days:
-                continue
-
-            log_ret = float(np.log(w.iloc[-1]["Close"] / w.iloc[0]["Close"]))
-            daily_log_rets = np.log(w["Close"] / w["Close"].shift(1)).dropna()
-            ann_vol = float(daily_log_rets.std() * ANNUALISATION_FACTOR)
-
-            results.append({
-                "ticker": ticker,
-                date_col: row[date_col],
-                return_col: log_ret,
-                vol_col: ann_vol,
-            })
-            usable += 1
-
-        n = len(firm)
-        print(f"  {ticker}: {usable}/{n} periods")
-
-    df_ret = pd.DataFrame(results)
-
-    # Coverage filtering is deferred to panel.drop_low_return_coverage(),
-    # which runs AFTER drop_earliest_year and cap_fiscal_year shrink the
-    # denominator.  Pre-filtering here would zero returns for firms whose
-    # post-trim coverage actually exceeds the threshold.
-
-    if df_ret.empty:
-        df = df.copy()
-        df[return_col] = np.nan
-        df[vol_col] = np.nan
-    else:
-        df = df.merge(df_ret, on=["ticker", date_col], how="left")
-
+    # Coverage filtering is deferred to panel.drop_low_return_coverage().
     return df

@@ -74,7 +74,12 @@ VARS: list[tuple[str, str]] = [
 def load_panel() -> pd.DataFrame:
     """Load the text-extended panel and attach the derived test variables."""
     df = pd.read_csv(DATA_DIR / "annual_panel_text.csv")
-    df["log_vol"] = np.log(df["vol_30d"].clip(lower=1e-6))
+    df = df[df["vol_30d"] > 0].copy()
+    df["log_vol"] = np.log(df["vol_30d"])
+    # Same 1st/99th winsorisation of financial ratios as in the regressions
+    # (the stored panel is unwinsorised).
+    from panel import winsorize_ratios
+    df = winsorize_ratios(df)
     if "log_words_1a" not in df.columns:
         df["log_words_1a"] = np.log(df["words_1a"].clip(lower=1))
     sil_path = DATA_DIR / "silence.csv"

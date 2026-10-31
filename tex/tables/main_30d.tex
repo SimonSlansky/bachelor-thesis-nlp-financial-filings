@@ -6,34 +6,33 @@
 \toprule
  & (1) & (2) & (3) & (4) & (5) \\
 \midrule
-$\ln(\sigma_{i,t})$ & $+0.1695$** & $+0.1368$* & $+0.1552$** & $+0.1336$* & $+0.1321$* \\
- & $(+2.12)$ & $(+1.80)$ & $(+1.96)$ & $(+1.76)$ & $(+1.75)$ \\[4pt]
-$\ln(\text{Total Assets})$ & $-0.0700$*** & $-0.0671$*** & $-0.0695$*** & $-0.0672$*** & $-0.0645$*** \\
- & $(-5.81)$ & $(-5.91)$ & $(-5.99)$ & $(-5.98)$ & $(-5.69)$ \\[4pt]
-Leverage & $-0.0198$ & $-0.0026$ & $-0.0249$ & $-0.0072$ & $-0.0082$ \\
- & $(-0.56)$ & $(-0.07)$ & $(-0.72)$ & $(-0.21)$ & $(-0.24)$ \\[4pt]
-ROA & $-1.0678$*** & $-0.8982$*** & $-1.0689$*** & $-0.9189$*** & $-0.9250$*** \\
- & $(-9.72)$ & $(-8.68)$ & $(-9.80)$ & $(-8.80)$ & $(-8.77)$ \\[4pt]
-Asset Growth & $+0.2460$*** & $+0.2033$*** & $+0.2313$*** & $+0.2011$*** & $+0.1982$*** \\
- & $(+4.34)$ & $(+3.80)$ & $(+4.21)$ & $(+3.78)$ & $(+3.72)$ \\[4pt]
-$\ln(\text{Words}^{\text{1A}})$ &  & $+0.1375$*** &  & $+0.1212$*** & $+0.1298$*** \\
- &  & $(+8.43)$ &  & $(+7.64)$ & $(+7.16)$ \\[4pt]
-RiskDensity &  &  & $-7.7820$*** & $-3.8769$*** &  \\
- &  &  & $(-5.40)$ & $(-2.68)$ &  \\[4pt]
-UncDensity &  &  &  &  & $-1.2779$ \\
- &  &  &  &  & $(-0.62)$ \\[4pt]
-LitDensity &  &  &  &  & $-6.1591$*** \\
- &  &  &  &  & $(-3.38)$ \\[4pt]
+$\ln(\sigma_{i,t})$ & $+0.1735$** & $+0.1405$* & $+0.1579$** & $+0.1366$* & $+0.1353$* \\
+ & $(+2.21)$ & $(+1.87)$ & $(+2.03)$ & $(+1.82)$ & $(+1.81)$ \\[4pt]
+$\ln(\text{Total Assets})$ & $-0.0713$*** & $-0.0689$*** & $-0.0709$*** & $-0.0690$*** & $-0.0665$*** \\
+ & $(-6.55)$ & $(-6.70)$ & $(-6.80)$ & $(-6.81)$ & $(-6.43)$ \\[4pt]
+Leverage & $-0.0241$ & $-0.0054$ & $-0.0288$ & $-0.0105$ & $-0.0115$ \\
+ & $(-0.75)$ & $(-0.17)$ & $(-0.91)$ & $(-0.33)$ & $(-0.36)$ \\[4pt]
+ROA & $-1.1053$*** & $-0.9349$*** & $-1.1041$*** & $-0.9577$*** & $-0.9635$*** \\
+ & $(-10.83)$ & $(-10.10)$ & $(-10.96)$ & $(-10.23)$ & $(-10.23)$ \\[4pt]
+Asset Growth & $+0.2381$*** & $+0.1963$*** & $+0.2238$*** & $+0.1943$*** & $+0.1917$*** \\
+ & $(+4.55)$ & $(+4.03)$ & $(+4.42)$ & $(+3.99)$ & $(+3.93)$ \\[4pt]
+$\ln(\text{Words}^{\text{1A}})$ &  & $+0.1342$*** &  & $+0.1158$*** & $+0.1243$*** \\
+ &  & $(+8.14)$ &  & $(+7.26)$ & $(+7.07)$ \\[4pt]
+RiskDensity &  &  & $-8.0914$*** & $-4.3588$*** &  \\
+ &  &  & $(-5.75)$ & $(-3.17)$ &  \\[4pt]
+UncDensity &  &  &  &  & $-1.8778$ \\
+ &  &  &  &  & $(-0.93)$ \\[4pt]
+LitDensity &  &  &  &  & $-6.5541$*** \\
+ &  &  &  &  & $(-3.83)$ \\[4pt]
 \midrule
 Industry FE & Yes & Yes & Yes & Yes & Yes \\
 Year FE & Yes & Yes & Yes & Yes & Yes \\
-Observations & 5,691 & 5,691 & 5,691 & 5,691 & 5,691 \\
-Firms & 535 & 535 & 535 & 535 & 535 \\
-Adj.\ $R^2$ & 0.492 & 0.505 & 0.497 & 0.506 & 0.507 \\
+Observations & 6,048 & 6,048 & 6,048 & 6,048 & 6,048 \\
+Firms & 526 & 526 & 526 & 526 & 526 \\
+Adj.\ $R^2$ & 0.498 & 0.511 & 0.504 & 0.512 & 0.513 \\
 \bottomrule
 \end{tabular}
 \par\smallskip
-\begin{flushleft}\footnotesize
+\noindent\footnotesize 
 \textit{Note:} The dependent variable is $\ln(\sigma_{i,t+1})$, the natural log of annualised post-filing volatility over a 30 days~window starting two trading days after the 10-K filing date. Column~(1) reports the financial baseline; column~(2) adds the log word count of Item~1A (H1); column~(3) adds the composite LM risk-word density (H2); column~(4) adds H1 and H2 jointly; column~(5) replaces the H2 composite by its LM-list decomposition into the LM-Uncertainty and LM-Litigious densities of Item~1A. All specifications include two-digit SIC industry and fiscal-year fixed effects. $t$-statistics in parentheses use two-way (firm and fiscal-year) clustered standard errors. ***, **, * denote significance at the 1\%, 5\%, and 10\% levels.
-\end{flushleft}
 \end{table}

@@ -36,6 +36,7 @@ import pandas as pd
 from linearmodels.iv.absorbing import AbsorbingLS
 
 from config import DATA_DIR
+from panel import winsorize_ratios, WINSORIZE_COLS
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 TEX_TABLE_DIR = BASE_DIR / "tex" / "tables"
@@ -89,21 +90,27 @@ HORIZONS: list[tuple[str, str, str]] = [
 # ── Data loading ──────────────────────────────────────────────────────────
 
 def _add_log_vol(df: pd.DataFrame, vol_col: str, lag_col: str) -> pd.DataFrame:
-    """Return a copy with log(vol) and lagged log(vol) added."""
-    out = df.copy()
-    out["log_vol"]        = np.log(out[vol_col].clip(lower=1e-6))
-    out["lagged_log_vol"] = np.log(out[lag_col].clip(lower=1e-6))
+    """Return a copy with log(vol) and lagged log(vol) added.
+
+    Non-positive volatilities are dropped (not clipped): clipping a zero SD
+    to 1e-6 creates ln(sigma) = -13.8 outliers that dominate short horizons.
+    """
+    out = df.loc[(df[vol_col] > 0) & (df[lag_col] > 0)].copy()
+    out["log_vol"]        = np.log(out[vol_col])
+    out["lagged_log_vol"] = np.log(out[lag_col])
     return out
 
 
 def load_text_panel(vol_col: str = "vol_next_year",
-                    lag_col: str = "lagged_vol") -> pd.DataFrame:
+                    lag_col: str = "lagged_vol",
+                    with_pre: bool = False) -> pd.DataFrame:
     """Load the text-extended panel and prune to rows usable for one horizon.
 
     Substitutes ``lag_col`` for the AR(1) control so each horizon uses its
     own lagged volatility. Drops rows missing any regression variable.
     Adds the SIC-2 industry code, the log(vol) dependent variable and its
-    lagged counterpart.
+    lagged counterpart.  With *with_pre*, also requires and adds
+    ``pre_log_vol`` (log volatility over the 60 trading days before filing).
     """
     df = pd.read_csv(DATA_DIR / "annual_panel_text.csv")
     if vol_col not in df.columns or lag_col not in df.columns:
@@ -117,8 +124,15 @@ def load_text_panel(vol_col: str = "vol_next_year",
     needed = [vol_col, lag_col, *FIN_VARS, LEN_VAR, DENS_VAR,
               UNC_VAR, LIT_VAR,
               "sic2", "fiscal_year", "ticker"]
+    if with_pre:
+        needed.append("pre_vol")
     df = df[needed].dropna().copy()
+    if with_pre:
+        df = df.loc[df["pre_vol"] > 0].copy()
+        df["pre_log_vol"] = np.log(df["pre_vol"])
     df = _add_log_vol(df, vol_col, lag_col)
+    # Winsorise financial ratios at the 1st/99th pct of THIS regression sample.
+    df = winsorize_ratios(df, cols=[c for c in WINSORIZE_COLS if c in df.columns])
     return df
 
 
@@ -576,8 +590,11 @@ def run_firm_fe(vol_col: str = "vol_30d",
     X = df[["lagged_log_vol", *FIN_VARS, LEN_VAR, UNC_VAR, LIT_VAR]].copy()
     X.insert(0, "const", 1.0)
     absorb = df[["ticker", "fiscal_year"]].astype("category")
+    clusters = df[["ticker", "fiscal_year"]].astype("category").apply(
+        lambda c: c.cat.codes
+    )
     res = AbsorbingLS(y, X, absorb=absorb).fit(
-        cov_type="clustered", clusters=df["ticker"],
+        cov_type="clustered", clusters=clusters,
     )
     return res, df
 
@@ -618,11 +635,91 @@ def firm_fe_to_latex(res, df, path: Path | None = None) -> str:
         r"H1 + LM-list decomposition specification with firm and fiscal-year "
         r"fixed effects absorbed. Identification of $\ln(\text{Words}^{1A})$, "
         r"UncDensity and LitDensity comes only from within-firm variation "
-        r"across years. Standard errors clustered by firm. ***, **, * denote "
+        r"across years. Standard errors are two-way clustered by firm and "
+        r"fiscal year. ***, **, * denote "
         r"significance at the 1\%, 5\%, and 10\% levels."
     )
     lines.append(r"\end{table}")
 
+    tex = "\n".join(lines)
+    if path is not None:
+        path.write_text(tex, encoding="utf-8")
+        print(f"  Table saved → {path.name}")
+    return tex
+
+
+# ── Robustness: pre-filing volatility control ─────────────────────────────
+
+PRE_SPECS: list[tuple[str, str, str, bool]] = [
+    # (header, vol col, lag col, add pre_log_vol)
+    ("(1) 30d, no pre-vol", "vol_30d",       "lagged_vol_30d", False),
+    ("(2) 30d",             "vol_30d",       "lagged_vol_30d", True),
+    ("(3) 90d",             "vol_90d",       "lagged_vol_90d", True),
+    ("(4) 365d",            "vol_next_year", "lagged_vol",     True),
+]
+
+
+def run_pre_filing():
+    """H1 + LM decomposition with the pre-filing volatility control.
+
+    Column (1) re-estimates the baseline on exactly the sample that has
+    pre-filing volatility, so (1) vs (2) isolates the effect of the control.
+    """
+    out = []
+    for header, vcol, lcol, add_pre in PRE_SPECS:
+        df = load_text_panel(vol_col=vcol, lag_col=lcol, with_pre=True)
+        xvars = ["lagged_log_vol", *FIN_VARS, LEN_VAR, UNC_VAR, LIT_VAR]
+        if add_pre:
+            xvars = ["pre_log_vol"] + xvars
+        out.append((header, _fit(df, xvars), df))
+    return out
+
+
+def pre_filing_to_latex(runs, path: Path | None = None) -> str:
+    show = [("pre_log_vol",    r"$\ln(\sigma^{\text{pre}}_{i,t})$"),
+            ("lagged_log_vol", LABELS["lagged_log_vol"]),
+            (LEN_VAR,          LABELS[LEN_VAR]),
+            (UNC_VAR,          LABELS[UNC_VAR]),
+            (LIT_VAR,          LABELS[LIT_VAR])]
+    n_cols = len(runs)
+    lines = [r"\begin{table}[htbp]", r"\centering",
+             r"\caption{Controlling for Pre-Filing Volatility}",
+             r"\label{tab:pre_filing}", r"\footnotesize",
+             r"\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}l"
+             + "c" * n_cols + r"@{}}",
+             r"\toprule",
+             " & " + " & ".join(h for h, _, _ in runs) + r" \\",
+             r"\midrule"]
+    for var, lab in show:
+        cs, ts = [], []
+        for _, res, _ in runs:
+            if var in res.params.index:
+                cs.append(f"${res.params[var]:+.4f}${_stars(res.pvalues[var])}")
+                ts.append(f"$({res.tstats[var]:+.2f})$")
+            else:
+                cs.append(""); ts.append("")
+        lines.append(f"{lab} & " + " & ".join(cs) + r" \\")
+        lines.append(" & " + " & ".join(ts) + r" \\[4pt]")
+    lines.append(r"\midrule")
+    lines.append("Financial controls & " + " & ".join(["Yes"] * n_cols) + r" \\")
+    lines.append("Industry FE & " + " & ".join(["Yes"] * n_cols) + r" \\")
+    lines.append("Year FE & " + " & ".join(["Yes"] * n_cols) + r" \\")
+    lines.append("Observations & " + " & ".join(f"{int(r.nobs):,}" for _, r, _ in runs) + r" \\")
+    lines.append("Firms & " + " & ".join(str(d['ticker'].nunique()) for _, _, d in runs) + r" \\")
+    lines.append(r"Adj.\ $R^2$ & " + " & ".join(f"{r.rsquared_adj:.3f}" for _, r, _ in runs) + r" \\")
+    lines += [r"\bottomrule", r"\end{tabular*}", r"\par\smallskip",
+              r"\begin{flushleft}\footnotesize",
+              r"\textit{Note:} H1 + LM-list decomposition specification. "
+              r"$\ln(\sigma^{\text{pre}}_{i,t})$ is the log of annualised "
+              r"volatility over the 60 trading days that end on the last "
+              r"trading day before the 10-K filing date, so it is known when "
+              r"the filing is released. Column~(1) is the baseline without "
+              r"this control, estimated on the same sample as column~(2). "
+              r"All columns include SIC2 and fiscal-year fixed effects; "
+              r"$t$-statistics in parentheses use two-way (firm and fiscal "
+              r"year) clustered standard errors. ***, **, * denote "
+              r"significance at the 1\%, 5\%, and 10\% levels.",
+              r"\end{flushleft}", r"\end{table}"]
     tex = "\n".join(lines)
     if path is not None:
         path.write_text(tex, encoding="utf-8")
@@ -727,6 +824,14 @@ def main() -> None:
         print(f"    {v:18s}  β = {res_ffe.params[v]:+.4f}  "
               f"t = {res_ffe.tstats[v]:+.2f}")
     firm_fe_to_latex(res_ffe, df_ffe, path=TEX_TABLE_DIR / "firm_fe.tex")
+
+    print("\n=== Pre-filing volatility robustness ===")
+    pre_runs = run_pre_filing()
+    for header, res, _ in pre_runs:
+        print(f"  {header}")
+        _print_result(res, ["pre_log_vol", "lagged_log_vol",
+                            LEN_VAR, UNC_VAR, LIT_VAR])
+    pre_filing_to_latex(pre_runs, path=TEX_TABLE_DIR / "pre_filing.tex")
 
     # Drop any stale half-life table left over from previous runs.
     stale = TEX_TABLE_DIR / "half_life.tex"

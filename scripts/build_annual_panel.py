@@ -26,8 +26,8 @@ from returns import compute_returns_and_volatility
 from panel import (
     compute_missing_components, impute_balance_sheet, add_financial_ratios,
     filter_transitions_and_duplicates, drop_earliest_year,
-    drop_low_return_coverage, cap_fiscal_year, winsorize_ratios,
-    add_lagged_volatility, save_panel, ANNUAL_COLS,
+    drop_low_return_coverage, cap_fiscal_year,
+    save_panel, ANNUAL_COLS,
     lock_firm_tags, save_tag_diagnostics,
 )
 from text_parser import load_cik_map, build_text_dataset
@@ -78,9 +78,41 @@ def _track(df: pd.DataFrame, label: str) -> pd.DataFrame:
 
 
 def main() -> None:
-    # 1. Fetch SEC universe
-    sec_df = fetch_universe(SAMPLE_SIZE)
-    print(f"Universe: {len(sec_df)} companies (top {SAMPLE_SIZE or 'all'} by market cap)\n")
+    import argparse
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--from-raw", action="store_true",
+                    help="rebuild from data/annual_financials.csv (no XBRL download)")
+    ap.add_argument("--skip-text", action="store_true",
+                    help="skip 10-K text extraction and text features")
+    args = ap.parse_args()
+
+    raw_path = DATA_DIR / "annual_financials.csv"
+    if args.from_raw:
+        df_all = pd.read_csv(raw_path, parse_dates=["year_end", "filing_date"])
+        print(f"Loaded raw extraction: {df_all['ticker'].nunique()} firms, "
+              f"{len(df_all)} firm-years\n")
+    else:
+        df_all = _extract_raw()
+        if df_all is None:
+            return
+        df_all.to_csv(raw_path, index=False)
+        print(f"  Raw data -> {raw_path.name}\n")
+    _process(df_all, skip_text=args.skip_text)
+
+
+def _extract_raw() -> pd.DataFrame | None:
+    # 1. Universe.  The SEC company-tickers file changes every day, so a
+    #    rerun from it would silently change the sample.  If a frozen list
+    #    exists (data/universe.csv: ticker, cik) it is used instead.
+    frozen = DATA_DIR / "universe.csv"
+    if frozen.exists():
+        sec_df = pd.read_csv(frozen, dtype=str)
+        sec_df["cik"] = sec_df["cik"].str.zfill(10)
+        print(f"Universe: {len(sec_df)} companies (frozen list {frozen.name})\n")
+    else:
+        sec_df = fetch_universe(SAMPLE_SIZE)
+        print(f"Universe: {len(sec_df)} companies (top {SAMPLE_SIZE or 'all'} by market cap)\n")
+        sec_df.to_csv(frozen, index=False)
 
     # 2. Load metadata
     print("Loading company metadata …")
@@ -103,19 +135,16 @@ def main() -> None:
 
     if not frames:
         print("No data extracted — aborting.")
-        return
+        return None
     df_all = pd.concat(frames, ignore_index=True)
     print(f"\n  Total: {df_all['ticker'].nunique()} firms, {len(df_all)} firm-years\n")
 
     # Merge SIC and fiscal_year_end from metadata
     meta_df = pd.DataFrame(companies.values())[["ticker", "sic", "fiscal_year_end"]]
-    df_all = df_all.merge(meta_df, on="ticker", how="left")
+    return df_all.merge(meta_df, on="ticker", how="left")
 
-    # 4. Save raw
-    raw_path = DATA_DIR / "annual_financials.csv"
-    df_all.to_csv(raw_path, index=False)
-    print(f"  Raw data -> {raw_path.name}\n")
 
+def _process(df_all: pd.DataFrame, skip_text: bool = False) -> None:
     # ── Pipeline tracking starts here ──────────────────────────────────
     print("=" * 66)
     print("  PIPELINE STAGE TRACKER")
@@ -148,35 +177,51 @@ def main() -> None:
         vol_col="vol_next_year",
         window_days=ANNUAL_RETURN_WINDOW,
         min_trading_days=MIN_TRADING_DAYS_ANNUAL,
+        lag_col="lagged_vol",
     )
     df_all = _track(df_all, "returns & volatility")
 
     # 8. Financial ratios (raw, unwinsorized)
     print("\nDeriving financial ratios …")
     df_all = add_financial_ratios(df_all, "year_end")
-    df_all = add_lagged_volatility(df_all, "vol_next_year", "year_end")
-    df_all = _track(df_all, "ratios & lagged vol")
+    df_all = _track(df_all, "ratios")
 
+    # Keep the filings of the dropped first year: they are needed as the
+    # t-1 anchor for the short-horizon lagged volatilities.
+    earliest = df_all.groupby("ticker")["year_end"].transform("min")
+    df_all.loc[df_all["year_end"] == earliest,
+               ["ticker", "fiscal_year", "filing_date"]].to_csv(
+        DATA_DIR / "lag_filings.csv", index=False)
     df_all = drop_earliest_year(df_all)
     df_all = _track(df_all, "drop earliest year")
 
-    # 8b. Cap fiscal year, then drop firms with insufficient return coverage
+    # 8b. Cap fiscal year
     print("\nFiltering panel …")
     df_all = cap_fiscal_year(df_all, max_fy=2024)
     df_all = _track(df_all, "cap FY <= 2024")
 
-    df_all = drop_low_return_coverage(df_all, "vol_next_year", MIN_FIRM_COVERAGE)
-    df_all = _track(df_all, "coverage filter")
+    # No firm-level return-coverage filter.  The old filter dropped firms
+    # with < 90% valid *post-filing* 365-day volatility, i.e. it selected on
+    # the outcome period (delisting / suspension after the filing).  Rows
+    # without a valid outcome now simply drop out of each regression.
+    n_cov = df_all.groupby("ticker")["vol_next_year"].apply(
+        lambda s: s.notna().mean() < MIN_FIRM_COVERAGE).sum()
+    print(f"  (info) {n_cov} firms would have failed the old "
+          f"{MIN_FIRM_COVERAGE:.0%} coverage rule; they are kept.")
 
-    # 8c. Winsorize on the final sample
-    df_all = winsorize_ratios(df_all)
-    df_all = _track(df_all, "winsorize")
+    # 8c. Winsorisation is NOT applied to the stored panel: it is applied to
+    #     each regression sample (regressions.load_text_panel, silence tables)
+    #     so the 1st/99th percentiles are those of the estimation sample.
 
     print("=" * 66)
 
     # 9. Save
     print("\nSaving final panel …")
     save_panel(df_all, DATA_DIR / "annual_panel.csv", ANNUAL_COLS)
+
+    if skip_text:
+        print("\n[skip] text extraction / features (--skip-text)")
+        return
 
     # 10. Extract 10-K text sections (Item 1A, Item 7)
     print("\nExtracting 10-K text sections …")

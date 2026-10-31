@@ -3,7 +3,20 @@
 \label{ch:methodology}
 % =============================================================================
 
-This chapter sets up the regressions that test H1, H2, and H3.
+This chapter sets out the regression specifications for the three
+hypotheses. All tests use a dynamic panel regression in which
+post-filing realised volatility depends on its own lag, financial
+controls, and one or more characteristics of the Item~1A
+risk-factor section, with industry and fiscal-year fixed effects.
+Section~\ref{sec:outcome} defines the dependent variable;
+Section~\ref{sec:controls} lists the controls, which are the same in
+all specifications so that the text coefficients can be compared.
+Sections~\ref{sec:h1} and~\ref{sec:h2} describe the joint test of
+the volume channel (H1) and the specificity channel (H2), which must
+be estimated together because the density measure for H2 has
+section length in its denominator. Section~\ref{sec:h3} introduces
+the peer-relative omission gap for H3, and the rest of the chapter
+covers estimation, inference, and robustness checks.
 
 
 % ─────────────────────────────────────────────────────────────────────────────
@@ -11,9 +24,9 @@ This chapter sets up the regressions that test H1, H2, and H3.
 \label{sec:outcome}
 % ─────────────────────────────────────────────────────────────────────────────
 
-The outcome is the natural log of annualised post-filing volatility,
-measured over a window of $h$~calendar days that begins two trading
-days after the 10-K filing date:
+The dependent variable is the natural logarithm of annualised
+post-filing stock-return volatility measured over a window of
+$h$~calendar days:
 \begin{equation}
 \ln \sigma_{i,t+1}^{[h]} \;=\; \ln\!\left(
 \sqrt{252}\cdot
@@ -21,15 +34,29 @@ days after the 10-K filing date:
 \right),
 \label{eq:vol}
 \end{equation}
-where $r_{i,d} = \ln(P_{i,d}/P_{i,d-1})$ is the daily log return
-for firm~$i$ and $W_{i,t}^{[h]}$ is the post-filing window for
-filing year~$t$. The two-day lag avoids the same-day price
-reaction to the filing; the $\sqrt{252}$ factor annualises the
-daily standard deviation. The log transform makes the right-skewed
-distribution roughly symmetric and lets coefficients be read as
-percentage changes in volatility. The headline horizon is
-$h = 30$~days; results at $h \in \{5, 10, 90, 180, 365\}$ are
-reported as exploratory horizon checks.
+where
+\begin{equation*}
+r_{i,d} \;=\; \ln\!\left(\frac{P_{i,d}}{P_{i,d-1}}\right)
+\end{equation*}
+is the daily log return for firm~$i$, and $W_{i,t}^{[h]}$ denotes
+the post-filing window associated with filing year~$t$. Day~0 is
+the first trading day on or after the 10-K filing date. The window
+begins two trading days after day~0, so the market reaction on the
+filing day and the next day is left out, and it then runs for
+$h$~calendar days. Only returns between two prices inside the
+window are used. A window needs a minimum number of daily returns
+(3 for $h = 5$, 5 for $h = 10$, 14 for $h = 30$, about half the
+trading days for longer windows); if it has fewer, or if all prices
+in it are the same, the volatility is treated as missing. The daily standard
+deviation is annualised by multiplying by $\sqrt{252}$; this is a
+constant rescaling and does not affect inference.
+
+We use the natural logarithm of volatility, so a coefficient $\beta$
+implies a change of $100(e^{\beta}-1)\%$ in volatility,
+approximately $100\beta\%$ for small $\beta$. The main
+specification uses a 30-day post-filing horizon ($h = 30$);
+horizons of $h \in \{5, 10, 90, 180, 365\}$ are reported as
+exploratory checks.
 
 
 % ─────────────────────────────────────────────────────────────────────────────
@@ -44,9 +71,19 @@ $\ln(\text{Total Assets})$, leverage (total liabilities over total
 assets), return on assets (net income over total assets), and
 asset growth (year-on-year change in total assets divided by
 lagged total assets). Lagged log-volatility
-$\ln \sigma_{i,t}^{[h]}$ enters with its own coefficient $\phi$
-and is computed on the prior filing year's window of identical
-length~$h$. All ratios are winsorised at the 1st and 99th
+$\ln \sigma_{i,t}^{[h]}$ enters with its own coefficient $\phi$.
+It uses the window of the same length~$h$ after the firm's
+filing for the \emph{previous} fiscal year ($t-1$). Each firm's
+first fiscal year is not in the regression sample, because asset
+growth needs the previous year's total assets; that first filing is
+still used to compute the lagged volatility of the second year.
+If the firm has
+no filing for year $t-1$, the lag is missing; we never use an older
+year instead. The lagged window is also cut off on the day before
+the current filing, so it never overlaps the outcome window. This
+matters only for $h = 365$~days, where a full year after the
+previous filing would otherwise run past the current filing date.
+All ratios are winsorised at the 1st and 99th
 percentiles of the regression sample. The H3 regression replaces
 asset growth with two liquidity proxies (current ratio and
 operating cash flow over assets). The reason is given in
@@ -58,10 +95,13 @@ Section~\ref{sec:h3}.
 \label{sec:h1}
 % ─────────────────────────────────────────────────────────────────────────────
 
-H1 follows the volume channel of \textcite{campbell2014}: longer
-risk-factor sections signal more risk and should be followed by
-higher realised volatility. The disclosure-volume variable is the
-log word count of Item~1A:
+Following \textcite{campbell2014}, disclosure volume is measured as
+the logarithm of the Item~1A word count. Campbell et al.\ show that
+firms with longer risk-factor disclosures later have higher
+market-based risk measures, including return volatility, consistent
+with disclosure volume carrying information about firm risk. We
+predict a positive association between Item~1A length and
+post-filing realised volatility. The volume variable is
 \begin{equation}
 \text{Words}^{1A}_{i,t} \;=\; \text{number of tokens in Item~1A
 of firm~$i$'s year-$t$ 10-K},
@@ -89,10 +129,8 @@ channel of H2 in a single regression (the
 where $\mu_j$ is a two-digit SIC industry fixed effect, $\tau_t$
 is a fiscal-year fixed effect, and $\text{RiskDensity}$ is defined
 in Section~\ref{sec:h2}. H1 predicts $\beta^{\text{len}} > 0$.
-Entering length and density jointly is required because the
-dictionary risk-density used in prior work has length in its
-denominator, so the two channels are identified only if both are
-estimated together.
+Length and density must enter together because the dictionary
+risk-density used in prior work has length in its denominator.
 
 
 % ─────────────────────────────────────────────────────────────────────────────
@@ -100,20 +138,47 @@ estimated together.
 \label{sec:h2}
 % ─────────────────────────────────────────────────────────────────────────────
 
-H2 follows the specificity channel of \textcite{hope2016}: holding
-length fixed, a section dominated by generic risk vocabulary
-carries less firm-specific information and should be followed by
-\emph{lower} realised volatility. The test has two stages. The
-first stage uses a single composite risk-word density. The second
-stage splits that composite into its two
-\textcite{loughran2011} sub-lists to identify which one carries
-the effect.
+H2 is motivated by the disclosure-specificity framework of
+\textcite{hope2016}. Hope et al.\ argue that risk disclosures are
+more informative when they contain firm-specific details rather than
+generic statements that could apply to any firm. They find that
+more specific risk-factor disclosures lead to stronger market
+reactions and better analyst assessments of firm risk.
+
+We do not measure specificity directly. Instead, we test whether
+the word composition of Item~1A is associated with future
+volatility after controlling for length and the usual financial
+determinants of volatility. We focus on the share of words from the
+uncertainty and litigious dictionaries of \textcite{loughran2011},
+which were built for financial reporting.
+
+Two disclosures of the same length may convey information
+differently. One may use more standard risk vocabulary; the other
+may use more firm-specific narrative. A higher concentration of
+dictionary risk words may therefore mean that more of the
+disclosure is generic risk framing rather than discussion of
+firm-specific exposures. This interpretation needs care, because
+words such as ``litigation'', ``regulatory'', ``investigation'', or
+``compliance'' can describe very firm-specific circumstances.
+Risk-word density is thus an indirect proxy for the balance between
+standard risk terminology and other narrative, not a direct measure
+of specificity in the sense of \textcite{hope2016}.
+
+Under this interpretation, a section with less standard risk
+vocabulary leaves more room for firm-specific discussion of risks,
+operations, counterparties, products, and events. If firm-specific
+disclosure helps investors understand risk \parencite{hope2016},
+higher risk-word density should be associated with lower subsequent
+volatility, holding length fixed. H2 predicts a negative relation.
+The test has two stages: the first uses a composite risk-word
+density, and the second splits it into the two
+\textcite{loughran2011} sub-lists.
 
 \subsection{Composite RiskDensity}
 \label{ssec:h2_composite}
 
 The first-stage variable is the share of Item~1A words that match
-the LM uncertainty or litigious lists:
+either the Loughran--McDonald uncertainty or litigious dictionaries:
 \begin{equation}
 \text{RiskDensity}_{i,t} \;=\; \frac{
 n^{\text{unc}}_{i,t} + n^{\text{lit}}_{i,t}
@@ -122,28 +187,30 @@ n^{\text{unc}}_{i,t} + n^{\text{lit}}_{i,t}
 },
 \label{eq:risk_density}
 \end{equation}
-where $n^{\text{unc}}$ and $n^{\text{lit}}$ are the per-section
-counts of uncertainty- and litigious-list words. Higher values
-mean a larger share of the section consists of standardised risk
-vocabulary. RiskDensity should therefore be interpreted as an
-indirect proxy for disclosure specificity rather than a direct
-measure of the Hope et al. construct. It captures the relative
-prevalence of dictionary-based wording in Item~1A: terms such as
-``litigation'', ``regulatory'', and ``investigation'' can be
-highly firm-specific in substance even when they raise the
-dictionary count. Lower values therefore indicate that a larger
-share of the narrative lies outside the standardised risk lexicon,
-rather than a definitive claim that the section is less specific.
+where $n^{\text{unc}}$ and $n^{\text{lit}}$ denote the numbers of
+uncertainty- and litigious-dictionary words appearing in firm~$i$'s
+Item~1A disclosure and $\text{Words}^{1A}$ is the total number of
+words in that section.
 
-H2 is tested through the coefficient $\beta^{\text{dens}}$ in the
-joint specification of equation~\ref{eq:joint_model}, with the
-prediction $\beta^{\text{dens}} < 0$.
+Higher values mean that more of the section consists of dictionary
+risk words. As discussed above, RiskDensity is not a direct measure
+of specificity; it measures how prominent standard risk language is
+in the section. Lower values mean that more of the text falls
+outside the risk lexicon and may contain more firm-specific
+information, though not necessarily in every case.
+
+H2 is tested through the coefficient $\beta^{\text{dens}}$ in
+equation~\eqref{eq:joint_model}, with the prediction
+\begin{equation*}
+\beta^{\text{dens}} < 0.
+\end{equation*}
 
 \subsection{LM sub-list decomposition (second stage)}
 \label{ssec:h2_decomp}
 
-The composite RiskDensity is the sum of two sub-densities, each
-normalised by Item~1A length:
+RiskDensity combines two different kinds of risk language. To see
+which one drives any relation, the second stage splits RiskDensity
+into two sub-densities:
 \begin{align}
 \text{UncDensity}_{i,t} &\;=\; \frac{n^{\text{unc}}_{i,t}}
   {\text{Words}^{1A}_{i,t}},
@@ -152,15 +219,19 @@ normalised by Item~1A length:
   {\text{Words}^{1A}_{i,t}},
 \label{eq:lit_density}
 \end{align}
-and $\text{RiskDensity} = \text{UncDensity} + \text{LitDensity}$.
-The two sub-lists capture different things: $\text{UncDensity}$
-picks up hedging language about what management does not know
-about its own business, while $\text{LitDensity}$ picks up the
-cautious legal phrasing that is typically associated with
-litigation-risk management and legal review.
+such that
+\begin{equation*}
+\text{RiskDensity}_{i,t} \;=\; \text{UncDensity}_{i,t}
+  + \text{LitDensity}_{i,t}.
+\end{equation*}
+The uncertainty dictionary covers language about ambiguity and
+incomplete knowledge of future outcomes. The litigious dictionary
+covers legal exposure, regulation, compliance, investigations,
+claims, and disputes. Both are risk-related, but they measure
+different things \parencite{loughran2011}.
 
-The second-stage regression replaces the composite with its two
-parts:
+The second-stage specification replaces the composite measure with
+its two components:
 \begin{multline}
 \ln \sigma_{i,t+1}^{[h]} \;=\; \alpha
 \;+\; \phi \, \ln \sigma_{i,t}^{[h]}
@@ -174,11 +245,10 @@ parts:
 \end{multline}
 The two coefficients are separately identified because the sample
 correlation between UncDensity and LitDensity is close to zero
-($r \approx -0.05$). The decomposition supports H2 if
-$\beta^{\text{lit}} < 0$ holds across horizons while
-$\beta^{\text{unc}}$ is small and not significantly different from
-zero, indicating that the H2 effect comes from the litigious
-sub-list rather than from generic uncertainty hedging.
+($r \approx -0.05$). If the negative association is concentrated
+in LitDensity while the UncDensity coefficient is small and
+insignificant, the relation comes mainly from legal and regulatory
+terminology rather than general uncertainty language.
 
 
 % ─────────────────────────────────────────────────────────────────────────────
@@ -228,10 +298,10 @@ peer aggregate is too noisy.
 SIC2 is the standard peer benchmark in the disclosure-similarity
 literature \parencite{brown2011, dyer2017}. The median peer cell
 has 35~firms (P25~=~14). The omission gap is also negatively
-correlated with Item~1A length ($r = -0.85$): a longer section
-trivially covers more peer terms. The H3 regression therefore
-controls for $\ln(\text{Words}^{1A})$ so that the omission
-coefficient is read holding length fixed. The H3 control vector
+correlated with Item~1A length ($r = -0.85$), since a longer
+section mechanically covers more peer terms. The H3 regression
+controls for $\ln(\text{Words}^{1A})$, so the omission coefficient
+holds length fixed. The H3 control vector
 also replaces asset growth with two liquidity proxies, the current
 ratio and operating cash flow over assets.\footnote{The swap follows
 prior risk-disclosure studies that include liquidity-related controls
@@ -271,9 +341,13 @@ $h \in \{5, 10, 30, 90, 180\}$~days. $h = 365$~days is dropped
 because the post-filing window for fiscal years $2023$--$2024$
 extends past the data cut-off.
 
-The H3 sample is $4{,}630$ to $4{,}636$~firm-years, smaller than
-the H1+H2 sample of $5{,}691$ at $h = 30$~days because of the
-$\geq 5$~peers-per-cell restriction.
+The H3 sample has $4{,}857$ to $4{,}871$~firm-years at
+$h \geq 10$~days, smaller than the H1+H2 sample of $6{,}048$ at
+$h = 30$~days. There are two reasons: the
+$\geq 5$~peers-per-cell restriction, and the two liquidity
+controls, which are missing for some firm-years. At $h = 5$~days
+the sample falls to $4{,}226$, because many 5-day windows do not
+contain enough daily returns.
 
 
 % ─────────────────────────────────────────────────────────────────────────────
@@ -285,41 +359,39 @@ All regressions are estimated by ordinary least squares with the
 relevant fixed effects absorbed using the \texttt{linearmodels}
 package. Coefficients are identified from
 \emph{within-industry, within-year} (or within-firm, within-year)
-variation, which removes both common time trends in volatility
-(the 2008 and 2020 crises in particular) and persistent industry-
-or firm-level differences in risk vocabulary. The analysis is
-predictive rather than causal: the coefficients measure the
-conditional association between Item~1A disclosure choices and
-\emph{subsequent} realised volatility, in the spirit of
-\textcite{campbell2014}, and should not be read as the effect of
+variation, which removes common time trends in volatility (such as
+the 2008 and 2020 crises) and persistent industry- or firm-level
+differences in risk vocabulary. The analysis is predictive, not
+causal: the coefficients measure the conditional association
+between Item~1A disclosure and \emph{subsequent} realised
+volatility, as in \textcite{campbell2014}, not the effect of
 disclosure on volatility.
 
 \paragraph{Limitation: anticipated volatility.}
 Item~1A is written when management already knows current
 volatility conditions, so expected volatility could shape the
-wording (reverse causality). The design mitigates this only
+wording (reverse causality). The design addresses this only
 partly: the outcome window starts two trading days after filing,
 lagged log-volatility is controlled for, fixed effects absorb
 persistent firm and industry differences, and the lead-lag check
 in Section~\ref{sec:robustness_silence} tests the timing. It does
 not rule out that management anticipates \emph{future}
-volatility not captured by lagged volatility, so the results are
-read as predictive associations, not as evidence that disclosure
-drives volatility.
+volatility not captured by lagged volatility, so we interpret the
+results as predictive associations.
 
 \paragraph{Primary horizon.}
-The headline horizon is $h = 30$~days. The primary test of H1--H3
-is conducted at this horizon. The other horizons in
+The headline horizon is $h = 30$~days, at which H1--H3 are
+tested. The other horizons in
 Table~\ref{tab:horizons} are reported as exploratory evidence on
 the time decay of the signal.
 
 \paragraph{Standard errors.}
 Standard errors are two-way clustered by firm and fiscal year
 \parencite{petersen2009, cameron2011robust}, because (i)~consecutive
-firm-year volatility windows overlap, producing strong within-firm
-serial correlation, and (ii)~calendar-year shocks (the 2020 COVID
-shock above all) produce strong within-year cross-sectional
-correlation that one-way firm clustering would miss.
+firm-year volatility windows overlap, which creates within-firm
+serial correlation, and (ii)~calendar-year shocks (above all COVID
+in 2020) create within-year cross-sectional correlation that
+one-way firm clustering would miss.
 
 \paragraph{Outliers.}
 Financial ratios are winsorised at the 1st and 99th percentiles of
@@ -329,15 +401,26 @@ $\text{RiskDensity}$ is a ratio with sample maximum
 $\approx 0.05$.
 
 \paragraph{Sample.}
-The estimation sample at $h = 30$~days has $5{,}691$~firm-years on
-$535$~unique firms; the $h = 365$~days sample retains
-$6{,}172$~firm-years on the same firms.
+The estimation sample at $h = 30$~days has $6{,}048$~firm-years on
+$526$~unique firms; the $h = 365$~days sample has
+$6{,}038$~firm-years on the same firms. The 5-day sample is
+smaller ($5{,}234$~firm-years), because many 5-day windows do not
+contain enough daily returns.
+
+\paragraph{Limitation: survivorship.}
+The list of firms comes from the SEC company list as it is today,
+so it only contains firms that still exist. Firms that were
+delisted, acquired, or went bankrupt during 2010--2024 are missing,
+and the 90\% return-coverage rule (Section~\ref{sec:sample_selection})
+removes a few more. The panel grows from 149~firms in fiscal year
+2010 to over 500 in 2020--2024, which shows this. Missing firms are
+likely to be riskier, so the results describe large firms that
+survived, and they may not hold for firms in distress.
 
 \paragraph{Stationarity.}
 Because the specification is dynamic---lagged log-volatility enters
 with its own coefficient $\phi$---an integrated regressor could
-produce a spurious association. Every variable that enters the
-regressions is therefore tested for a unit root with the augmented
-Dickey--Fuller test before the results are interpreted. The checks,
-reported in Section~\ref{sec:robustness_stationarity}, confirm that
-the panel is stationary, $I(0)$.
+produce a spurious association. We test every regression variable
+for a unit root with the augmented Dickey--Fuller test. The
+results, in Section~\ref{sec:robustness_stationarity}, indicate
+that the panel is stationary, $I(0)$.

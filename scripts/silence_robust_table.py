@@ -1,6 +1,6 @@
 """
 Generate tex/tables/silence_robust.tex — robustness panel for the
-H4 strategic-silence specification at h=30d under firm+year FE.
+H3 strategic-silence specification at h=30d under firm+year FE.
 
 Six columns:
   (1) baseline:   omission_1a + log_words_1a + RiskDensity + 5 fin + lagged
@@ -16,6 +16,10 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 from linearmodels.iv.absorbing import AbsorbingLS
+
+import sys
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from panel import winsorize_ratios, consecutive_lag
 
 ROOT = Path(__file__).resolve().parent.parent
 DATA = ROOT / "data"
@@ -33,6 +37,7 @@ def fit(df, var, extra_controls=None, restrict=None):
     d = d[(d[f"vol_{H}d"] > 0) & (d[f"lagged_vol_{H}d"] > 0)]
     if restrict is not None:
         d = restrict(d)
+    d = winsorize_ratios(d, cols=FIN[1:])   # regression-sample winsorisation
     if len(d) < 200:
         return None
     d["fy"] = d["fiscal_year"].astype("category")
@@ -92,9 +97,11 @@ def main():
 
     # Squared length
     df["log_words_1a_sq"] = df["log_words_1a"] ** 2
-    # Lag
-    df = df.sort_values(["ticker", "fiscal_year"]).copy()
-    df["om_lag1"] = df.groupby("ticker")["omission_1a"].shift(1)
+    # Lag: strictly fiscal year t-1 (NaN across gaps)
+    df = df.sort_values(["ticker", "fiscal_year"]).reset_index(drop=True)
+    df["om_lag1"] = consecutive_lag(df, "omission_1a")
+    # Pre-filing volatility (60 trading days before the filing)
+    df["pre_log_vol"] = np.log(df["pre_vol"].where(df["pre_vol"] > 0))
 
     cols = []
     cols.append(("(1) Baseline", fit(df, "omission_1a")))
@@ -106,6 +113,8 @@ def main():
                   fit(df, "omission_1a",
                       extra_controls=["log_words_mda", "log_words_1a_sq"])))
     cols.append(("(6) Prior-year",   fit(df, "om_lag1")))
+    cols.append(("(7) Pre-filing vol",
+                  fit(df, "omission_1a", extra_controls=["pre_log_vol"])))
 
     headers = " & ".join(c[0] for c in cols)
     bs = " & ".join(f"{c[1]['b']:+.3f}{stars(c[1]['p'])}" for c in cols)
@@ -115,10 +124,10 @@ def main():
     tex = (
         r"\begin{table}[htbp]" "\n"
         r"\centering" "\n"
-        r"\caption{Robustness of the strategic-silence result (H4): firm $\times$ year fixed effects, $h = 30$ days.}" "\n"
+        r"\caption{Robustness of the strategic-silence result (H3): firm $\times$ year fixed effects, $h = 30$ days.}" "\n"
         r"\label{tab:silence_robust}" "\n"
         r"\footnotesize" "\n"
-        r"\begin{tabular}{lcccccc}" "\n"
+        r"\setlength{\tabcolsep}{2pt}" "\n" r"\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lccccccc@{}}" "\n"
         r"\toprule" "\n"
         f"& {headers} \\\\\n"
         r"\midrule" "\n"
@@ -126,16 +135,17 @@ def main():
         f"& {ts} \\\\\n"
         f"$N$ & {ns} \\\\\n"
         r"\bottomrule" "\n"
-        r"\end{tabular}" "\n"
+        r"\end{tabular*}" "\n"
         r"\par\smallskip" "\n"
         r"\begin{flushleft}\footnotesize" "\n"
         r"\textit{Notes.} Each column is a separate firm $\times$ year fixed-effect regression at $h = 30$ days. "
-        r"Column~(1) reports the baseline H4 specification of equation~\ref{eq:silence_model}. "
+        r"Column~(1) reports the baseline H3 specification of equation~\ref{eq:silence_model}. "
         r"Column~(2) replaces $\textsc{Omission}_{1A}$ with its decile rank within (SIC2, fiscal year) cells. "
         r"Column~(3) replaces it with the residual after regressing $\textsc{Omission}_{1A}$ on $\ln(\textsc{Words}_{1A})$ within (SIC2, fiscal year) cells. "
         r"Column~(4) restricts the sample to industry-year cells with at least 20 panel firms. "
         r"Column~(5) adds $\ln(\textsc{Words}_{\mathrm{MDA}})$ and $\ln(\textsc{Words}_{1A})^2$ as additional length controls. "
-        r"Column~(6) replaces the contemporaneous omission with its prior-year value. "
+        r"Column~(6) replaces the contemporaneous omission with its value for fiscal year $t-1$ (missing if the firm has no filing for $t-1$). "
+        r"Column~(7) adds the log of pre-filing volatility (60 trading days ending the day before the filing) as an extra control. "
         r"All regressions include lagged log-volatility, the five financial controls, $\ln(\textsc{Words}_{1A})$, and $\textsc{RiskDensity}_{1A}$. "
         r"$t$-statistics in parentheses use two-way clustered standard errors on (ticker, fiscal year). "
         r"$^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$." "\n"

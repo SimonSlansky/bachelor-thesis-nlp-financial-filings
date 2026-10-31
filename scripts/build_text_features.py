@@ -99,15 +99,18 @@ def main() -> None:
         # The text panel keeps year_end as a string (it survives a CSV
         # round-trip); convert both sides to datetime for a clean merge.
         p["year_end"] = pd.to_datetime(p["year_end"], errors="coerce")
-        cols = ["ticker", "year_end"] + [c for c in HORIZON_COLS if c in h.columns]
-        p = p.merge(h[cols], on=["ticker", "year_end"], how="left")
-        # Lagged short-horizon vols mirror the role of ``lagged_vol`` for
-        # the 365-day horizon: previous filing-year volatility per firm.
+        hcols = [c for c in HORIZON_COLS if c in h.columns]
+        lcols = [f"lagged_{c}" for c in hcols if f"lagged_{c}" in h.columns]
+        if len(lcols) != len(hcols):
+            sys.exit("volatility_horizons.csv lacks lagged_* columns; "
+                     "re-run build_volatility_horizons.py")
+        extra = [c for c in ("pre_vol",) if c in h.columns]
+        p = p.merge(h[["ticker", "year_end", *hcols, *lcols, *extra]],
+                    on=["ticker", "year_end"], how="left")
+        # Lagged short-horizon vols come from build_volatility_horizons.py:
+        # window after the fiscal-year t-1 filing, truncated before the
+        # current filing (no overlap, no multi-year gaps).
         p = p.sort_values(["ticker", "year_end"]).reset_index(drop=True)
-        g = p.groupby("ticker", sort=False)
-        for c in HORIZON_COLS:
-            if c in p.columns:
-                p[f"lagged_{c}"] = g[c].shift(1)
         for c in HORIZON_COLS:
             if c in p.columns:
                 print(f"    {c:10s} coverage = {p[c].notna().mean():6.1%}")

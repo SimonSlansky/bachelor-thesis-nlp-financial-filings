@@ -80,9 +80,15 @@ ANNUAL_FLOW_RANGE = (350, 380)   # days
 # ---------------------------------------------------------------------------
 # Stock-return windows
 # ---------------------------------------------------------------------------
-POST_FILING_LAG_DAYS = 2
-ANNUAL_RETURN_WINDOW = 365   # calendar days
-MIN_TRADING_DAYS_ANNUAL = 200
+# Window starts this many TRADING days after the first trading day on or
+# after the filing date (see scripts/volatility.py).
+POST_FILING_LAG_TRADING_DAYS = 2
+ANNUAL_RETURN_WINDOW = 365   # calendar days (window length after start)
+MIN_TRADING_DAYS_ANNUAL = 200   # minimum closes -> min returns = 199
+
+# Price download range (cached in data/prices/ for reproducibility).
+PRICE_START = "2009-01-01"
+PRICE_END: str | None = None    # None = today at first download
 MIN_FIRM_COVERAGE = 0.90
 
 # ---------------------------------------------------------------------------

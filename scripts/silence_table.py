@@ -16,6 +16,10 @@ import numpy as np
 import pandas as pd
 from linearmodels.iv.absorbing import AbsorbingLS
 
+import sys
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from panel import winsorize_ratios
+
 ROOT = Path(__file__).resolve().parent.parent
 DATA = ROOT / "data"
 
@@ -28,6 +32,7 @@ def fit(df, h, firm_fe):
              "log_words_1a", "risk_1a", "omission_1a"] + FIN)
     d = df[cols].dropna().copy()
     d = d[(d[f"vol_{h}d"] > 0) & (d[f"lagged_vol_{h}d"] > 0)]
+    d = winsorize_ratios(d, cols=FIN[1:])   # regression-sample winsorisation
     if len(d) < 200:
         return None
     d["sic2"] = (d["sic"] // 100).astype("category")
@@ -107,7 +112,7 @@ def main():
         r"\end{tabular}" "\n"
         r"\par\smallskip" "\n"
         r"\begin{flushleft}\footnotesize" "\n"
-        r"\textit{Notes.} Dependent variable is $\log(\textrm{RV}_{h\textrm{d}})$ over the $h$-day window beginning the trading day after filing. "
+        r"\textit{Notes.} Dependent variable is $\log(\textrm{RV}_{h\textrm{d}})$ over the $h$-day window beginning two trading days after the filing date. "
         r"$\textsc{Omission}_{1A}$ is the share of TF-IDF mass on terms used by SIC2-year peers (leave-one-out, $\geq 5$ peers) that the focal firm does not mention. "
         r"All regressions control for $\log(\textrm{RV}_{h\textrm{d}, t-1})$, the five financial controls (size, leverage, ROA, current ratio, OCF/assets), $\log(\textrm{words}_{1A})$, and $\textsc{RiskDensity}_{1A}$. "
         r"$t$-statistics in parentheses use two-way clustered standard errors on (ticker, fiscal year). "

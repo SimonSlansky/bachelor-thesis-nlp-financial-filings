@@ -37,7 +37,7 @@
   {\textbf{Sample selection.} 1{,}000 largest U.S.\ firms
    $\rightarrow$ operating entities only $\rightarrow$ exclude SIC 6000--6999
    $\rightarrow$ require $\geq 5$y XBRL \& $\geq 90\%$ return coverage
-   \;$\Rightarrow$\; \textbf{535 firms, 2010--2024}};
+   \;$\Rightarrow$\; \textbf{about 540 firms, 2010--2024}};
 
 % ---- Financial branch (left) ----
 \node[fin, below=14mm of sel.south, xshift=-30mm] (f1)
@@ -72,7 +72,7 @@
   {\textbf{Merge financial + textual features} $\rightarrow$
    \texttt{annual\_panel\_text.csv}};
 \node[outbox, below=9mm of mg] (out)
-  {\textbf{Regression-ready firm-year panel}\\ 535 firms $\times$ 2010--2024};
+  {\textbf{Regression-ready firm-year panel}\\ 526 firms $\times$ 2010--2024};
 
 % ---- Arrows: sources -> selection ----
 \draw[arr] (s1.south) -- ($(s1.south)+(0,-4mm)$) -| (sel.north);
