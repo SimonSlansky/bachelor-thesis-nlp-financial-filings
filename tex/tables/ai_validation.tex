@@ -1,0 +1,29 @@
+\begin{table}[htbp]
+  \centering
+  \small
+  \caption{LLM extraction audit: share of sections rated acceptable ($n = 200$ sections, 100 Item~1A and 100 Item~7)}
+  \label{tab:ai_validation}
+  \begin{tabular}{l r@{/}l r r@{/}l r l}
+    \toprule
+    Criterion & \multicolumn{2}{c}{Strict} & \% & \multicolumn{2}{c}{Lenient} & \% & 95\,\% CI (lenient) \\
+    \midrule
+    Correct section & 192 & 200 & 96.0 & 192 & 200 & 96.0 & [92.3\,--\,98.0\,\%] \\
+    Start boundary & 191 & 200 & 95.5 & 193 & 200 & 96.5 & [93.0\,--\,98.3\,\%] \\
+    End boundary & 192 & 200 & 96.0 & 193 & 200 & 96.5 & [93.0\,--\,98.3\,\%] \\
+    Content quality & 191 & 200 & 95.5 & 195 & 200 & 97.5 & [94.3\,--\,98.9\,\%] \\
+    Completeness & 189 & 200 & 94.5 & 191 & 200 & 95.5 & [91.7\,--\,97.6\,\%] \\
+    \midrule
+    Overall (all five) & 179 & 200 & 89.5 & 187 & 200 & 93.5 & [89.2\,--\,96.2\,\%] \\
+    \midrule
+    \multicolumn{8}{l}{\emph{Sections with at least one Fail, by fiscal-year stratum}} \\
+    \quad FY 2010--2012 & \multicolumn{7}{l}{5 of 40} \\
+    \quad FY 2013--2015 & \multicolumn{7}{l}{3 of 40} \\
+    \quad FY 2016--2018 & \multicolumn{7}{l}{2 of 40} \\
+    \quad FY 2019--2021 & \multicolumn{7}{l}{2 of 40} \\
+    \quad FY 2022--2024 & \multicolumn{7}{l}{1 of 40} \\
+    \bottomrule
+  \end{tabular}
+  \begin{minipage}{0.92\linewidth}\vspace{4pt}\footnotesize
+  \emph{Notes.} Strict = rated Pass; lenient = Pass or Minor issue. The sample is stratified into five three-year fiscal-year strata with 20 sections per stratum and section type; Item~1A and Item~7 were drawn independently (197 distinct filings). 5 sections with no extracted text are counted as Fail on every criterion. The model saw only the extracted section text, not the surrounding filing. Wilson score intervals.
+  \end{minipage}
+\end{table}

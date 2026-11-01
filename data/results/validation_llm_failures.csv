@@ -1,0 +1,14 @@
+ticker,fiscal_year,era,section,word_count,empty_extraction,correct_section,start_boundary,end_boundary,content_quality,completeness,notes
+ROP,2019,2019--2021,item_1a,5554,False,Fail,Fail,Pass,Pass,Pass,"The extraction incorrectly includes the entire ""ITEM 1. BUSINESS"" section before the ""ITEM 1A. RISK FACTORS"" section."
+VZ,2015,2013--2015,item_1a,3083,False,Pass,Pass,Pass,Pass,Fail,"The section ends abruptly mid-sentence/paragraph, suggesting truncation, and the word count is on the lower end for a company of this size."
+PH,2015,2013--2015,item_7,0,True,Fail,Fail,Fail,Fail,Fail,extraction failure: empty extraction
+DE,2012,2010--2012,item_7,9258,False,Pass,Pass,Fail,Pass,Pass,"The extraction includes the header and initial lines of the Statement of Consolidated Income, which belongs to Item 8 (Financial Statements)."
+SPGI,2010,2010--2012,item_1a,1982,False,Pass,Pass,Pass,Pass,Fail,"Word count (1,982) is significantly below the typical minimum (3,000) for Item 1A, suggesting material incompleteness."
+FE,2010,2010--2012,item_7,0,True,Fail,Fail,Fail,Fail,Fail,extraction failure: maximum recursion depth exceeded
+EIX,2015,2013--2015,item_1a,34423,False,Fail,Pass,Fail,Pass,Pass,"The extraction includes substantial content from Item 7A, Item 8, Item 9A, and Item 1, which are not part of Item 1A."
+PEP,2017,2016--2018,item_1a,13180,False,Fail,Fail,Pass,Pass,Pass,"The extraction includes significant text from Item 1 (Employees, Available Information) before the actual Item 1A content begins."
+CSL,2012,2010--2012,item_1a,1788,False,Pass,Pass,Pass,Pass,Fail,"The word count (1,788) is significantly below the typical range for Item 1A (3,000-30,000), suggesting potential truncation."
+PFE,2010,2010--2012,item_7,0,True,Fail,Fail,Fail,Fail,Fail,extraction failure: empty extraction
+D,2023,2022--2024,item_1a,0,True,Fail,Fail,Fail,Fail,Fail,extraction failure: empty extraction
+WTRG,2020,2019--2021,item_1a,0,True,Fail,Fail,Fail,Fail,Fail,extraction failure: empty extraction
+ETN,2016,2016--2018,item_1a,1421,False,Pass,Pass,Pass,Pass,Fail,"The word count (1,421) is significantly lower than the typical range for Item 1A, suggesting the section is incomplete."
