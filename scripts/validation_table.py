@@ -110,38 +110,50 @@ def main():
     if args.check_stored:
         check_stored(s)
 
-    # LaTeX table
+    # LaTeX table (second audit columns if available)
+    agp = RES / "validation_llm_agreement.csv"
+    ag = pd.read_csv(agp).set_index("criterion") if agp.exists() else None
     L = [r"\begin{table}[htbp]", r"  \centering", r"  \small",
-         r"  \caption{LLM extraction audit: share of sections rated acceptable"
+         r"  \caption{LLM extraction audits: sections rated acceptable"
          rf" ($n = {n}$ sections, {n // 2} Item~1A and {n // 2} Item~7)}}",
          r"  \label{tab:ai_validation}",
-         r"  \begin{tabular}{l r@{/}l r r@{/}l r l}", r"    \toprule",
-         r"    Criterion & \multicolumn{2}{c}{Strict} & \% &"
-         r" \multicolumn{2}{c}{Lenient} & \% & 95\,\% CI (lenient) \\",
+         r"  \begin{tabular}{l r r l r r r}", r"    \toprule",
+         r"    & \multicolumn{3}{c}{Gemini 2.5 Flash (full section)} &"
+         r" \multicolumn{3}{c}{Claude Opus 5.5 (excerpts)} \\",
+         r"    \cmidrule(lr){2-4}\cmidrule(lr){5-7}",
+         r"    Criterion & Strict \% & Lenient \% & 95\,\% CI & Lenient \% & Agreement & $\kappa$ \\",
          r"    \midrule"]
     for _, x in crit.iterrows():
-        name = "Overall (all five)" if x["criterion"] == "all" else LABELS[x["criterion"]]
-        if x["criterion"] == "all":
+        k = x["criterion"]
+        name = "Overall (all five)" if k == "all" else LABELS[k]
+        if k == "all":
             L.append(r"    \midrule")
-        L.append(f"    {name} & {x['strict']} & {n} & {x['strict_pct']:.1f} & "
-                 f"{x['lenient']} & {n} & {x['lenient_pct']:.1f} & "
-                 f"[{x['ci_lo']:.1f}\\,--\\,{x['ci_hi']:.1f}\\,\\%] \\\\")
+        sec = (f"{ag.loc[k, 'claude_ok_pct']:.1f} & {100 * ag.loc[k, 'agreement']:.1f} & "
+               f"{ag.loc[k, 'kappa']:.2f}") if ag is not None else "& &"
+        L.append(f"    {name} & {x['strict_pct']:.1f} & {x['lenient_pct']:.1f} & "
+                 f"[{x['ci_lo']:.1f}, {x['ci_hi']:.1f}] & {sec} \\\\")
     L += [r"    \midrule",
-          r"    \multicolumn{8}{l}{\emph{Sections with at least one Fail, by fiscal-year stratum}} \\"]
+          r"    \multicolumn{7}{l}{\emph{Gemini: sections with at least one Fail, by fiscal-year stratum}} \\"]
     for _, x in strata.iterrows():
         tot = int(x.get("fail_item_1a", 0) + x.get("fail_item_7", 0))
         nn = int(x.get("n_item_1a", 0) + x.get("n_item_7", 0))
-        L.append(f"    \\quad FY {x['era']} & \\multicolumn{{7}}{{l}}{{{tot} of {nn}}} \\\\")
+        L.append(f"    \\quad FY {x['era']} & \\multicolumn{{6}}{{l}}{{{tot} of {nn}}} \\\\")
+    both = "" if ag is None else (
+        f" Both audits fail the same {int(ag.loc['all', 'both_fail'])} sections on the overall"
+        f" criterion; {int(ag.loc['all', 'gemini_only_fail'])} fail only under Gemini and"
+        f" {int(ag.loc['all', 'claude_only_fail'])} only under Claude.")
     L += [r"    \bottomrule", r"  \end{tabular}",
-          r"  \begin{minipage}{0.92\linewidth}\vspace{4pt}\footnotesize",
+          r"  \begin{minipage}{0.95\linewidth}\vspace{4pt}\footnotesize",
           r"  \emph{Notes.} Strict = rated Pass; lenient = Pass or Minor issue."
           r" The sample is stratified into five three-year fiscal-year strata"
           r" with 20 sections per stratum and section type; Item~1A and Item~7"
           rf" were drawn independently ({n_filings} distinct filings)."
           rf" {int(r['empty_extraction'].sum())} sections with no extracted text"
-          r" are counted as Fail on every criterion. The model saw only the"
-          r" extracted section text, not the surrounding filing."
-          r" Wilson score intervals.",
+          r" are counted as Fail on every criterion. Gemini saw the whole extracted"
+          r" section; Claude saw its first and last 1{,}200 and a middle 600 characters"
+          r" and the word count, blind to the Gemini verdicts. Neither saw the"
+          r" surrounding filing. Agreement and Cohen's $\kappa$ on acceptable (1)"
+          r" versus Fail (0). Wilson score intervals." + both,
           r"  \end{minipage}", r"\end{table}"]
     TEX.write_text("\n".join(L) + "\n")
     print(f"-> {TEX.relative_to(ROOT)}")

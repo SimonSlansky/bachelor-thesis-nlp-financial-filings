@@ -43,104 +43,50 @@
 
 %%% Abstract in Czech (required even for English theses)
 \def\Abstrakt{%
-Výroční zprávy amerických firem (formulář 10-K) obsahují jak auditovaná
-finanční data, tak rozsáhlé textové části psané vedením společnosti.
-Sekce Rizikové faktory (Item~1A) je tématem dvou paralelních literatur,
-jejichž predikce směřují opačnými směry. Jedna~--- reprezentovaná
-Campbellem a~spol. (2014)~--- spojuje větší \emph{objem} rizikové
-diskuze s~vyšší následnou volatilitou. Druhá~--- reprezentovaná
-Hopem, Hu a~Lu (2016)~--- spojuje vyšší \emph{specifičnost} rizikové
-diskuze s~nižší volatilitou. Protože hustota rizikových slov používaná
-v~předchozí literatuře má délku sekce ve~jmenovateli, oba kanály jsou
-v~ní smíšeny v~jediné statistice.
+Výroční zprávy amerických firem (formulář 10-K) obsahují v~sekci Rizikové
+faktory (Item~1A) slovní popis rizik, kterým firma čelí. Práce zkoumá, zda
+tři vlastnosti této sekce souvisejí s~volatilitou akciových výnosů
+v~týdnech po zveřejnění zprávy: její délka (H1), podíl slov ze slovníků
+nejistoty a~soudní agendy podle Loughrana a~McDonalda (H2) a~to, jakou
+část slovníku oborových konkurentů firma ve~své sekci nepoužije (H3).
 %
-Tato práce dekomponuje měření na dvě nezávislé proměnné~---
-logaritmus počtu slov v~Item~1A a~hustotu rizikových slov dle
-slovníku Loughran--McDonald~--- a~vstupuje s~nimi společně do regrese
-log-volatility po zveřejnění s~odvětvovými a~ročními fixními efekty
-a~clustrovanými chybami na úrovni firmy a~fiskálního roku. Vedle toho zkoumá, zda
-záleží i~na~tom, co~firma \emph{nezmíní}: konstruuje
-peer-relativní mezeru v~pokrytí rizikových témat, která pro každou
-firmu a~rok zachycuje podíl témat zveřejněných konkurenty z~téhož
-odvětví, jež však daná firma ve~své Item~1A vynechává.
+Panel 5\,782 pozorování 512 velkých amerických nefinančních firem za
+fiskální roky 2010--2024 je sestaven přímo z~podání SEC. Regrese
+logaritmu volatility za~30 dní po zveřejnění kontrolují volatilitu před
+zveřejněním, velikost, ocenění, minulý výnos a~účetní ukazatele a~obsahují
+odvětvové a~roční fixní efekty.
 %
-Na nevyváženém panelu 526 velkých amerických firem za fiskální
-roky 2010--2024 (6\,048 pozorování při 30denním horizontu) je
-delší Item~1A spojen s~vyšší volatilitou (koeficient $+0{,}116$;
-$t=+7{,}26$), zatímco hustší Item~1A je při kontrolované délce
-spojen s~\emph{nižší} volatilitou (koeficient $-4{,}36$;
-$t=-3{,}17$). Záporný efekt nese slovník soudní agendy
-(LM-Litigious, koeficient $-6{,}55$; $t=-3{,}83$). Efekt délky
-platí na všech horizontech od~5 do~365~dní, efekt slovníku soudní
-agendy na horizontech od~10 do~365~dní. Oba výsledky platí
-v~obdobích před~COVID i~během~COVID.
-%
-Výsledky podporují obě teoretické literatury současně~--- kanály
-fungují, ale opačnými směry~--- a~ukazují, že
-slovníková hustota rizikových slov, používaná v~předchozí praxi,
-podhodnocuje signál o~specifičnosti, protože jej míchá s~objemovým
-kanálem skrze společný jmenovatel.
-%
-V~souladu s~tím je~peer-relativní mezera v~pokrytí rizikových témat
-v~průřezu nulová, ale po~přidání firemních fixních efektů se~stává
-kladnou a~významnou ($\hat{\beta}^{\text{om}} = +1{,}247$;
-$t = +2{,}58$ na~30denním horizontu): firmy, které vynechají to,
-co~konkurenti zveřejňují, mají vyšší následnou volatilitu. Tento
-výsledek je v~některých testech robustnosti slabší, proto jej
-považujeme pouze za~náznak.
+Delší sekce Item~1A je spojena s~vyšší následnou volatilitou (koeficient
+$+0{,}053$, $t=+4{,}51$); souvislost platí na všech horizontech od 5 do 365
+dní, ale nikoli v~rámci firmy v~čase. Hustota rizikových slov při dané
+délce není na 30denním horizontu významná; záporně a~významně působí jen
+slova soudní agendy, a~to citlivě na volbu vzorku. Mezera oproti
+konkurentům s~volatilitou nesouvisí. H1 je tedy podpořena mezi firmami,
+H2 a~H3 podpořeny nejsou.
 }
 
 %%% Abstract in English
 \def\AbstraktEN{%
-Corporate 10-K filings contain both audited financial data
-and narrative disclosures written by management, yet most
-empirical models use these two information channels separately.
-The Item~1A risk-factor section is itself
-the subject of two parallel literatures which predict effects
-in opposite directions: one, represented by \textcite{campbell2014},
-connects a larger \emph{volume} of risk discussion to higher
-subsequent volatility, while the other, represented by
-\textcite{hope2016}, links a higher \emph{specificity} of risk
-discussion to lower volatility.
+The risk-factor section (Item~1A) of the 10-K describes the risks a firm
+faces. This thesis asks whether three properties of the section are
+associated with stock-return volatility in the weeks after the filing: its
+length (H1), its share of words from the Loughran--McDonald uncertainty and
+litigious lists (H2), and the share of its industry peers' vocabulary that
+the firm does not use (H3).
 %
-This thesis proceeds in three steps. It first separates volume
-(the log word count of Item~1A) from specificity (the
-Loughran--McDonald risk-word density) and enters them jointly in
-a panel regression of post-filing log-volatility. It then splits
-the composite risk-density into its two sub-lists---uncertainty
-and litigious wording---each normalised by Item~1A length.
-Finally, it asks whether what a firm \emph{omits} also matters,
-measuring for each firm-year the share of risk topics disclosed
-by industry peers but absent from its own Item~1A. All
-specifications use two-digit SIC industry and fiscal-year fixed
-effects with two-way clustered standard errors by firm and fiscal
-year; the omission
-specification adds firm fixed effects to absorb permanent
-disclosure styles.
+The panel of 5{,}782 firm-years of 512 large U.S.\ non-financial firms for
+fiscal years 2010--2024 is built directly from SEC filings. Regressions of
+log 30-day post-filing volatility control for pre-filing volatility, size,
+valuation, past returns and accounting fundamentals, with industry and
+fiscal-year fixed effects and standard errors clustered by firm and year.
 %
-On an unbalanced panel of 526 large U.S.\ firms over fiscal years
-2010--2024 (6{,}048 firm-years at the 30-day horizon), longer
-Item~1A sections predict higher post-filing volatility
-($\hat{\beta} = +0.116$, $t = +7.26$), while denser Item~1A
-sections, holding length constant, predict \emph{lower} post-filing
-volatility ($\hat{\beta} = -4.36$, $t = -3.17$). The
-decomposition shows that the negative effect comes from
-the LM-Litigious sub-list ($\hat{\beta}^{\text{lit}} = -6.55$,
-$t = -3.83$), while the Uncertainty sub-list is not
-significant. The length effect holds at every horizon from 5 to
-365~days, and the litigious effect at every horizon from 10 to
-365~days. Both hold in the pre-COVID and COVID-era sub-samples.
-The density result is a between-firm pattern: under firm fixed
-effects the density coefficients vanish, so firms that
-always use more litigious wording have lower volatility,
-but a firm that raises its litigious wording does not.
-%
-The peer-relative omission gap is not significant in
-the cross-section but is positive and significant under firm
-fixed effects ($\hat{\beta}^{\text{om}} = +1.247$, $t = +2.58$ at
-the 30-day horizon): firms that skip topics their peers report
-have higher subsequent volatility. This result is weaker in some
-robustness checks, so we read it as suggestive.
+Longer Item~1A sections are associated with higher post-filing volatility
+($\hat\beta = +0.053$, $t = +4.51$) at every horizon from 5 to 365 days, but
+the association does not hold within firms over time. Holding length fixed,
+the density of risk words is not significant at 30 days; only the litigious
+words have a negative association, which is sensitive to the sample. The
+peer-relative omission gap is not associated with volatility. H1 is
+supported between firms; H2 and H3 are not supported.
 }
 
 %%% Keywords in Czech

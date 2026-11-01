@@ -248,3 +248,101 @@ Verdict changes (to confirm with owner before any prose):
   "supported"); only the litigious sub-list is significant, and it is fragile
   to dropping imputed rows.
 - H3: **not supported** under the timestamped rule (was "partially supported").
+
+## Phases 4–7 — status 1 Nov 2026
+Phase 4: all tables generated from `data/results/` by `make_tables.py`
+(inline tag-provenance and AI-validation tables moved to generated files),
+figures by `make_figures.py` (timeline, placebo histogram, omission vs length,
+FE comparison, horizon profile), `check_numbers.py` → **0 unmatched numbers**
+(allowlist: one literature figure, one regulation citation).
+Phase 5: Chapters 3–6 and both appendices rewritten from the Phase-3 results;
+edit marks removed. Phase 6: bibliography extended and checked against
+Crossref (`admin/crossref_check.csv`); conclusion (`zaver.tex`) drafted;
+**literature review and introduction NOT written — owner instruction**.
+Phase 7: clean `latexmk` (biber, 0 undefined citations/references, 56 pp.);
+README run order and frozen-input rule; this register.
+
+### Final issue register (#1–#72)
+✅ fixed · ⚠️ documented limitation · ❌ not done (reason) · ⏳ waiting for owner
+
+| # | Status | Note |
+|---|---|---|
+| 1 | ⏳ | Conclusion written; introduction and literature review left to the owner by instruction |
+| 2 | ✅ | Declarative headings, impersonal voice (Ch. 3–6) |
+| 3 | ✅ | Overclaim removed; Yahoo Finance and adjustments named |
+| 4 | ✅ | Universe source, snapshot (list committed 2026-10-12), 1,000 → 548 attrition, look-ahead caveat |
+| 5 | ✅ | Post-filing 90% filter replaced by pre-filing liquidity rule |
+| 6 | ✅ | Min-years 3/5/7 robustness; extraction-stage ≥ 5 years stated |
+| 7 | ✅ | FE description corrected |
+| 8 | ✅ | 15 year clusters discussed; wild-cluster bootstrap (9,999, Webb) reported |
+| 9 | ⚠️ | Campbell et al. (2014) sample size could not be verified from metadata; `% TODO verify` in 03_data.tex |
+| 10 | ✅ | "Roughly quadruple" |
+| 11 | ✅ | OCF/assets is a control |
+| 12 | ✅ | 10-Q pilot described; Reg S-K Item 105 cited |
+| 13 | ✅ | Consolidated net income (ProfitLoss first) |
+| 14 | ✅ | Tag-overlap tails table |
+| 15 | ✅ | "Material" = > 1% of total assets |
+| 16 | ✅ | Locking losses reported; tag-choice look-ahead stated |
+| 17 | ✅ | Imputation counts + drop-imputed robustness (LitDensity not robust: stated) |
+| 18 | ✅ | Point-in-time XBRL; accession check, 7 text_mismatch exclusions |
+| 19 | ✅ | One control vector, consistent count |
+| 20 | ✅ | Sample-attrition table |
+| 21 | ✅ | True stratification (5 × 3-year strata, 20 per section) and failure counts (21 strict / 13 lenient) |
+| 22 | ⏳ | Second independent LLM audit added (Claude Opus 5.5, κ 0.68 vs Gemini); model input limitation stated; human labels (51-section template) **not done — owner to label, or keep as stated limitation** |
+| 23 | ✅ | Actual coverage (Item 1A 96.3%, Item 7 94.9%) by year |
+| 24 | ✅ | Comparative "fewer false positives" claim deleted |
+| 25 | ✅ | Item 1C date corrected |
+| 26 | ⚠️ | Exhibit-fallback share not measurable without re-download (planned limitation) |
+| 27 | ✅ | Cleaning/tokenisation/LM version documented (data dictionary + Ch. 3) |
+| 28 | ✅ | Median words from generated summary (8,700); check_numbers |
+| 29 | ✅ | Timing notation + timeline figure |
+| 30 | ✅ | Market vol, idio-vol DV, filing-month × year FE |
+| 31 | ✅ | Pre-filing volatility in the common controls |
+| 32 | ✅ | Market cap, B/M, past return; EA handled by window/day exclusion |
+| 33 | ✅ | Count specification; ratio-regression discussion (Kronmal) |
+| 34 | ⏳ | H2 stated two-sided in methodology; theoretical derivation of both channels belongs to the literature review (owner) |
+| 35 | ✅ | "Precision", not "identification" |
+| 36 | ✅ | Cut-off 2026-10-30; 365d from the same machinery |
+| 37 | ✅ | Δomission decomposition; pooled-vocabulary variant |
+| 38 | ✅ | Length-invariant omission; one reconciled r (−0.915, H3 sample) |
+| 39 | ✅ | TF-IDF specification documented |
+| 40 | ⏳ | Strategic-silence theory and non-strategic alternatives belong to the literature review (owner) |
+| 41 | ✅ | Same controls and loader for H1–H3; footnote consistent |
+| 42 | ✅ | Decision rule (timestamped before estimation), Holm; never "pre-specified" |
+| 43 | ✅ | Industry FE ≠ firm FE corrected |
+| 44 | ✅ | Firm FE without LDV + Nickell paragraph |
+| 45 | ✅ | Clustering rationale corrected |
+| 46 | ✅ | Ranges from data (RiskDensity max 0.077); "log is bounded" removed |
+| 47 | ✅ | Lagged-text and change specifications |
+| 48 | ✅ | Balanced 2012–2024 sub-panel |
+| 49 | ✅ | Within-R² and increments |
+| 50 | ✅ | Denominator interpretation removed |
+| 51 | ✅ | Unsupported "firm-specific text" claim removed |
+| 52 | ✅ | SIC3, FF48, excluding SIC 49/80 |
+| 53 | ✅ | Verdicts match evidence (H2 composite not supported at 5%) |
+| 54 | ✅ | Effect sizes per pooled and within-firm SD |
+| 55 | ✅ | One H3 verdict everywhere (not supported) |
+| 56 | ✅ | Speculation removed/hedged |
+| 57 | ✅ | "Priced" removed |
+| 58 | ✅ | Predicted-sign wording fixed |
+| 59 | ⏳ | 30-day choice motivated in methodology; literature support for the horizon pending (`% TODO verify` on cited window lengths) |
+| 60 | ✅ | Post-2019 interaction replaces split |
+| 61 | ✅ | Change stated in % (no "almost unchanged") |
+| 62 | ✅ | Within/between variance decomposition |
+| 63 | ✅ | 1,000-draw placebo, empirical p 0.47, histogram |
+| 64 | ✅ | Length-residual and fixed-length checks |
+| 65 | ✅ | Decile N drop explained (992 in cells < 10); tail-decile dummies |
+| 66 | ✅ | ≥ 20-peer industry composition table |
+| 67 | ✅ | Prior-year omission framed as timing check |
+| 68 | ✅ | Number of checks consistent |
+| 69 | ✅ | Harris–Tzavalis + IPS (simulated null moments), correct nulls |
+| 70 | ✅ | Boundedness argument weakened |
+| 71 | ⏳ | References added and Crossref-verified; the review chapter itself is the owner's |
+| 72 | ✅ | Historical SIC (99.99%), SIC3/FF48/today's-SIC alternatives |
+
+Open for the owner: write `02_literature_review.tex` and `uvod.tex`
+(verdicts to state: H1 supported between firms only; H2 composite not
+supported at 5%, litigious sub-list significant but fragile; H3 not
+supported); human labels or keep #22 limitation; the 9 `% TODO` items
+(acknowledgements, Campbell sample size, cited window lengths and control
+sets, three end pages Crossref does not list, one reference not on Crossref).

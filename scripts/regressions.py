@@ -480,7 +480,31 @@ def descriptives(h: str = HEADLINE) -> pd.DataFrame:
     return q
 
 
+def sample_attrition(h: str = HEADLINE) -> pd.DataFrame:
+    """Panel -> 30d estimation sample, one filter at a time (#20)."""
+    df = _read_panel()
+    rows = [("panel (FY 2010-2024)", df)]
+    df = df[_log_pos(df[f"vol_{h}"]).notna()]
+    rows.append((f"valid {h} post-filing volatility", df))
+    df = df[_bool(df["liquid_pre"])]
+    rows.append(("pre-filing liquidity rule", df))
+    df = df[df["text_mismatch"] != 1]
+    rows.append(("text from the panel's 10-K", df))
+    df = df[df[TEXT_VARS].notna().all(axis=1)]
+    rows.append(("Item 1A text (>= 100 tokens)", df))
+    pre = df.assign(pre_log_vol=_log_pos(df["pre_vol"]))
+    for c in CONTROLS:
+        pre = pre[pre[c].notna()]
+        rows.append((f"non-missing {c}", pre))
+    out = pd.DataFrame([{"stage": s, "firms": int(d["ticker"].nunique()),
+                         "firm_years": len(d)} for s, d in rows])
+    out.to_csv(RESULTS_DIR / f"regression_sample_attrition_{h}.csv", index=False)
+    print(out.to_string(index=False))
+    return out
+
+
 ANALYSES = {
+    "attrition": lambda a: sample_attrition(),
     "describe": lambda a: descriptives(),
     "main": lambda a: (run_main("30d"), run_main("365d")),
     "horizons": lambda a: run_horizons(),

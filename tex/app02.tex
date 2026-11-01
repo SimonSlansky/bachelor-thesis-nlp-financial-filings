@@ -5,72 +5,78 @@ This appendix documents the use of artificial intelligence tools in
 preparing this thesis, as required by the university.
 
 % ─────────────────────────────────────────────────────────────────────────────
-\section*{Extraction Validation (Section~\ref{ssec:text_coverage})}
+\section*{Extraction audit 1 (Section~\ref{ssec:text_coverage})}
 
-\paragraph{Tool.} Google Gemini~2.5~Flash (accessed via the OpenAI-compatible
-Gemini API endpoint), with temperature set to~0 for deterministic output.
+\paragraph{Tool.} Google Gemini~2.5~Flash, accessed through the
+OpenAI-compatible Gemini API, temperature~0.
 
-\paragraph{Purpose.} An independent, automated quality audit of the
-SEC~10-K section extraction pipeline.  The model evaluated 200~extracted
-sections (100~Item~1A, 100~Item~7) against a structured five-criterion
-rubric (correct section, start boundary, end boundary, content quality,
-completeness) on a three-level scale (Pass / Minor / Fail).
+\paragraph{Input and task.} The model received one stored section at a time
+(the full extracted text of Item~1A or Item~7 with its word count, ticker and
+fiscal year) and a five-criterion rubric (correct section, start boundary,
+end boundary, content quality, completeness) with three levels (Pass, Minor,
+Fail). It did not receive the rest of the filing, so boundary judgements are
+made from the extracted text alone. The prompt is part of
+\texttt{scripts/validate\_extraction.py}.
 
-\paragraph{Contribution and verification.}
-The evaluation rubric, sampling strategy, prompt design, and statistical
-analysis (Wilson confidence intervals) were all designed by the author.
-The model's only role was applying the rubric to each extracted section.
-All Fail verdicts were manually spot-checked against the original SEC
-filings and confirmed to be correct.  Results are reported in
-Table~\ref{tab:ai_validation}.
-
-\begin{table}[htbp]
-  \centering
-  \small
-  \caption{LLM-assisted extraction validation results
-           ($n = 200$~sections, 100~per section type).}
-  \label{tab:ai_validation}
-  \begin{tabular}{l r@{/}l r r@{/}l r l}
-    \toprule
-    Criterion &
-      \multicolumn{2}{c}{Strict} & \% &
-      \multicolumn{2}{c}{Lenient} & \% &
-      95\,\% CI (lenient) \\
-    \midrule
-    Correct section   & 192 & 200 & 96.0 & 192 & 200 & 96.0 & [92.3\,--\,98.0\,\%] \\
-    Start boundary    & 191 & 200 & 95.5 & 193 & 200 & 96.5 & [93.0\,--\,98.3\,\%] \\
-    End boundary      & 192 & 200 & 96.0 & 193 & 200 & 96.5 & [93.0\,--\,98.3\,\%] \\
-    Content quality   & 191 & 200 & 95.5 & 195 & 200 & 97.5 & [94.3\,--\,98.9\,\%] \\
-    Completeness      & 189 & 200 & 94.5 & 191 & 200 & 95.5 & [91.7\,--\,97.6\,\%] \\
-    \midrule
-    Overall (all five) & 179 & 200 & 89.5 & 187 & 200 & 93.5 & [89.2\,--\,96.2\,\%] \\
-    \bottomrule
-  \end{tabular}
-\end{table}
+\paragraph{Sample.} 200 sections, drawn at random within five three-year
+fiscal-year strata (2010--2012, \dots, 2022--2024), 20 per stratum and section
+type; Item~1A and Item~7 were drawn independently (197 distinct filings).
+The texts the model rated are identical to the stored texts used in the
+analysis.
 
 % ─────────────────────────────────────────────────────────────────────────────
-\section*{Code Development}
+\section*{Extraction audit 2}
 
-\paragraph{Tool.} AI-powered code completion (integrated in VS Code).
+\paragraph{Tool.} Claude Opus~5.5 (Anthropic), used through the coding
+assistant described below, on 1~November~2026.
 
-\paragraph{Purpose.} Code completion during the
-development of the data-pipeline scripts that build the panel and
-extract the 10-K text sections.
+\paragraph{Input and task.} The same 200 sections and the same rubric, blind
+to the ratings of audit~1. Because of the length of the sections, the model
+received for each section the first and last 1{,}200 characters, a
+600-character excerpt from the middle and the word count. It therefore
+judges the start and end boundaries on the same evidence as audit~1 but sees
+less of the body of each section. The ratings are stored in the repository
+(\texttt{admin/claude\_audit/}).
 
-\paragraph{Contribution and verification.}
-All generated code was reviewed, tested, and modified by the author.
-The overall architecture, variable definitions, and analytical choices
-are the author's own.
+\paragraph{Results.} Table~\ref{tab:ai_validation} reports both audits. The
+two models agree on the overall verdict for 96.5\% of the sections.
+
+\input{tables/ai_validation}
+
+\paragraph{Limitations.} Both audits are LLM judgements of the extracted text
+without the original filing, and the second model is used as a check of the
+first, not as ground truth. No human audit was completed for this version: a
+blind labelling sheet of 51 sections (50 random and the remaining
+LLM-flagged section) and the code to compute agreement with the LLM ratings
+are part of the repository. The audits do not compare the parser with other
+extraction methods, so no claim is made about its accuracy relative to
+plain-text or XBRL-based extraction.
 
 % ─────────────────────────────────────────────────────────────────────────────
-\section*{Writing Assistance}
+\section*{Code development, analysis and text revision}
 
-\paragraph{Tool.} AI-powered writing assistant (integrated in VS Code).
+\paragraph{Tools.} AI code completion in VS Code during the original
+development; for the revision of the thesis, an AI coding agent in VS Code
+(GitHub Copilot with Claude Opus~5.5).
 
-\paragraph{Purpose.} Grammar and style suggestions for English-language
-prose in the thesis text.
+\paragraph{Purpose.} The agent was used to rewrite and test the data and
+estimation scripts, to re-run the analysis, to generate the tables and
+figures from the stored results, to check the references against the
+Crossref database, and to draft revised text of Chapters~\ref{ch:data}
+to~\ref{ch:robustness}, the appendices and the conclusion.
 
-\paragraph{Contribution and verification.}
-All substantive content, argumentation, and interpretation are the
-author's own.  The tool was used only for language polishing; every
-suggestion was reviewed before acceptance.
+\paragraph{Contribution and verification.} The research questions, the
+hypotheses, the decisions on the revision and the decision rule for H3 are
+the author's. All code, results and text produced with the agent were
+reviewed by the author; every number in the text is generated by the
+scripts in the repository, and a script checks the numbers in the text
+against the generated results.
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section*{Writing assistance}
+
+\paragraph{Tool.} AI writing assistant integrated in VS Code.
+
+\paragraph{Purpose.} Grammar and style suggestions for English prose.
+
+\paragraph{Verification.} Every suggestion was reviewed before acceptance.

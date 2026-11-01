@@ -1,0 +1,2 @@
+50,000   # literature: approximate sample of Loughran & McDonald (2011), cited
+229.105  # regulation citation: 17 CFR 229.105 (Reg S-K Item 105)

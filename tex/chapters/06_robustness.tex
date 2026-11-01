@@ -3,311 +3,270 @@
 \label{ch:robustness}
 % =============================================================================
 
-This chapter checks that the headline results of
-Chapter~\ref{ch:results} survive several variations in the
-specification.
+This chapter checks the results of Chapter~\ref{ch:results} against other
+horizons, specifications, samples and methods of inference, and examines the
+omission measure of H3 in detail.
 
 
 % ─────────────────────────────────────────────────────────────────────────────
-\section{Alternative post-filing windows}
+\section{Alternative horizons}
 \label{sec:robustness_horizons}
 % ─────────────────────────────────────────────────────────────────────────────
 
-The headline specification measures post-filing volatility over a
-30-day window. To check the choice of window we re-estimate the
-H1+H2 specification of equation~\ref{eq:decomposition_model} at
-five additional horizons (5, 10, 90, 180, and 365~days).
-Table~\ref{tab:horizons} reports all six columns side by side.
+Table~\ref{tab:horizons} re-estimates the composite and decomposition
+specifications with volatility over 5, 10, 30, 90, 180 and 365 days. The
+length coefficient is positive and significant at the 1\% level at every
+horizon (between $+0.058$ and $+0.101$ in the decomposition). LitDensity is
+negative and significant from 30 days on ($t$ between $-2.90$ and $-5.38$),
+but not at 5 or 10 days, where the windows contain few returns. UncDensity
+is never significant. The composite RiskDensity is significant at the 5\%
+level from 90 days on. Figure~\ref{fig:horizon} plots the length and
+LitDensity coefficients. The coefficients are not compared formally across
+horizons, because the windows overlap and the estimates are correlated.
 
 \input{tables/horizons}
-
-All three text coefficients keep the predicted sign at every
-horizon: positive for $\ln(\text{Words}^{1A})$, negative for
-LitDensity, and not significantly different from zero for
-UncDensity. Neither H1 nor the LM-list decomposition reverses for
-any of the windows. The length coefficient is significant at the
-1\%~level at every horizon. The LitDensity coefficient is
-significant at the 1\%~level from 10~days onward, with $|t|$
-between $2.76$ (10~days) and $4.19$ (180~days). At 5~days it has
-the same sign but is not significant ($-4.15$, $t = -1.36$). A
-5-day window holds only a few daily returns, so the volatility
-estimate is noisy and the sample is smaller (5{,}234~firm-years).
-The UncDensity coefficient is never significant ($|t| \leq 1.21$
-at every window). The 30-day window is not one in which the
-results happen to be strongest.
-
-Both coefficient series decline in a similar way with $h$,
-consistent with a signal that is priced over weeks rather than
-years. We do not fit a formal half-life because the error terms
-across horizons are correlated through the shared daily returns.
-
-Figure~\ref{fig:horizon} plots the two headline coefficients with
-their 95\% confidence intervals across all six horizons. The
-length effect (left) is positive and significant throughout, and
-the litigious-density effect (right) is negative throughout and
-significant from 10~days onward. Both become smaller at longer
-windows.
 
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=\textwidth]{img/fig_horizon_profile.pdf}
-\caption{Length (H1, left) and LM-Litigious density (H2, right)
-coefficients with 95\% confidence intervals across the six
-post-filing horizons ($h = 5$, 10, 30, 90, 180, and 365~days;
-horizons are displayed at equal spacing for readability). Both
-effects keep their sign at every horizon and decay towards longer
-windows.}
+\caption{Length (left) and LitDensity (right) coefficients with 95\%
+confidence intervals at the six horizons (decomposition specification,
+industry and year fixed effects; horizons on a log scale).}
 \label{fig:horizon}
 \end{figure}
 
-% ─────────────────────────────────────────────────────────────────────────────
-\section{Pre-COVID and COVID-era sub-samples}
-\label{sec:robustness_subperiods}
-% ─────────────────────────────────────────────────────────────────────────────
-
-The 2020 fiscal year and its aftermath were a large shock to both
-equity volatility and corporate disclosure. Average annualised
-volatility roughly doubled in spring 2020, and Item~1A sections
-grew longer as firms added pandemic and supply-chain language. We
-re-estimate the H1+H2 decomposition specification
-(equation~\ref{eq:decomposition_model}) separately for the two
-periods. Filings with fiscal year $\leq 2019$ form the pre-COVID
-sample (3{,}595~firm-years) and filings with fiscal year $\geq 2020$
-form the COVID-era sample (2{,}453~firm-years). All other features
-of the specification are unchanged. Table~\ref{tab:subperiod}
-reports the result.
-
-\input{tables/subperiods}
-
-Length and LitDensity have the predicted signs and similar
-magnitudes in both periods. Length is
-significant at the 1\% level in both ($\beta = +0.100$, $t = +5.99$
-pre-COVID; $\beta = +0.168$, $t = +8.58$ COVID era). LitDensity is
-negative and significant in both ($\beta = -5.86$, $t = -2.74$
-pre-COVID; $\beta = -10.18$, $t = -5.64$ COVID era). UncDensity is
-insignificant in both, as in the full sample. Length and
-LitDensity coefficients are larger in absolute value in the
-COVID-era sample, consistent with the higher level of volatility
-in that period, but the pattern is the same. The main results are
-not driven by COVID.
-
 
 % ─────────────────────────────────────────────────────────────────────────────
-\section{Within-firm identification: firm fixed effects}
+\section{Robustness of the H1 and H2 estimates}
+\label{sec:robustness_h12}
+% ─────────────────────────────────────────────────────────────────────────────
+
+Table~\ref{tab:robust_30d} reports the decomposition specification under
+alternative choices, one change per row (Table~\ref{tab:robust_365d} in
+Appendix~\ref{app:variables} repeats it at 365 days).
+
+\input{tables/robustness_30d}
+
+\paragraph{Market conditions and earnings releases.} Adding the market's
+volatility over the same window, replacing the fiscal-year fixed effects by
+filing-month $\times$ fiscal-year effects, and using idiosyncratic volatility
+as the dependent variable leave the length coefficient between $+0.053$ and
+$+0.089$ and LitDensity between $-2.235$ and $-3.399$, all significant at the
+5\% level. Earnings releases rarely fall in the 30-day window, because the
+release usually precedes the 10-K; dropping the windows that contain one,
+or removing the release day and the following day from every window, does
+not change the estimates.
+
+\paragraph{Industry definition.} Finer (SIC3) or alternative
+(Fama--French 48) industry effects, today's rather than the historical SIC
+code, and excluding utilities (SIC~49) and health services (SIC~80), whose
+risk disclosures are shaped by regulation, all leave both coefficients
+significant; with Fama--French industries LitDensity is $-4.052$
+($t = -3.64$).
+
+\paragraph{Sample.} Requiring at least three, five or seven years per firm,
+using only firms observed in every fiscal year 2012--2024 (3{,}367
+firm-years), and dropping the market capitalisations based on weighted-average
+share counts leave the results intact. Dropping every firm-year with an
+imputed balance-sheet value reduces the sample to 3{,}820 firm-years, mostly
+because total liabilities are often computed from assets and equity; length
+stays significant ($+0.078$, $t = +4.87$), but LitDensity is no longer
+($-1.761$, $t = -1.05$). The LitDensity result therefore depends partly on
+firm-years whose leverage is constructed rather than reported.
+
+\paragraph{Counts instead of ratios.} With $\ln(1+n^{\text{unc}})$ and
+$\ln(1+n^{\text{lit}})$ next to $\ln(\text{Words}^{1A})$, no ratio enters
+the model. The litigious count is negative but significant only at the 10\%
+level ($t = -1.76$), and the uncertainty count is positive ($t = +2.47$).
+Holding length fixed, a higher count is a higher density, so this
+specification restates H2 without the ratio; that the litigious coefficient
+weakens shows that the ratio form matters for its significance.
+
+\paragraph{Timing.} Using the text of the previous year's 10-K instead of
+the current one leaves the length coefficient unchanged ($+0.057$) and
+LitDensity weaker ($-2.449$, $t = -1.95$). When the level of year $t-1$ and
+the change from $t-1$ to $t$ enter together, the levels carry the
+association and the changes are insignificant. The text variables
+therefore act as slowly moving firm characteristics; the association is not
+driven by the revisions made in the current filing.
+
+\paragraph{Before and after 2020.} Interacting the three text variables with
+a dummy for fiscal years from 2020 shows no significant change after 2019:
+the interaction terms have $t$-statistics of $+1.42$ (length), $+1.02$
+(UncDensity) and $-1.09$ (LitDensity). In this specification the pre-2020
+LitDensity coefficient alone is not significant ($t = -1.47$); the pooled
+estimate is more precise than either sub-period.
+
+\paragraph{Inference with few year clusters.} Table~\ref{tab:inference}
+compares $p$-values. The wild cluster bootstrap by fiscal year gives
+$p = 0.001$ for length and $p = 0.005$ for LitDensity in the industry
+fixed-effects model, close to the two-way clustered values; with one-way
+firm clustering LitDensity has $p = 0.028$. The conclusions do not depend on
+the clustering choice.
+
+\input{tables/inference}
+
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Firm fixed effects}
 \label{sec:robustness_firmfe}
 % ─────────────────────────────────────────────────────────────────────────────
 
-The headline specification absorbs two-digit SIC industry and
-fiscal-year fixed effects, so coefficients come from variation
-\emph{within an industry-year cell}. This removes industry
-differences in risk vocabulary and macroeconomic time effects, but
-persistent firm-level traits could still drive the result. We
-replace the industry fixed effects with firm fixed effects, so
-that identification comes only from \emph{within-firm} year-to-year
-variation in the three text variables. Table~\ref{tab:firm_fe}
-reports the result at the 30-day horizon. Standard errors are
-clustered by both firm and fiscal year.
+The headline models compare firms within an industry and year. Replacing the
+industry effects by firm effects asks a different question: whether a firm
+whose Item~1A becomes longer or denser than usual has higher volatility
+than usual. Table~\ref{tab:firm_fe} reports the answer, and
+Figure~\ref{fig:coef_fe} compares the coefficients.
 
 \input{tables/firm_fe}
 
-The length effect remains, though it is smaller:
-$\hat{\beta}^{\text{len}} = +0.069$ ($t = +2.57$, $p \approx 0.01$).
-Firms that lengthen their Item~1A from one year to the next have
-higher subsequent volatility. Both LM sub-densities become
-insignificant: $\hat{\beta}^{\text{unc}} = -2.39$ ($t = -0.92$) and
-$\hat{\beta}^{\text{lit}} = -1.04$ ($t = -0.26$). The mix of risk
-vocabulary changes little within firms because Item~1A is largely
-carried over from one filing to the next \parencite{cazier2021},
-so there is little variation left to estimate a sub-density
-coefficient from. This fits the \textcite{cazier2021,beatty2019}
-view of cautionary boilerplate as a near-permanent firm-level
-disclosure style. We therefore interpret the H2 result as a
-between-firm pattern and do not claim a within-firm causal
-channel.
+Under firm fixed effects the length coefficient falls from $+0.058$ to
+$+0.009$ ($t = +0.45$), and no density coefficient is significant
+(LitDensity $-3.132$, $t = -1.02$). Adding the lagged dependent variable,
+whose coefficient is biased under firm fixed effects \parencite{nickell1981},
+changes nothing (column 3). The associations in Chapter~\ref{ch:results} are
+therefore between-firm patterns: firms with longer and more litigious
+risk-factor sections differ systematically in subsequent volatility from
+otherwise similar firms in the same industry and year, but year-to-year
+changes in a firm's own section do not track changes in its volatility. Two
+features of the data limit what the firm fixed-effects models can show.
+First, most of the variation in the text variables is between firms: only
+18\% of the variance of $\ln(\text{Words}^{1A})$ and 19\% of that of
+LitDensity is within firms (Table~\ref{tab:variance}), so the within
+estimates are imprecise; the confidence interval of the within-firm
+LitDensity coefficient contains the between-firm estimate. Second, Item~1A
+changes slowly from year to year \parencite{brown2011, cazier2021}, which is
+consistent with this variance split.
 
-Figure~\ref{fig:coef_fe} shows the contrast. Under industry and
-year fixed effects the length coefficient is positive, both density
-coefficients are precisely estimated, and LitDensity is below zero.
-With firm and year fixed effects the length effect is almost
-unchanged, but the density intervals widen and both include zero.
+\input{tables/variance_decomposition}
 
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=0.85\textwidth]{img/fig_coef_fe.pdf}
-\caption{H1 and H2 coefficients at the 30-day horizon with 95\%
-confidence intervals, under industry$+$year fixed effects (circles)
-versus firm$+$year fixed effects (squares). The length effect is
-stable across the two designs; the density coefficients lose
-significance once firm fixed effects absorb permanent disclosure
-styles.}
+\includegraphics[width=0.9\textwidth]{img/fig_coef_fe.pdf}
+\caption{Text coefficients at the 30-day horizon with 95\% confidence
+intervals, industry and year fixed effects (circles) versus firm and year
+fixed effects (squares). The length coefficient falls from $+0.058$ to
+$+0.009$; the density intervals under firm fixed effects are wide and
+include zero.}
 \label{fig:coef_fe}
 \end{figure}
 
 
 % ─────────────────────────────────────────────────────────────────────────────
-\section{Robustness of the strategic-silence result (H3)}
+\section{The omission measure (H3)}
 \label{sec:robustness_silence}
-% ────────────────────────────────────────────────────────────────────────────
+% ─────────────────────────────────────────────────────────────────────────────
 
-The H3 result of Section~\ref{sec:silence_results} comes from a
-within-firm specification at the 30-day horizon. Three features of
-the design call for further checks before reading it as evidence of
-strategic silence:
-(i)~the omission gap is mechanically negatively correlated with
-Item~1A length ($r = -0.93$), so with a weak length control the
-omission gap could proxy for length;
-(ii)~the SIC2 peer benchmark is one of several possible reference
-sets, and the result might depend on that choice;
-(iii)~the filing date and the start of the volatility window are
-close together, which leaves room for reverse causality if a
-difficult year produces both a shorter, less peer-aligned 10-K and
-higher volatility for unrelated reasons.
-Table~\ref{tab:silence_robust} reports six specifications that
-address these concerns; a placebo test is reported separately
-below.
+H3 is not supported in Chapter~\ref{ch:results}. This section examines the
+measure itself, to show that the null result does not come from a single
+construction choice, and reports the checks that address the criticisms of
+the earlier version of the measure. Table~\ref{tab:silence_robust} reports
+the coefficients and Table~\ref{tab:silence_diag} the diagnostics.
 
-Figure~\ref{fig:omission_length} illustrates the first concern.
-Longer Item~1A sections cover more of the peer vocabulary, so the
-omission gap falls steeply with length ($r = -0.93$). Column~(3)
-of Table~\ref{tab:silence_robust}, which removes the length
-component from the omission gap by orthogonalising it on
-$\ln(\textsc{Words}_{1A})$, is therefore the key check for H3.
+\input{tables/silence_robust}
+\input{tables/silence_diag}
+
+\paragraph{Length.} The omission gap is strongly related to length:
+$r = -0.915$ with $\ln(\text{Words}^{1A})$ in the H3 sample of 4{,}659
+firm-years (Figure~\ref{fig:omission_length}). A longer section mechanically
+covers more of the peer vocabulary. Three versions remove this link in
+different ways. The length-invariant gap computed from blocks of 3{,}000
+tokens has a correlation of $+0.424$ with length instead (the remaining
+relation runs through how varied a section's vocabulary is); the residual
+from a regression of the gap on length within each industry-year cell is
+uncorrelated with length by construction; and adding $\ln(\text{Words}^{\text{MD\&A}})$
+and the square of $\ln(\text{Words}^{1A})$ allows for a non-linear length
+effect. None of these versions is significant under either fixed-effect
+structure.
 
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=0.8\textwidth]{img/fig_omission_length.pdf}
-\caption{Item~1A omission gap against Item~1A length, one point per
-firm-year, with the OLS fit line. The strong negative association
-($r = -0.93$) is the central identification concern for H3 and
-motivates the length-orthogonalised specification in Column~(3) of
-Table~\ref{tab:silence_robust}. Firm-years with non-recoverable
-Item~1A text ($\textsc{Words}_{1A} = 0$, $n = 63$) are excluded from
-the figure: these observations mechanically take
-$\textsc{Omission}_{1A} = 1$ and do not enter any regression because
-the LM-density variables are undefined for them.}
+\caption{Omission gap against $\ln(\text{Words}^{1A})$, one point per
+firm-year of the 30-day H3 sample, with the OLS fit.}
 \label{fig:omission_length}
 \end{figure}
 
-\input{tables/silence_robust}
+\paragraph{Sources of variation.} Under firm fixed effects the gap varies
+only from year to year. The decomposition in Table~\ref{tab:silence_diag}
+attributes 91\% of the variance of the year-on-year change to changes in the
+firm's own text, 6\% to changes in the peers' texts and 3\% to entering and
+leaving peers. A fixed vocabulary for all years gives a gap with the same
+(insignificant) coefficients. The within-firm variation of the gap is
+therefore mostly a revision of the firm's own section, and only 13\% of its
+variance is within firms (Table~\ref{tab:variance}).
 
-\paragraph{Placebo (peer-cell shuffle).} The first check keeps the
-SIC2 cell sizes and the firm-year distribution fixed but randomly
-reassigns firms to SIC2 cells within each fiscal year, recomputes
-the omission gap of equation~\ref{eq:omission}, and re-estimates
-equation~\ref{eq:silence_model} with firm and year fixed effects.
-If the association reflects silence on \emph{peer-relevant} risks,
-the placebo coefficient should disappear. If it is a length
-artefact, the placebo should resemble the real coefficient. Across
-five permutations the placebo $t$-values are
-$1.00, 0.59, 2.19, 1.20, 1.39$. Four of the five are small, but one
-($t = 2.19$) is significant at the 5\%~level. The real coefficient
-($t = +2.58$) is only a little above the largest placebo value. So
-the placebo test gives only weak support: a random peer group can
-sometimes produce a similar association, most likely because the
-omission gap still carries some length information.
+\paragraph{Peer definition.} Peers defined by today's SIC code, and only
+cells with at least 20 peers (3{,}262 firm-years; Table~\ref{tab:h3_cells} in
+Appendix~\ref{app:variables} lists the industries, which are dominated by
+business services, utilities, chemicals and pharmaceuticals, machinery and
+electronics), give the same result.
 
-\paragraph{Length controls (Columns 3 and 5).}
-Column~(3) replaces the omission gap by its residual after
-regressing on $\ln(\textsc{Words}_{1A})$ within each (SIC2,
-fiscal year) cell; the residual has the predicted sign but is not
-significant ($t = +1.54$, $p = 0.12$). Column~(5) keeps the original
-gap but adds two more length controls (MD\&A word count and squared
-Item~1A log word count); the omission coefficient stays significant
-($t = +2.85$, $p = 0.004$). Linear or quadratic length controls do
-not remove the effect, but once the length part of the gap is
-fully removed (Column~3) the effect is no longer significant.
+\paragraph{Ranks and tails.} The decile rank of the gap within its
+industry-year cell and a dummy for the top decile (with the bottom decile
+controlled) are insignificant. These versions need cells with at least ten
+firms, which reduces the sample from 4{,}659 to 3{,}667 firm-years; 992
+firm-years lie in smaller cells.
 
-\paragraph{Large-cell restriction (Column 4) and prior-year
-specification (Column 6).} Restricting to cells with at least
-20~peers reduces the panel to $3{,}396$~firm-years and
-\emph{increases} the coefficient to $+2.47$ ($t = +3.01$), so the
-effect is stronger where the peer aggregate is measured more
-precisely. Column~(6) uses prior-year omission to address the
-filing-window overlap; the lagged coefficient is positive but
-significant only at the 10\%~level ($+0.448$, $t = +1.88$,
-$p = 0.06$).
+\paragraph{Timing.} The gap of the previous fiscal year, which is known long
+before the current filing and cannot reflect conditions at that filing, has a
+positive coefficient that is significant at the 5\% level under firm fixed
+effects ($+0.726$, $t = +1.97$) but not under industry effects
+($t = +1.37$). As one of many checks, and without a significant
+contemporaneous counterpart, this does not change the conclusion.
 
-\paragraph{Decile rank (Column 2).} Using the decile rank of
-omission within each (SIC2, fiscal year) cell keeps the positive
-sign but is not significant ($t = +0.74$). If there is an effect,
-it sits in the tails of the omission distribution, where
-omissions are most visible.
+\paragraph{Placebo.} Firms were reassigned at random to industry cells within
+each fiscal year, keeping the cell sizes, the gap was recomputed and the
+firm fixed-effects model re-estimated, 1{,}000 times. The observed
+$t$-statistic of $+0.70$ lies in the middle of the placebo distribution: the
+empirical two-sided $p$-value is 0.466, and 2.4\% of the
+placebo $t$-statistics exceed 1.96 (Figure~\ref{fig:placebo}). The real peer
+groups carry no more information about volatility than random ones.
 
-\paragraph{Summary for H3.} The omission coefficient has the
-predicted positive sign in every column. It stays significant with
-extra length controls and in the large-cell sample. However, it is
-not significant once the length part is fully removed (Column~3)
-or with the decile rank (Column~2), it is only significant at the
-10\%~level with prior-year omission (Column~6), and one of five
-placebo runs comes close to the real $t$-value. We therefore treat
-the H3 result as suggestive only: it is consistent with a
-within-firm strategic-silence channel, but we cannot rule out
-that it is partly a length effect, and we make no causal claim.
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.8\textwidth]{img/fig_placebo.pdf}
+\caption{Distribution of the omission-gap $t$-statistic in 1{,}000 placebo
+assignments of firms to industry cells (firm and year fixed effects, 30-day
+window), with the observed value.}
+\label{fig:placebo}
+\end{figure}
+
+\paragraph{Summary for H3.} Across the eleven specifications and both
+fixed-effect
+structures, the omission coefficient is significant in one (the prior-year
+gap under firm fixed effects, at the 5\% level without a multiple-testing
+adjustment). The verdict of Section~\ref{sec:silence_results} stands: H3 is
+not supported.
 
 
 % ─────────────────────────────────────────────────────────────────────────────
-\section{Stationarity of the panel}
+\section{Persistence and unit roots}
 \label{sec:robustness_stationarity}
 % ─────────────────────────────────────────────────────────────────────────────
 
-Every specification in this thesis is a dynamic panel: lagged
-log-volatility enters equation~\ref{eq:joint_model} and its
-extensions with its own coefficient $\phi$. If the outcome or a
-regressor had a unit root, the regression could be spurious. We
-test all twelve regression variables for stationarity with the
-(augmented) Dickey--Fuller test.
-
-\paragraph{How the test is applied.}
-Each variable is a panel of short annual series, with at most
-fifteen observations per firm. We adapt the
-\textcite{dickeyfuller1979} test in two steps. First, we subtract
-each year's cross-sectional mean from every variable, which removes
-common shocks such as the 2020 volatility spike, as the year fixed
-effects do in the regressions. Second, we run an augmented
-Dickey--Fuller regression (intercept, one lag) for each firm and
-combine the per-firm $p$-values with Fisher's method
-\parencite{maddala1999}. Pooling is needed because a single
-fifteen-year series has little power.
-Table~\ref{tab:stationarity} reports, for each variable, the
-average autoregressive coefficient, the average ADF statistic, the
-share of firms that reject the unit root individually, and Fisher's
-combined $p$-value.
+With at most 15 annual observations per firm, the main risk of a dynamic
+panel is the Nickell bias discussed in Section~\ref{sec:estimation}, not a
+spurious regression. For completeness, Table~\ref{tab:stationarity} reports
+two panel unit-root tests designed for short panels. Every variable is first
+demeaned by fiscal year. The Harris--Tzavalis test \parencite{harris1999}
+uses the balanced panel of firms observed in all years 2012--2024 and tests
+the null that every firm's series has a unit root against a common
+autoregressive coefficient below one; its $p$-values are simulated for the
+actual number of firms and years. The Im--Pesaran--Shin test \parencite{ips2003}
+averages firm-level augmented Dickey--Fuller statistics on the unbalanced
+panel; its null is that all firms have a unit root, and a rejection means
+that at least some firms' series are stationary, not that all are.
 
 \input{tables/stationarity}
 
-\paragraph{Autoregressive coefficients.}
-A unit root means $\rho = 1$. The estimates of $\hat\rho$ range
-from $-0.07$ for the (demeaned) outcome to at most $0.64$, far from
-one. After removing the common market factor, firm-specific
-log-volatility is almost serially uncorrelated ($\hat\rho \approx
-0$), and the most persistent variables (leverage, Item~1A length,
-and the risk-word densities) have $\hat\rho$ below two-thirds.
-
-\paragraph{Per-firm and pooled tests.}
-The average ADF statistic lies between $-1.6$ and $-2.6$, short of
-the $-2.9$ needed to reject at $5\%$ for a single series, and only
-$10$--$30\%$ of firms reject individually. This is expected given
-fifteen-year series. The pooled Fisher test rejects the unit-root
-null with a $p$-value below $0.001$ for all twelve variables. The
-Dickey--Fuller test without the augmentation lag rejects more often
-(the share of firms rejecting roughly doubles), so the result does
-not depend on the lag choice.
-
-\paragraph{Bounded variables.}
-The variables with the highest $\hat\rho$, leverage and the
-risk-word densities, are bounded by construction: leverage lies
-between zero and one, and the densities are word shares with sample
-maxima below $0.05$. A unit-root process has variance that grows
-without bound, so boundedness is evidence against a unit root,
-though not a proof of stationarity. Together with the test results
-above, it makes an integrated process implausible. The persistence
-of these variables reflects the fact that Item~1A is largely
-carried over from one filing to the next \parencite{cazier2021}, a
-slow-moving but mean-reverting firm trait, as in the firm
-fixed-effects result of Section~\ref{sec:robustness_firmfe}.
-
-\paragraph{Summary.} All regression variables have autoregressive
-coefficients well below one, and the pooled Dickey--Fuller test
-rejects the unit-root null for all twelve at the $0.1\%$ level. The
-panel is stationary, $I(0)$, and the main associations are not
-spurious regressions.
+Both tests reject the unit-root null for volatility, the text variables and
+most controls. Two variables are exceptions. For leverage the
+Harris--Tzavalis test does not reject ($\hat\rho = 0.772$, $p = 0.592$),
+while the Im--Pesaran--Shin test does; for the omission gap neither test
+rejects at the 5\% level ($\hat\rho = 0.758$, $p = 0.257$; IPS $p = 0.099$). Leverage is
+a control, and the omission gap enters only the H3 models, whose coefficient
+is insignificant. A ratio bounded between zero and one cannot follow a random
+walk forever, but over 13 years it can be persistent enough that these tests
+lack power; the results are therefore read as showing high persistence for
+these two variables rather than as proof of stationarity.

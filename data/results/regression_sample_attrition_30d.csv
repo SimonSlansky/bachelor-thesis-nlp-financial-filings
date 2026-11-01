@@ -1,0 +1,15 @@
+stage,firms,firm_years
+panel (FY 2010-2024),548,6757
+valid 30d post-filing volatility,538,6603
+pre-filing liquidity rule,538,6598
+text from the panel's 10-K,538,6592
+Item 1A text (>= 100 tokens),528,6387
+non-missing pre_log_vol,528,6387
+non-missing log_mcap,522,6253
+non-missing leverage,521,6083
+non-missing roa,520,5934
+non-missing asset_growth,520,5919
+non-missing bm,520,5919
+non-missing ret_pre_12m,520,5919
+non-missing current_ratio,512,5787
+non-missing ocf_to_assets,512,5782

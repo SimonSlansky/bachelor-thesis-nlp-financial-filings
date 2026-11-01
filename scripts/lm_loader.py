@@ -81,3 +81,7 @@ if __name__ == "__main__":  # pragma: no cover
         sys.exit(1)
     for k, v in lm.items():
         print(f"{k:>12s}: {len(v):>5d} words")
+    import json
+    sizes = {k: len(v) for k, v in lm.items()}
+    sizes["uncertainty_and_litigious"] = len(lm["uncertainty"] & lm["litigious"])
+    (DATA_DIR / "results" / "lm_dictionary.json").write_text(json.dumps(sizes, indent=2))
