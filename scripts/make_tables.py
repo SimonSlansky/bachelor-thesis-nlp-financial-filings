@@ -205,6 +205,8 @@ ROB = [("baseline", "Baseline (Table~\\ref{tab:main_30d}, col.\\ 5)"),
        ("vol_excl_ea_days", "Volatility without earnings-release days"),
        ("idio_vol", "Idiosyncratic volatility as DV"),
        ("fm_year_fe", "Filing-month $\\times$ year FE"),
+       ("cal_ym_fe", "Calendar year-month of filing FE (instead of fiscal year)"),
+       ("dec_fye_only", "Firms with a December fiscal-year end only"),
        ("sic3_fe", "SIC3 + year FE"), ("ff48_fe", "FF48 + year FE"),
        ("sic2_snapshot_fe", "Today's SIC2 + year FE"),
        ("excl_sic49_80", "Excluding utilities (49) and health services (80)"),
@@ -501,6 +503,30 @@ def tag_tables():
     write("tag_provenance", L)
 
 
+def timing_table():
+    t = pd.read_csv(RES / "timing_30d.csv").set_index("stat")["value"]
+    mon = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+    L = [r"\begin{table}[htbp]", r"\centering",
+         r"\caption{Fiscal-year ends and filing dates in the estimation sample (30-day window)}",
+         r"\label{tab:timing}", r"\small", r"\begin{tabular}{lrr}", r"\toprule",
+         r"Month & Fiscal year ends (\%) & 10-K filed (\%) \\", r"\midrule"]
+    for m in range(12):
+        L.append(f"{mon[m]} & {100 * t[f'share_fye_month_{m + 1}']:.1f} & "
+                 f"{100 * t[f'share_filed_in_month_{m + 1}']:.1f}" + r" \\")
+    L += [r"\bottomrule", r"\end{tabular}"]
+    L += note(r"Shares of the 5{,}782 firm-years. Fiscal-year end month: month of the period end, "
+              r"periods ending on 1--7 January counted to December. The median lag between period end "
+              rf"and filing is {t['lag_days_median']:.0f} days (10th percentile {t['lag_days_p10']:.0f}, "
+              rf"90th percentile {t['lag_days_p90']:.0f}). "
+              rf"{int(t['firms_non_dec_fye'])} of the 512 firms have a fiscal year that does not end in "
+              rf"December. {100 * t['share_filed_calendar_year_after_fy']:.1f}\% of the 10-Ks are filed in the "
+              r"calendar year after the fiscal year, and the filings of one fiscal year span a median of "
+              rf"{t['median_calendar_span_of_fy_filings_days']:.0f} calendar days; the filings fall in "
+              rf"{int(t['filing_calendar_months_distinct'])} distinct calendar months.")
+    L += [r"\end{table}"]
+    write("timing", L)
+
+
 def text_coverage():
     c = pd.read_csv(DATA / "text_coverage_by_year.csv")
     L = [r"\begin{table}[htbp]", r"\centering", r"\caption{Text coverage by fiscal year}",
@@ -536,7 +562,8 @@ def main():
     for f in (summary, correlation, lambda: main_table("30d"), lambda: main_table("365d"),
               horizons, firm_fe, lambda: robustness("30d"), lambda: robustness("365d"),
               inference, effect_sizes, variance_decomp, silence_main, silence_robust,
-              silence_diag, stationarity, attrition, tag_tables, text_coverage, h3_cells):
+              silence_diag, stationarity, attrition, tag_tables, text_coverage, h3_cells,
+              timing_table):
         f()
 
 

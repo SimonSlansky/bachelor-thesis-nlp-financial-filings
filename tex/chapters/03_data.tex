@@ -135,6 +135,31 @@ filing whose text is used. The fiscal year is the calendar year in which the
 period ends (periods ending on 1--7 January count to the previous year, for
 firms with 52/53-week years).
 
+\paragraph{Fiscal years and calendar time.} Firms do not share a fiscal
+calendar, so the 10-Ks of one fiscal year are filed at different calendar
+dates (Table~\ref{tab:timing} in Appendix~\ref{app:variables}). 72.6\% of the
+firm-years end in December, and 145 of the 512 firms in the estimation sample
+have a different fiscal-year end, from January to November. The median lag
+between period end and filing is 53 days (10th to 90th percentile: 38 to 59
+days), so most filings fall in February, but the filings of one fiscal year
+span a median of 390 calendar days and fall in 169 distinct calendar months.
+Four choices keep this heterogeneity from distorting the analysis. First, the
+fiscal year is assigned from the period end itself, not from the fiscal-year
+end month that the SEC reports today, which is unreliable for firms with
+52/53-week years and had shifted the labels of about 20 firms by one year in
+an earlier version of the panel. Second, every timing variable is anchored on
+the firm's own filing date, not on a common calendar date: the outcome
+window, the pre-filing windows and the lagged volatility of the previous
+filing all start at that firm's day~0 (Section~\ref{sec:outcome}), and the
+accounting variables and the text come from the filing that opens the window.
+Third, the previous fiscal year is matched only when it is exactly one year
+earlier, so that a change of the fiscal-year end never produces a lag of
+unequal length. Fourth, because a fiscal-year effect cannot remove
+calendar-time shocks when the filings of one fiscal year are spread over more
+than a year, the robustness checks replace it by the calendar month of the
+filing and restrict the sample to firms with a December year end
+(Section~\ref{sec:robustness_h12}).
+
 \paragraph{Tag choices.} One accounting concept can be reported under several
 US-GAAP elements, so the elements must be mapped explicitly
 \parencite{chychyla2015}. Two kinds of alternatives are handled differently.

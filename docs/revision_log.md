@@ -346,3 +346,19 @@ supported at 5%, litigious sub-list significant but fragile; H3 not
 supported); the 9 `% TODO` items
 (acknowledgements, Campbell sample size, cited window lengths and control
 sets, three end pages Crossref does not list, one reference not on Crossref).
+
+## Fiscal vs calendar year ends (owner question, 1 Nov 2026)
+Existing handling (now documented in Ch. 3 "Fiscal years and calendar time",
+Ch. 4 "Fiscal-year effects", Ch. 6 "Fiscal and calendar time", Appendix A
+Table `tab:timing`): fiscal year = year of the period end (1–7 Jan → previous
+year); all windows (outcome, pre-filing, lagged) anchored on each firm's own
+filing date; lag matched only to exactly t−1; liquidity/pre-vol windows in
+trading days before filing; market vol over the same window; filing-month ×
+fiscal-year FE. Added: calendar year-month-of-filing FE and December-FYE-only
+sample (`robustness_30d/365d.csv`: `cal_ym_fe`, `dec_fye_only`),
+`data/results/timing_30d.csv`. Facts: 72.6% of firm-years end in December,
+145 of 512 firms do not; median filing lag 53 days (p10–p90 38–59); filings of
+one fiscal year span a median 390 calendar days / 169 calendar months.
+Results (30d): calendar-month FE length +0.057 (t 4.94), LitDensity −2.33
+(t −2.62); December-FYE only (N 4,200, 371 firms) length +0.060 (4.64),
+LitDensity −1.91 (t −1.96, p 0.0505, 10% level only).

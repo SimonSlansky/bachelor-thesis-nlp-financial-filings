@@ -341,13 +341,19 @@ coefficients measure conditional associations between the disclosure and
 subsequent volatility, as in \textcite{campbell2014}.
 
 \paragraph{Fiscal-year effects.} The year fixed effects absorb shocks common
-to all firms of a fiscal year. Filing dates of one fiscal year span several
-calendar months, so a fiscal-year effect does not remove calendar-time
-market shocks within the year. Three robustness checks address this: the
-market (SPY) volatility over the same window as a control, filing-month
-$\times$ fiscal-year fixed effects, and idiosyncratic volatility (the
-residual standard deviation of a market-model regression inside the window)
-as the dependent variable.
+to all firms of a fiscal year. Because fiscal years end in different months,
+the filings of one fiscal year are spread over more than a year of calendar
+time (Section~\ref{sec:xbrl_tags}), so a fiscal-year effect does not remove
+calendar-time market shocks: the volatility spike of spring 2020, for
+example, falls in the post-filing windows of firms with different fiscal-year
+labels and in only part of the windows within one label.
+Four robustness checks address this:
+the market (SPY) volatility over the same window as a control, filing-month
+$\times$ fiscal-year fixed effects, fixed effects for the calendar month of
+the filing in place of the fiscal-year effects, and the sample of firms with
+a December fiscal-year end, for which fiscal and calendar time coincide. The
+idiosyncratic volatility (the residual standard deviation of a market-model
+regression inside the window) is used as a further dependent variable.
 
 \paragraph{Anticipated volatility.} Item~1A is written when management already
 knows current conditions, so expected volatility could shape the wording.

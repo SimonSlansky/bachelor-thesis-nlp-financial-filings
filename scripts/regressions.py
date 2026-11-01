@@ -149,6 +149,10 @@ def load_text_panel(h: str = HEADLINE, ind: str = "sic2_hist",
     df["fm_year"] = (pd.to_numeric(df["filing_month"], errors="coerce") * 10000
                      + df["fiscal_year"])
     df["post2019"] = (df["fiscal_year"] >= 2020).astype(float)
+    fd = pd.to_datetime(df["filing_date"], errors="coerce")
+    df["cal_ym"] = fd.dt.year * 100 + fd.dt.month   # calendar month of day 0
+    df["fye_month"] = (pd.to_datetime(df["year_end"], errors="coerce")
+                       - pd.Timedelta(days=7)).dt.month
     if liquid:
         df = df[_bool(df["liquid_pre"])]
     if drop_mismatch:
@@ -318,6 +322,15 @@ def run_robustness(h: str = HEADLINE) -> pd.DataFrame:
     d = load_text_panel(h, extra=("fm_year",))
     add("fm_year_fe", fit(d, X5, absorb=("ind", "fm_year")), absorb="ind+filing_month_x_year",
         cluster="firm+year")
+    # fiscal years end in different months: absorb calendar time directly
+    # (calendar year-month of the filing) instead of the fiscal-year label
+    d = load_text_panel(h, extra=("cal_ym",))
+    add("cal_ym_fe", fit(d, X5, absorb=("ind", "cal_ym")), absorb="ind+calendar_year_month",
+        cluster="firm+year")
+    # firms whose fiscal year ends in December: fiscal and calendar time coincide
+    dec = base[base["fye_month"] == 12]
+    add("dec_fye_only", fit(dec, X5), absorb="ind+year", cluster="firm+year",
+        n_nondec_dropped=int(len(base) - len(dec)))
     # #30 idiosyncratic volatility as DV
     d = load_text_panel(h, dv="idio")
     add("idio_vol", fit(d, X5), absorb="ind+year", cluster="firm+year", dv="idio")
@@ -503,8 +516,44 @@ def sample_attrition(h: str = HEADLINE) -> pd.DataFrame:
     return out
 
 
+def timing(h: str = HEADLINE) -> pd.DataFrame:
+    """Fiscal-year-end months, filing lags and filing months of the sample."""
+    d = load_text_panel(h)
+    fd = pd.to_datetime(d["filing_date"])
+    lag = (fd - pd.to_datetime(d["year_end"])).dt.days
+    rows = [{"stat": f"share_fye_month_{m}", "value": float((d["fye_month"] == m).mean()),
+             "n": int((d["fye_month"] == m).sum())} for m in range(1, 13)]
+    rows += [{"stat": f"share_filed_in_month_{m}", "value": float((fd.dt.month == m).mean()),
+              "n": int((fd.dt.month == m).sum())} for m in range(1, 13)]
+    rows += [{"stat": "firms_dec_fye", "value": float(d.loc[d["fye_month"] == 12, "ticker"].nunique()),
+              "n": int(d["ticker"].nunique())},
+             {"stat": "firms_non_dec_fye", "value": float(d.loc[d["fye_month"] != 12, "ticker"].nunique()),
+              "n": int(d["ticker"].nunique())},
+             {"stat": "firm_years_dec_fye", "value": float((d["fye_month"] == 12).mean()),
+              "n": int((d["fye_month"] == 12).sum())},
+             {"stat": "share_filed_calendar_year_after_fy",
+              "value": float((fd.dt.year > d["fiscal_year"]).mean()),
+              "n": int((fd.dt.year > d["fiscal_year"]).sum())},
+             {"stat": "share_filed_same_calendar_year_as_fy",
+              "value": float((fd.dt.year == d["fiscal_year"]).mean()),
+              "n": int((fd.dt.year == d["fiscal_year"]).sum())},
+             {"stat": "lag_days_p10", "value": float(lag.quantile(.10)), "n": len(d)},
+             {"stat": "lag_days_median", "value": float(lag.median()), "n": len(d)},
+             {"stat": "lag_days_p90", "value": float(lag.quantile(.90)), "n": len(d)},
+             {"stat": "filing_calendar_months_distinct", "value": float(d["cal_ym"].nunique()),
+              "n": len(d)}]
+    span = d.assign(fd=fd).groupby("fiscal_year")["fd"].agg(["min", "max"])
+    rows.append({"stat": "median_calendar_span_of_fy_filings_days",
+                 "value": float((span["max"] - span["min"]).dt.days.median()), "n": len(span)})
+    out = pd.DataFrame(rows)
+    out.to_csv(RESULTS_DIR / f"timing_{h}.csv", index=False)
+    print(f"  -> timing_{h}.csv")
+    return out
+
+
 ANALYSES = {
     "attrition": lambda a: sample_attrition(),
+    "timing": lambda a: timing(),
     "describe": lambda a: descriptives(),
     "main": lambda a: (run_main("30d"), run_main("365d")),
     "horizons": lambda a: run_horizons(),
