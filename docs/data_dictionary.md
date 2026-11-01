@@ -198,7 +198,27 @@ winsorised (bounded in [0, 1]).
 | `commission_1a` | focal TF-IDF mass on terms no peer uses |
 | `peer_n_1a` | number of peers |
 
-## 6. Sample rules
+## 6. Coverage after the Phase-1 rebuild (1 Nov 2026)
+
+Panel `data/annual_panel.csv`: 548 firms, 6,757 firm-years, FY 2010–2024.
+
+| Item | Value | Source file |
+|---|---|---|
+| Item 1A / Item 7 text (≥ 100 tokens) | 96.3% / 94.9% of firm-years (by year: `data/text_coverage_by_year.csv`; lowest FY2010 92.8%, FY2024 94.7%) | `text_coverage_by_year.csv` |
+| shares outstanding | 97.8% (dei 6,042; weighted-average basic 445; balance-sheet 118) | `annual_panel.csv` (`shares_source`) |
+| `log_mcap` / `bm` | 96.7% / 95.9% of `volatility_horizons.csv` rows | `results/volatility_horizons_coverage.csv` |
+| `vol_30d`, `pre_vol`, `ret_pre_12m` | 98.8% (6 firms never had Yahoo price files) | idem |
+| `liquid_pre` | 98.7% of filings pass | idem |
+| historical SIC (`sic_at_filing`) | 99.99%; SIC4 differs from today in 2.2%, SIC2 in 1.6% of firm-years | `filing_metadata.csv` |
+| `text_mismatch = 1` | 7 firm-years (text from a 10-K/A, panel now uses the original 10-K) | `accession_changes.csv` |
+| imputations | liabilities from A − E 2,171; forward-filled assets 1, liabilities 32 | `annual_panel.csv` flags |
+| data cut-off | 2026-10-30 (last SPY close); FY2022/23/24 `vol_365d` missing for 9 firm-years each (firms without prices) | `phase1_checklist.csv` |
+
+FY2024 text coverage is lower because the fiscal-year fix (§2) gives ~15 firms an
+FY2024 observation (period ending late Dec 2024) that the extraction run had labelled
+FY2025 and therefore never extracted; no text is downloaded to fill it.
+
+## 7. Sample rules
 
 - Universe: `data/universe.csv` — 548 tickers frozen from the SEC company list. The file
   holds the firms that passed the operating-company and non-financial (SIC 6000–6999

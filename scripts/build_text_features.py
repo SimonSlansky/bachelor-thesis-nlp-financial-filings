@@ -38,24 +38,18 @@ HORIZON_COLS = ["vol_5d", "vol_10d", "vol_30d", "vol_90d", "vol_180d", "vol_365d
 
 
 def _merge_filing_metadata(p: pd.DataFrame, text_df: pd.DataFrame) -> pd.DataFrame:
-    """Historical SIC and section source (main document vs exhibit)."""
-    import numpy as np
+    """Historical SIC at filing (#72).  The section source (main document vs
+    exhibit) is not available: measuring it would need the 10-Ks again (#26)."""
     meta_p = DATA_DIR / "filing_metadata.csv"
     if meta_p.exists():
-        m = (pd.read_csv(meta_p).drop_duplicates(["ticker", "fiscal_year"], keep="last")
-             [["ticker", "fiscal_year", "sic_at_filing", "src_1a", "src_7"]])
-        p = p.drop(columns=[c for c in ("sic_at_filing", "src_1a", "src_7") if c in p])
-        p = p.merge(m, on=["ticker", "fiscal_year"], how="left")
-        # 'exhibit_or_none' + stored text present => text came from the exhibit.
-        for sec, wcol in (("1a", "words_1a"), ("7", "words_mda")):
-            c = f"src_{sec}"
-            amb = p[c].eq("exhibit_or_none")
-            p.loc[amb & (p[wcol] >= 100), c] = "exhibit"
-            p.loc[amb & ~(p[wcol] >= 100), c] = "none"
+        m = pd.read_csv(meta_p).drop_duplicates(["ticker", "fiscal_year"], keep="last")
+        keep = [c for c in ("sic_at_filing", "sic_source") if c in m.columns]
+        p = p.drop(columns=[c for c in keep + ["src_1a", "src_7"] if c in p])
+        p = p.merge(m[["ticker", "fiscal_year", *keep]], on=["ticker", "fiscal_year"],
+                    how="left")
         p["sic_hist"] = p["sic_at_filing"].fillna(p["sic"])
         print(f"  filing metadata: SIC coverage {p['sic_at_filing'].notna().mean():.1%}, "
-              f"SIC changed vs today in {(p['sic_at_filing'].notna() & (p['sic_at_filing'] != p['sic'])).mean():.1%}; "
-              f"1A from exhibit: {(p['src_1a'] == 'exhibit').sum()}")
+              f"SIC changed vs today in {(p['sic_at_filing'].notna() & (p['sic_at_filing'] != p['sic'])).mean():.1%}")
     else:
         print("  [warn] filing_metadata.csv missing: run backfill_filing_metadata.py")
         p["sic_hist"] = p["sic"]

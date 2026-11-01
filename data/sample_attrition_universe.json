@@ -1,0 +1,17 @@
+[
+  {
+    "stage": "universe (SEC list, top N)",
+    "firms": 548,
+    "firm_years": null
+  },
+  {
+    "stage": "operating, non-financial, valid FYE",
+    "firms": 548,
+    "firm_years": null
+  },
+  {
+    "stage": ">= 5 years of 10-K XBRL data",
+    "firms": 548,
+    "firm_years": 8000
+  }
+]

@@ -61,3 +61,4 @@ data/_horizons_log.txt
 # Large backups (keep on disk, never commit)
 admin/pre_*/text_sections.csv
 admin/*.log
+data/prices_raw/

@@ -1,0 +1,60 @@
+item,stat,value,note
+1,old firms,529,
+1,old firm-years,6483,
+1,old FY range,2010-2024,
+1,new firms,548,
+1,new firm-years,6757,
+1,new FY range,2010-2024,
+1,firm-years only old / only new / both,5 / 280 / 6478,
+2,firm-years with changed net_income (matched),2655,of 6478
+2,"net_income == ni_consol where ni_consol exists (raw, before locking)",1.0000,n=4598
+2,share ni_consol - ni_parent ~= ni_nci (within 1% of assets),0.9973,n=2989
+2,firm-years reporting ProfitLoss (ni_consol),4598,
+2,net_income tag counts (raw),"{""ProfitLoss"": 4598, ""NetIncomeLoss"": 3184, ""IncomeLossFromContinuingOperations"": 31}",
+3,firm-years with stored text in new panel,6587,
+3,accession changed,7,
+3,changed but same-period original 10-K (text valid),0,
+3,text_mismatch = 1,7,0.11% of text firm-years
+4,shares_out coverage,0.9775,
+4,shares_out source,"{""dei:EntityCommonStockSharesOutstanding"": 6042, ""us-gaap:WeightedAverageNumberOfSharesOutstandingBasic"": 445, ""us-gaap:CommonStockSharesOutstanding"": 118}",
+5,AAPL FY2022 filed 2022-10-28,"mcap=$2,303bn price_pre=144.80 shares=15,908m",
+5,AAPL FY2023 filed 2023-11-03,"mcap=$2,762bn price_pre=177.57 shares=15,553m",
+5,AAPL FY2024 filed 2024-11-01,"mcap=$3,415bn price_pre=225.91 shares=15,116m",
+5,NVDA FY2022 filed 2022-03-18,"mcap=$622bn price_pre=247.66 shares=2,510m",
+5,NVDA FY2023 filed 2023-02-24,"mcap=$585bn price_pre=236.64 shares=2,470m",
+5,NVDA FY2024 filed 2024-02-21,"mcap=$1,736bn price_pre=694.52 shares=2,500m",
+5,TSLA FY2022 filed 2023-01-31,"mcap=$527bn price_pre=166.66 shares=3,164m",
+5,TSLA FY2023 filed 2024-01-29,"mcap=$584bn price_pre=183.25 shares=3,185m",
+5,TSLA FY2024 filed 2025-01-30,"mcap=$1,252bn price_pre=389.10 shares=3,217m",
+5,MSFT FY2022 filed 2022-07-28,"mcap=$2,004bn price_pre=268.74 shares=7,458m",
+5,MSFT FY2023 filed 2023-07-27,"mcap=$2,510bn price_pre=337.77 shares=7,430m",
+5,MSFT FY2024 filed 2024-07-30,"mcap=$3,172bn price_pre=426.73 shares=7,433m",
+5,JNJ FY2022 filed 2023-02-16,"mcap=$415bn price_pre=159.37 shares=2,604m",
+5,JNJ FY2023 filed 2024-02-16,"mcap=$380bn price_pre=157.92 shares=2,409m",
+5,JNJ FY2024 filed 2025-02-13,"mcap=$374bn price_pre=155.26 shares=2,408m",
+5,KO FY2022 filed 2023-02-21,"mcap=$260bn price_pre=60.12 shares=4,327m",
+5,KO FY2023 filed 2024-02-20,"mcap=$256bn price_pre=59.39 shares=4,312m",
+5,KO FY2024 filed 2025-02-20,"mcap=$301bn price_pre=70.07 shares=4,301m",
+6,tag_overlap.csv,tag_overlap.csv,"[{""metric"":""net_income"",""tag_a"":""ni_consol"",""tag_b"":""ni_parent"",""n_both"":3838,""median_pp"":0.0432306323,""mean_pp"":0.3596047235,""p90_pp"":0.8082461076,""p95_pp"":1.479575443,""p99_pp"":3.5616714404,""max_pp"":37.4394555712,""share_identical"":0.2037519541,""n_material"":303,""share_material"":0.0789473684,""material_threshold"":0.01},{""metric"":""operating_cash_flow"",""tag_a"":""ocf_total"",""tag_b"":""ocf_cont"",""n_both"":417,""median_pp"":0.0350452158,""mean_pp"":0.367900389,""p90_pp"":1.3777976176,""p95_pp"":1.7959990643,""p99_pp"":4.1855072246,""max_pp"":6.4998594321,""share_identical"":0.3045563549,""n_material"":50,""share_material"":0.1199040767,""material_threshold"":0.01}]"
+6,tag_locking_summary.csv,tag_locking_summary.csv,"[{""metric"":""stockholders_equity"",""values_nulled"":637,""values_before"":7900,""firms_with_multiple_tags"":171,""firms"":543},{""metric"":""net_income"",""values_nulled"":38,""values_before"":7813,""firms_with_multiple_tags"":209,""firms"":548},{""metric"":""operating_cash_flow"",""values_nulled"":0,""values_before"":7956,""firms_with_multiple_tags"":217,""firms"":548}]"
+6,sample_attrition.csv,sample_attrition.csv,"[{""stage"":""universe (SEC list, top N)"",""firms"":548,""firm_years"":null},{""stage"":""operating, non-financial, valid FYE"",""firms"":548,""firm_years"":null},{""stage"":"">= 5 years of 10-K XBRL data"",""firms"":548,""firm_years"":8000.0},{""stage"":""raw extraction"",""firms"":548,""firm_years"":8000.0},{""stage"":""tag locking"",""firms"":548,""firm_years"":8000.0},{""stage"":""transitions & dedup"",""firms"":548,""firm_years"":7958.0},{""stage"":""imputation"",""firms"":548,""firm_years"":7958.0},{""stage"":""returns & volatility"",""firms"":548,""firm_years"":7958.0},{""stage"":""ratios"",""firms"":548,""firm_years"":7958.0},{""stage"":""drop earliest year"",""firms"":548,""firm_years"":7410.0},{""stage"":""cap FY <= 2024"",""firms"":548,""firm_years"":6757.0}]"
+6,imputed_liab_identity count,2171,
+6,imputed_ffill_total_assets count,1,
+6,imputed_ffill_total_liabilities count,32,
+7,data cut-off (last SPY trading day),2026-10-30,
+7,FY2022 vol_365d NaN,9,of 542
+7,FY2023 vol_365d NaN,9,of 547
+7,FY2024 vol_365d NaN,9,of 545
+8,coverage of every column,data/results/volatility_horizons_coverage.csv,
+8,"corr(vol_30d new, backup)",1.00000,n=6344
+8,share idio_vol_30d < vol_30d,0.8831,
+8,share idio_vol_365d < vol_365d,0.9886,
+8,"median mkt_vol_30d by filing month, top 3","{""2020-02"": 0.897, ""2020-03"": 0.565, ""2011-07"": 0.447}",
+8,mean ea_in_30d,0.014,
+8,mean ea_in_90d,0.987,
+8,liquid_pre share,0.9874,
+9,Item 1A / Item 7 coverage (all years),0.9631 / 0.9486,
+9,sic_at_filing coverage,0.9999,
+9,share SIC4 differs from today,0.0218,
+9,share SIC2 differs from today,0.0164,
+11,min_years_sensitivity,"[{""min_years"": 3, ""firms"": 544, ""firm_years"": 6749}, {""min_years"": 5, ""firms"": 516, ""firm_years"": 6649}, {""min_years"": 7, ""firms"": 487, ""firm_years"": 6492}]",
