@@ -1,0 +1,41 @@
+\begin{table}[htbp]
+\centering
+\caption{Sample construction}
+\label{tab:attrition}
+\small
+\begin{tabular}{lrr}
+\toprule
+Stage & Firms & Firm-years \\
+\midrule
+\multicolumn{3}{l}{\emph{Universe (SEC ticker list, reconstructed with current metadata)}} \\
+SEC ticker list, first 1,000 rows & 1,000 &  \\
+$-$ not an operating company & 753 &  \\
+$-$ financial (SIC 6000-6999) & 600 &  \\
+$-$ no fiscal-year end & 599 &  \\
+$-$ < 5 years of 10-K XBRL data & 550 &  \\
+\multicolumn{3}{l}{\emph{Frozen universe (548 firms) to panel}} \\
+$\geq$ 5 years of 10-K XBRL data & 548 & 8,000 \\
+transitions \& dedup & 548 & 7,958 \\
+drop earliest year & 548 & 7,410 \\
+cap FY $\leq$ 2024 & 548 & 6,757 \\
+\multicolumn{3}{l}{\emph{Panel to 30-day estimation sample}} \\
+valid 30d post-filing volatility & 538 & 6,603 \\
+pre-filing liquidity rule & 538 & 6,598 \\
+text from the panel's 10-K & 538 & 6,592 \\
+Item 1A text ($\geq$ 100 tokens) & 528 & 6,387 \\
+non-missing pre\_log\_vol & 528 & 6,387 \\
+non-missing log\_mcap & 522 & 6,253 \\
+non-missing leverage & 521 & 6,083 \\
+non-missing roa & 520 & 5,934 \\
+non-missing asset\_growth & 520 & 5,919 \\
+non-missing bm & 520 & 5,919 \\
+non-missing ret\_pre\_12m & 520 & 5,919 \\
+non-missing current\_ratio & 512 & 5,787 \\
+non-missing ocf\_to\_assets & 512 & 5,782 \\
+\bottomrule
+\end{tabular}
+\par\smallskip
+\begin{minipage}{\linewidth}\footnotesize
+\emph{Notes.} The 1{,}000 firms are the first 1{,}000 rows of the SEC \texttt{company\_tickers.json} list as stored in the repository (2026-10-12); the universe file holds the 548 firms that passed these filters in the original run. Each estimation-sample row applies one more requirement.
+\end{minipage}
+\end{table}

@@ -1,9 +1,14 @@
 # latexmkrc: put intermediate and output files in /tmp to avoid OneDrive fileprovider issues
+@default_files = ('prace.tex');   # chapters/appendices are \input, not standalone
+$pdf_mode = 1;
+# never stop at an interactive "?" prompt; fail fast and report file:line
+$pdflatex = 'pdflatex -interaction=nonstopmode -halt-on-error -file-line-error %O %S';
+$max_repeat = 6;
 $out_dir = '/tmp/latex_build_bakalarka';
 
-# Ensure output directory exists
-if ( ! -d $out_dir ) {
-    system("mkdir -p $out_dir");
+# Ensure output directory exists (incl. chapters/ for \include'd .aux files)
+if ( ! -d "$out_dir/chapters" ) {
+    system("mkdir -p $out_dir/chapters");
 }
 
 # Keep standard clean behavior but target the output directory

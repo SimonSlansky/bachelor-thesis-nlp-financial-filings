@@ -1,0 +1,41 @@
+\begin{table}[htbp]
+\centering
+\caption{Robustness of the H1/H2 decomposition (365-day window)}
+\label{tab:robust_365d}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lcccr}
+\toprule
+ & $\ln(\text{Words}^{1A})$ & UncDensity & LitDensity & $N$ \\
+\midrule
+Baseline (Table~\ref{tab:main_30d}, col.\ 5) & $+0.084$*** $(+8.64)$ & $-0.106$ $(-0.11)$ & $-4.709$*** $(-5.38)$ & 5,782 \\
++ market volatility in window & $+0.085$*** $(+8.47)$ & $-0.189$ $(-0.21)$ & $-4.641$*** $(-5.32)$ & 5,782 \\
+Volatility without earnings-release days & $+0.069$*** $(+7.07)$ & $-0.426$ $(-0.44)$ & $-4.087$*** $(-4.53)$ & 5,782 \\
+Idiosyncratic volatility as DV & $+0.107$*** $(+8.88)$ & $-2.468$** $(-2.17)$ & $-5.227$*** $(-4.72)$ & 5,782 \\
+Filing-month $\times$ year FE & $+0.077$*** $(+8.36)$ & $+0.043$ $(+0.05)$ & $-4.046$*** $(-5.42)$ & 5,782 \\
+SIC3 + year FE & $+0.080$*** $(+7.79)$ & $-0.299$ $(-0.28)$ & $-4.138$*** $(-3.93)$ & 5,782 \\
+FF48 + year FE & $+0.083$*** $(+9.02)$ & $-0.020$ $(-0.02)$ & $-4.958$*** $(-5.70)$ & 5,782 \\
+Today's SIC2 + year FE & $+0.086$*** $(+9.48)$ & $-0.166$ $(-0.18)$ & $-4.500$*** $(-5.28)$ & 5,782 \\
+Excluding utilities (49) and health services (80) & $+0.085$*** $(+7.59)$ & $-0.713$ $(-0.73)$ & $-4.421$*** $(-4.72)$ & 5,112 \\
+Excluding weighted-average share counts & $+0.080$*** $(+7.30)$ & $-0.366$ $(-0.37)$ & $-4.858$*** $(-4.91)$ & 5,392 \\
+Excluding imputed balance-sheet values & $+0.087$*** $(+6.27)$ & $-1.494$ $(-1.30)$ & $-4.332$*** $(-3.37)$ & 3,820 \\
+Balanced panel, FY 2012--2024 & $+0.097$*** $(+8.25)$ & $+1.105$ $(+0.89)$ & $-4.807$*** $(-4.08)$ & 3,367 \\
+Firms with $\geq 3$ years & $+0.084$*** $(+8.58)$ & $-0.134$ $(-0.14)$ & $-4.731$*** $(-5.42)$ & 5,765 \\
+Firms with $\geq 5$ years & $+0.084$*** $(+8.27)$ & $-0.168$ $(-0.18)$ & $-4.699$*** $(-5.26)$ & 5,613 \\
+Firms with $\geq 7$ years & $+0.082$*** $(+8.05)$ & $-0.203$ $(-0.20)$ & $-4.598$*** $(-4.98)$ & 5,432 \\
++ lagged dependent variable & $+0.062$*** $(+7.42)$ & $-0.181$ $(-0.27)$ & $-3.495$*** $(-4.94)$ & 5,780 \\
+SE clustered by firm only & $+0.084$*** $(+8.31)$ & $-0.106$ $(-0.10)$ & $-4.709$*** $(-4.71)$ & 5,782 \\
+SE clustered by year only & $+0.084$*** $(+14.10)$ & $-0.106$ $(-0.17)$ & $-4.709$*** $(-9.12)$ & 5,782 \\
+Counts: $\ln(\text{Words})$, $\ln(1+n^{\text{unc}})$, $\ln(1+n^{\text{lit}})$ & $-0.079$*** $(-4.80)$ & $+0.164$*** $(+7.37)$ & $-0.015$ $(-1.25)$ & 5,855 \\
+Text of year $t-1$ instead of $t$ & $+0.080$*** $(+7.74)$ & $+0.117$ $(+0.13)$ & $-4.103$*** $(-4.92)$ & 5,345 \\
+Level + change: Level $t-1$ & $+0.085$*** $(+8.24)$ & $+0.107$ $(+0.11)$ & $-4.340$*** $(-4.79)$ & 5,289 \\
+Level + change: Change $t-1\to t$ & $+0.067$*** $(+2.69)$ & $-0.949$ $(-0.46)$ & $-2.456$ $(-1.05)$ & 5,289 \\
+Post-2019 interaction: FY $\leq$ 2019 (main effect) & $+0.067$*** $(+5.19)$ & $-1.597$ $(-1.51)$ & $-4.886$*** $(-4.76)$ & 5,782 \\
+Post-2019 interaction: $\times$ FY $\geq$ 2020 & $+0.052$** $(+2.43)$ & $+4.418$** $(+2.40)$ & $-0.164$ $(-0.12)$ & 5,782 \\
+\bottomrule
+\end{tabular}
+\par\smallskip
+\begin{minipage}{\linewidth}\footnotesize
+\emph{Notes.} Each row is a separate regression of the column-(5) specification with the change described; common controls, industry (historical SIC2) and year FE and two-way clustered standard errors unless stated. $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.
+\end{minipage}
+\end{table}

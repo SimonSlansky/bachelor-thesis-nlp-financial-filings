@@ -1,29 +1,33 @@
 \begin{table}[htbp]
 \centering
-\caption{Within-Firm Identification (Firm $+$ Year FE, 30-day horizon)}
+\caption{Industry versus firm fixed effects (30-day window)}
 \label{tab:firm_fe}
-\begin{tabular}{lc}
+\small
+\begin{tabular}{lccc}
 \toprule
- & Estimate \\
+ & (1) Industry + year & (2) Firm + year & (3) Firm + year, lagged DV \\
 \midrule
-$\ln(\sigma_{i,t})$ & $-0.0867$ \\
- & $(-1.21)$ \\[4pt]
-$\ln(\text{Words}^{\text{1A}})$ & $+0.0693$** \\
- & $(+2.57)$ \\[4pt]
-UncDensity & $-2.3919$ \\
- & $(-0.92)$ \\[4pt]
-LitDensity & $-1.0387$ \\
- & $(-0.26)$ \\[4pt]
+$\ln(\text{Words}^{1A})$ & $+0.058$*** & $+0.009$ & $+0.015$ \\
+ & $(+4.54)$ & $(+0.45)$ & $(+0.65)$ \\[2pt]
+UncDensity & $-0.545$ & $-2.372$ & $-2.492$ \\
+ & $(-0.31)$ & $(-1.25)$ & $(-1.19)$ \\[2pt]
+LitDensity & $-3.018$*** & $-3.132$ & $-3.327$ \\
+ & $(-2.90)$ & $(-1.02)$ & $(-1.05)$ \\[2pt]
+$\ln\sigma^{\mathrm{pre}}_{i,t}$ & $+0.584$*** & $+0.436$*** & $+0.451$*** \\
+ & $(+9.85)$ & $(+6.53)$ & $(+8.05)$ \\[2pt]
+$\ln\sigma^{[30]}_{i,t}$ (lagged) &  &  & $-0.099$ \\
+ &  &  & $(-1.46)$ \\[2pt]
 \midrule
-Financial controls & Yes \\
-Firm FE & Yes \\
-Year FE & Yes \\
-Observations & 6,048 \\
-Firms & 526 \\
-Adj.\ $R^2$ & 0.581 \\
+RiskDensity in column-(4) specification & $-1.845$* & $-2.727$ & $-2.883$ \\
+ & $(-1.70)$ & $(-1.31)$ & $(-1.31)$ \\
+\midrule
+Observations & 5,782 & 5,782 & 5,782 \\
+Firms & 512 & 512 & 512 \\
+Within $R^2$ & 0.368 & 0.115 & 0.125 \\
 \bottomrule
 \end{tabular}
 \par\smallskip
-\noindent\footnotesize 
-\textit{Note:} H1 + LM-list decomposition specification with firm and fiscal-year fixed effects absorbed. Identification of $\ln(\text{Words}^{1A})$, UncDensity and LitDensity comes only from within-firm variation across years. Standard errors are two-way clustered by firm and fiscal year. ***, **, * denote significance at the 1\%, 5\%, and 10\% levels.
+\begin{minipage}{\linewidth}\footnotesize
+\emph{Notes.} All columns include the common control vector and use the same sample. Column (3) adds the lagged dependent variable, which is subject to Nickell bias under firm fixed effects. Standard errors clustered two-way by firm and fiscal year. $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.
+\end{minipage}
 \end{table}

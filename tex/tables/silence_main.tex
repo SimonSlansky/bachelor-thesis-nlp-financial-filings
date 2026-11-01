@@ -1,27 +1,37 @@
 \begin{table}[htbp]
 \centering
-\caption{Silence Hypothesis: Item 1A omission relative to SIC2 peers and post-filing realised volatility.}
+\caption{H3: omission gap and post-filing volatility}
 \label{tab:silence_main}
 \footnotesize
-\begin{tabular}{lccccc}
+\setlength{\tabcolsep}{3.5pt}
+\begin{tabular}{lcccccc}
 \toprule
-& $h=5$ & $h=10$ & $h=30$ & $h=90$ & $h=180$ \\
+ & 5 days & 10 days & 30 days & 90 days & 180 days & 365 days \\
 \midrule
-\multicolumn{6}{l}{\textit{Panel A. Industry $\times$ year fixed effects}} \\
-$\textsc{Omission}_{1A}$ & +0.256 & +0.207 & +0.238 & +0.272 & +0.283 \\
-& (+0.41) & (+0.44) & (+0.65) & (+0.95) & (+1.28) \\
-$N$ & 4,226 & 4,857 & 4,871 & 4,871 & 4,871 \\
-$R^2$ & 0.230 & 0.372 & 0.514 & 0.586 & 0.655 \\
-\midrule
-\multicolumn{6}{l}{\textit{Panel B. Firm $\times$ year fixed effects}} \\
-$\textsc{Omission}_{1A}$ & +1.735** & +1.395* & +1.247*** & +1.339*** & +1.237*** \\
-& (+2.05) & (+1.75) & (+2.58) & (+2.77) & (+2.76) \\
-$N$ & 4,226 & 4,857 & 4,871 & 4,871 & 4,871 \\
-$R^2$ & 0.363 & 0.492 & 0.627 & 0.694 & 0.750 \\
+\multicolumn{7}{l}{\emph{Omission$^{1A}$, Industry + year FE}} \\
+$\hat\beta$ & $-0.015$ & $-0.032$ & $+0.081$ & $+0.238$ & $+0.333$ & $+0.206$ \\
+ & $(-0.03)$ & $(-0.10)$ & $(+0.37)$ & $(+1.21)$ & $(+1.55)$ & $(+1.17)$ \\
+Holm $p$ & 1.000 & 1.000 & 1.000 & 1.000 & 1.000 & -- \\
+$N$ & 4,261 & 4,652 & 4,659 & 4,659 & 4,659 & 4,659 \\[3pt]
+\multicolumn{7}{l}{\emph{Omission$^{1A}$, Firm + year FE}} \\
+$\hat\beta$ & $+0.418$ & $+0.414$ & $+0.475$ & $+0.639$ & $+0.613$ & $+0.274$ \\
+ & $(+0.67)$ & $(+0.49)$ & $(+0.70)$ & $(+1.09)$ & $(+1.17)$ & $(+0.61)$ \\
+Holm $p$ & 1.000 & 1.000 & 1.000 & 1.000 & 1.000 & -- \\
+$N$ & 4,261 & 4,652 & 4,659 & 4,659 & 4,659 & 4,659 \\[3pt]
+\multicolumn{7}{l}{\emph{Length-invariant omission (3{,}000-token blocks), Industry + year FE}} \\
+$\hat\beta$ & $+0.542$ & $+0.548$** & $+0.487$ & $+0.452$* & $+0.443$* & $+0.285$* \\
+ & $(+1.32)$ & $(+1.97)$ & $(+1.60)$ & $(+1.82)$ & $(+1.90)$ & $(+1.80)$ \\
+Holm $p$ & 1.000 & 0.491 & 0.773 & 0.546 & 0.516 & -- \\
+$N$ & 4,261 & 4,652 & 4,659 & 4,659 & 4,659 & 4,659 \\[3pt]
+\multicolumn{7}{l}{\emph{Length-invariant omission (3{,}000-token blocks), Firm + year FE}} \\
+$\hat\beta$ & $+0.548$ & $+0.679$ & $+0.351$ & $+0.433$ & $+0.424$ & $+0.097$ \\
+ & $(+0.90)$ & $(+1.08)$ & $(+0.58)$ & $(+0.82)$ & $(+1.12)$ & $(+0.34)$ \\
+Holm $p$ & 1.000 & 1.000 & 1.000 & 1.000 & 1.000 & -- \\
+$N$ & 4,261 & 4,652 & 4,659 & 4,659 & 4,659 & 4,659 \\[3pt]
 \bottomrule
 \end{tabular}
 \par\smallskip
-\begin{flushleft}\footnotesize
-\textit{Notes.} Dependent variable is $\log(\textrm{RV}_{h\textrm{d}})$ over the $h$-day window beginning two trading days after the filing date. $\textsc{Omission}_{1A}$ is the share of TF-IDF mass on terms used by SIC2-year peers (leave-one-out, $\geq 5$ peers) that the focal firm does not mention. All regressions control for $\log(\textrm{RV}_{h\textrm{d}, t-1})$, the five financial controls (size, leverage, ROA, current ratio, OCF/assets), $\log(\textrm{words}_{1A})$, and $\textsc{RiskDensity}_{1A}$. $t$-statistics in parentheses use two-way clustered standard errors on (ticker, fiscal year). $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.
-\end{flushleft}
+\begin{minipage}{\linewidth}\footnotesize
+\emph{Notes.} Each cell is a separate regression of $\ln\sigma^{[h]}_{i,t+1}$ on the omission measure, $\ln(\text{Words}^{1A})$, RiskDensity and the common controls. Holm $p$: Holm-adjusted over the ten tests of each measure at $h\in\{5,10,30,90,180\}$ under both FE structures (365 days is outside the family). Two-way clustered $t$-statistics. Verdict under the decision rule of Section~\ref{sec:h3}: not supported. $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.
+\end{minipage}
 \end{table}

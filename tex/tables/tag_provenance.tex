@@ -1,0 +1,32 @@
+\begin{table}[htbp]
+\centering
+\caption{XBRL tags: choices, locking losses and overlap}
+\label{tab:tag_provenance}
+\footnotesize
+\begin{tabular}{llrr}
+\toprule
+Metric & Locked tag & Firms & \% \\
+\midrule
+Net income & \texttt{ProfitLoss} & 322 & 58.8 \\
+ & \texttt{NetIncomeLoss} & 223 & 40.7 \\
+ & \texttt{IncomeLossFromContinuingOperations} & 3 & 0.5 \\
+Operating cash flow & \texttt{NetCashProvidedByUsedInOperatingActivities} & 530 & 96.7 \\
+ & \texttt{NetCashProvidedByUsedInOperatingActivitiesContinuingOperations} & 18 & 3.3 \\
+Stockholders' equity & \texttt{StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest} & 315 & 58.0 \\
+ & \texttt{StockholdersEquity} & 228 & 42.0 \\
+\midrule
+\multicolumn{4}{l}{\emph{Values set to missing by per-firm tag locking}} \\
+Stockholders' equity & 637 of 7,900 & 171 firms with $>1$ tag & \\
+Net income & 38 of 7,813 & 209 firms with $>1$ tag & \\
+Operating cash flow & 0 of 7,956 & 217 firms with $>1$ tag & \\
+\midrule
+\multicolumn{4}{l}{\emph{Paired tags reported together: $|$difference$|$ / total assets (pp)}} \\
+Net income & n = 3,838; median 0.043; p95 1.48; p99 3.56; max 37.4 & $>$1\%: 303 & 7.9 \\
+Operating cash flow & n = 417; median 0.035; p95 1.80; p99 4.19; max 6.5 & $>$1\%: 50 & 12.0 \\
+\bottomrule
+\end{tabular}
+\par\smallskip
+\begin{minipage}{\linewidth}\footnotesize
+\emph{Notes.} Net-income pair: \texttt{ProfitLoss} (consolidated) vs \texttt{NetIncomeLoss} (parent); their difference is the non-controlling interest, and the panel uses the consolidated figure. Operating-cash-flow pair: total vs continuing operations. ``$>$1\%'': differences above 1\% of total assets. Locking: for metrics with non-equivalent tags, each firm keeps its most frequent tag.
+\end{minipage}
+\end{table}

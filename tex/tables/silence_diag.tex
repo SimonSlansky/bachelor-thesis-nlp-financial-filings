@@ -1,0 +1,32 @@
+\begin{table}[htbp]
+\centering
+\caption{H3 diagnostics: placebo, sources of variation, length}
+\label{tab:silence_diag}
+\small
+\begin{tabular}{lr}
+\toprule
+\multicolumn{2}{l}{\emph{Placebo: random SIC2 cells within year, firm + year FE, 30 days}} \\
+Permutations & 1,000 \\
+Observed $t$ & 0.70 \\
+Placebo $t$: mean / SD & 0.24 / 0.93 \\
+Placebo $t$: 95th / 97.5th percentile & 1.69 / 1.96 \\
+Empirical $p$ (one-sided / two-sided) & 0.315 / 0.466 \\
+\midrule
+\multicolumn{2}{l}{\emph{Decomposition of $\Delta$Omission (n = 4,802)}} \\
+Own-text change: share of variance & 0.907 \\
+Peer-text change: share of variance & 0.063 \\
+Peer-composition change: share of variance & 0.026 \\
+Interaction: share of variance & 0.078 \\
+\midrule
+\multicolumn{2}{l}{\emph{Correlation with $\ln(\text{Words}^{1A})$, H3 sample}} \\
+Omission$^{1A}$ & -0.915 \\
+Length-invariant omission & 0.424 \\
+Pooled-vocabulary omission & -0.933 \\
+$N$ & 4,659 \\
+\bottomrule
+\end{tabular}
+\par\smallskip
+\begin{minipage}{\linewidth}\footnotesize
+\emph{Notes.} Decomposition in the year-$t$ vocabulary using fiscal-year documents: own = $\Omega(o_t,C_{t-1})-\Omega(o_{t-1},C_{t-1})$; peer text = change for the peers present in both years; composition = effect of entering/leaving peers; interaction = remainder.
+\end{minipage}
+\end{table}

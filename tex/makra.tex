@@ -49,6 +49,12 @@
 \usepackage{booktabs}       % better horizontal lines in tables
 \usepackage{tabularx}       % tables with longer texts
 \usepackage{longtable}      % multi-page tables
+% babel czech/slovak make "-" active, which breaks \cmidrule{a-b} in tables
+\usepackage{etoolbox}
+\ifdefined\shorthandoff
+  \AtBeginEnvironment{table}{\shorthandoff{-}}
+  \AtBeginEnvironment{tabular}{\shorthandoff{-}}
+\fi
 \usepackage[section]{placeins} % keeps floats from drifting past \section breaks
 \newenvironment{tablenotes}{\par\smallskip\small\let\item\relax}{} % lightweight table notes
 \makeatletter

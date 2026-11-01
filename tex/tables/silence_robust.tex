@@ -1,20 +1,29 @@
 \begin{table}[htbp]
-\centering
-\caption{Robustness of the strategic-silence result (H3): firm $\times$ year fixed effects, $h = 30$ days.}
+\centering\shorthandoff{-}
+\caption{H3 robustness (30-day window)}
 \label{tab:silence_robust}
-\footnotesize
-\setlength{\tabcolsep}{3pt}
-\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lcccccc@{}}
+\small
+\begin{tabular}{lcrcr}
 \toprule
-& (1) Baseline & (2) Decile rank & (3) Length-resid & (4) $\geq 20$ peers & (5) Triple length & (6) Prior-year \\
+ & \multicolumn{2}{c}{Firm + year FE} & \multicolumn{2}{c}{Industry + year FE} \\
+\cmidrule(lr){2-3}\cmidrule(lr){4-5}
+ & $\hat\beta$ ($t$) & $N$ & $\hat\beta$ ($t$) & $N$ \\
 \midrule
-$\textsc{Omission}_{1A}$ & +1.247*** & +0.006 & +0.310 & +2.470*** & +1.360*** & +0.448* \\
-& (+2.58) & (+0.74) & (+1.54) & (+3.01) & (+2.85) & (+1.88) \\
-$N$ & 4,871 & 3,876 & 4,867 & 3,396 & 4,871 & 4,447 \\
+Baseline & $+0.475$ $(+0.70)$ & 4,659 & $+0.081$ $(+0.37)$ & 4,659 \\
+Length-invariant omission & $+0.351$ $(+0.58)$ & 4,659 & $+0.487$ $(+1.60)$ & 4,659 \\
+Residual on $\ln(\text{Words}^{1A})$ within cell & $+0.394$ $(+0.86)$ & 4,608 & $+0.025$ $(+0.08)$ & 4,608 \\
+Decile rank within cell (cells $\geq 10$) & $+0.003$ $(+0.53)$ & 3,667 & $+0.002$ $(+0.57)$ & 3,667 \\
+Top-decile dummy (bottom-decile dummy included) & $-0.025$ $(-0.66)$ & 3,667 & $-0.001$ $(-0.05)$ & 3,667 \\
+Cells with $\geq 20$ peers & $+0.857$ $(+1.15)$ & 3,262 & $+0.233$ $(+0.93)$ & 3,262 \\
++ $\ln(\text{Words}^{\text{MD\&A}})$ and $\ln(\text{Words}^{1A})^2$ & $+0.602$ $(+0.86)$ & 4,659 & $+0.013$ $(+0.05)$ & 4,659 \\
+Omission of year $t-1$ & $+0.726$** $(+1.97)$ & 4,224 & $+0.223$ $(+1.37)$ & 4,224 \\
+Pooled vocabulary over all years & $+0.417$ $(+1.02)$ & 4,659 & $+0.084$ $(+0.38)$ & 4,659 \\
+Peers by today's SIC2 & $+0.702$ $(+0.92)$ & 4,604 & $+0.071$ $(+0.33)$ & 4,604 \\
++ lagged dependent variable & $+0.530$ $(+0.73)$ & 4,659 & $+0.073$ $(+0.35)$ & 4,659 \\
 \bottomrule
-\end{tabular*}
+\end{tabular}
 \par\smallskip
-\begin{flushleft}\footnotesize
-\textit{Notes.} Each column is a separate firm $\times$ year fixed-effect regression at $h = 30$ days. Column~(1) reports the baseline H3 specification of equation~\ref{eq:silence_model}. Column~(2) replaces $\textsc{Omission}_{1A}$ with its decile rank within (SIC2, fiscal year) cells. Column~(3) replaces it with the residual after regressing $\textsc{Omission}_{1A}$ on $\ln(\textsc{Words}_{1A})$ within (SIC2, fiscal year) cells. Column~(4) restricts the sample to industry-year cells with at least 20 panel firms. Column~(5) adds $\ln(\textsc{Words}_{\mathrm{MDA}})$ and $\ln(\textsc{Words}_{1A})^2$ as additional length controls. Column~(6) replaces the contemporaneous omission with its prior-year value. All regressions include lagged log-volatility, the five financial controls, $\ln(\textsc{Words}_{1A})$, and $\textsc{RiskDensity}_{1A}$. $t$-statistics in parentheses use two-way clustered standard errors on (ticker, fiscal year). $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.
-\end{flushleft}
+\begin{minipage}{\linewidth}\footnotesize
+\emph{Notes.} H3 specification with one change per row; coefficient on the (modified) omission measure. Two-way clustered $t$-statistics. $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.
+\end{minipage}
 \end{table}

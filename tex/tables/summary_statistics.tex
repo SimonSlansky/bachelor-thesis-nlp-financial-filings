@@ -1,27 +1,34 @@
 \begin{table}[htbp]
 \centering
-\caption{Summary Statistics}
+\caption{Summary statistics (30-day estimation sample)}
 \label{tab:summary}
-\begin{tabular}{lccccc}
+\small
+\begin{tabular}{lrrrrrrr}
 \toprule
- & Mean & SD & P25 & Median & P75 \\
+ & Mean & SD & P1 & P25 & Median & P75 & P99 \\
 \midrule
-$\ln(\sigma_{i,t+1})$ & -1.341 & 0.582 & -1.733 & -1.408 & -1.060 \\
-$\ln(\sigma_{i,t})$ & -1.352 & 0.590 & -1.754 & -1.421 & -1.063 \\
-$\ln(\text{Total Assets})$ & 23.139 & 1.480 & 22.133 & 23.163 & 24.214 \\
-Leverage & 0.612 & 0.219 & 0.471 & 0.608 & 0.737 \\
-ROA & 0.062 & 0.089 & 0.027 & 0.062 & 0.105 \\
-Asset Growth & 0.117 & 0.249 & 0.003 & 0.060 & 0.145 \\
-$\ln(\text{Words}^{\text{1A}})$ & 9.011 & 0.653 & 8.610 & 9.063 & 9.414 \\
-RiskDensity & 0.051 & 0.007 & 0.047 & 0.051 & 0.055 \\
-UncDensity & 0.034 & 0.005 & 0.032 & 0.034 & 0.037 \\
-LitDensity & 0.016 & 0.005 & 0.013 & 0.016 & 0.019 \\
+$\sigma^{[30]}_{i,t+1}$ & 0.317 & 0.269 & 0.089 & 0.176 & 0.243 & 0.346 & 1.465 \\
+$\ln\sigma^{[30]}_{i,t+1}$ & -1.347 & 0.579 & -2.423 & -1.736 & -1.416 & -1.063 & 0.382 \\
+$\ln\sigma^{\mathrm{pre}}_{i,t}$ & -1.294 & 0.433 & -2.181 & -1.597 & -1.335 & -1.042 & -0.103 \\
+$\ln(\text{Market cap})$ & 23.591 & 1.436 & 20.252 & 22.737 & 23.548 & 24.451 & 26.983 \\
+Leverage & 0.612 & 0.219 & 0.128 & 0.472 & 0.610 & 0.737 & 1.298 \\
+ROA & 0.064 & 0.089 & -0.319 & 0.028 & 0.063 & 0.107 & 0.294 \\
+Asset growth & 0.117 & 0.247 & -0.241 & 0.003 & 0.060 & 0.144 & 1.540 \\
+Book-to-market & 0.299 & 0.255 & -0.122 & 0.116 & 0.243 & 0.423 & 1.265 \\
+Past 12-month return & 0.135 & 0.285 & -0.753 & -0.020 & 0.144 & 0.289 & 1.003 \\
+Current ratio & 1.955 & 1.477 & 0.379 & 1.052 & 1.473 & 2.346 & 8.869 \\
+OCF/assets & 0.112 & 0.079 & -0.196 & 0.069 & 0.106 & 0.153 & 0.324 \\
+Words$^{1A}$ & 10,053 & 6,990 & 1,652 & 5,504 & 8,700 & 12,253 & 35,579 \\
+$\ln(\text{Words}^{1A})$ & 9.012 & 0.649 & 7.410 & 8.613 & 9.071 & 9.414 & 10.479 \\
+RiskDensity & 0.0511 & 0.0065 & 0.0358 & 0.0471 & 0.0508 & 0.0552 & 0.0673 \\
+UncDensity & 0.0346 & 0.0049 & 0.0225 & 0.0317 & 0.0346 & 0.0374 & 0.0472 \\
+LitDensity & 0.0165 & 0.0046 & 0.0064 & 0.0134 & 0.0162 & 0.0194 & 0.0280 \\
 \midrule
-Observations & \multicolumn{5}{c}{6,048} \\
-Firms & \multicolumn{5}{c}{526} \\
+Observations & \multicolumn{7}{l}{5,782} \\
 \bottomrule
 \end{tabular}
 \par\smallskip
-\noindent\footnotesize 
-\textit{Note:} Summary statistics for the regression sample at the 30-day horizon. $\sigma_{i,t+1}$ is the annualised standard deviation of daily log returns over the 30-day window starting two trading days after the filing date; $\ln(\sigma_{i,t+1})$ is its natural logarithm. Words$^{\text{1A}}$ is the cleaned word count of Item~1A; RiskDensity is the share of LM uncertainty- and litigious-list words in Item~1A; UncDensity and LitDensity are the two sub-components separately. Financial ratios are winsorised at the 1st and 99th percentiles.
+\begin{minipage}{\linewidth}\footnotesize
+\emph{Notes.} $\sigma^{[30]}_{i,t+1}$: annualised standard deviation of daily log returns in the 30-calendar-day window starting two trading days after the 10-K filing day. $\sigma^{\mathrm{pre}}$: the same over the 60 trading days before filing. Financial ratios, book-to-market and the past return are winsorised at the 1st/99th percentiles of this sample; the text variables are not winsorised. The maximum RiskDensity is 0.0772.
+\end{minipage}
 \end{table}
