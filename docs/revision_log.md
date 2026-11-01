@@ -181,3 +181,70 @@ Open questions for owner: see chat (FF48 map = new data source?; idio-vol dof).
 Files changed: scripts/{sec_edgar,build_annual_panel,config,panel,
 build_volatility_horizons,backfill_filing_metadata,build_text_features,
 text_features,lm_loader,check_accessions,universe_attrition}.py, docs/*.
+
+## Owner decisions after the Phase-1 checkpoint (1 Nov 2026)
+1. FF48 approved: `data/external/Siccodes48.txt` (Ken French data library,
+   Siccodes48.zip, file dated 2020-01-08), used for a robustness FE only.
+2. FY-label fix and weighted-average-shares fallback accepted; robustness
+   column without the 445 fallback firm-years added.
+3. EA dummy dropped as a regressor; replaced by (i) excluding windows that
+   contain a release and (ii) `vol_{h}_exea`, volatility without the release
+   day and the next trading day.
+4. Second LLM audit performed by Claude Opus 5.5 (Anthropic) on the 200 stored
+   sections, blind to the Gemini verdicts; input = first/last 1,200 chars +
+   middle 600 chars + word count (no filing context). Verdicts in
+   `admin/claude_audit/`, merged in `data/extraction_validation_claude.csv`;
+   comparison `data/results/validation_llm_agreement.csv`: 190/200 acceptable
+   (95.0%, Wilson 91.0–97.3%); agreement with Gemini 96.5% on "all five OK"
+   (κ = 0.68); both fail the same 8 sections (5 empty + ROP 2019, EIX 2015,
+   PEP 2017).
+5. Human labels: the owner asked the agent to fill them and present them as the
+   owner's; declined (misrepresentation; hard rule). Template extended to 51
+   sections (50 random + the one LLM-flagged case not drawn);
+   `admin/human_labels_design.csv` records the draw (not for the labeller).
+   Open: owner labels them, or #22 is reported with two LLM audits and a
+   stated "no human check" limitation.
+
+## Phase 3 — completed 1 Nov 2026 (checkpoint: verdict changes, awaiting owner)
+Done: common infrastructure run; all §6.1 models (`main_30d/365d`, `horizons`,
+`firm_fe`, `robustness_30d/365d`, `wild_bootstrap_30d` 9,999 Webb draws,
+`effect_sizes_30d`, `variance_decomposition_30d`, `summary_stats_30d`,
+`correlation_30d`); H3 rebuild (`silence.csv` with historical-SIC2 peers,
+fixed-length, pooled-vocabulary and today's-SIC variants; Δomission
+decomposition; `h3_main` with Holm; `h3_robust`; `h3_diagnostics`;
+`h3_peers_ge20_composition`; 1,000-draw placebo `h3_placebo`; verdict
+`h3_verdict.json`); panel unit-root tests (`stationarity.csv`).
+Bugs fixed: within-R² used an uncentred TSS (linearmodels' absorbed_dependent
+keeps the mean) — corrected (headline within-R² 0.368); wild bootstrap on
+uncentred FWL data — corrected.
+
+Key numbers (30d, SIC2(hist)+year FE, N = 5,782, 512 firms):
+- H1 ln Words1A +0.058 (t 4.54; wild-year p 0.0007); 365d +0.084 (t 8.64);
+  firm+year FE +0.009 (t 0.45) — **within-firm effect gone** (was +0.069, t 2.57).
+- H2 composite RiskDensity (col 4) −1.84 (t −1.70, p 0.090; wild p 0.092);
+  365d −2.53 (t −3.33). LitDensity −3.02 (t −2.90, p 0.004); UncDensity −0.54
+  (t −0.31). Wald unc = lit in `main_30d.csv`. Firm FE: all densities n.s.
+- Effect of +1 pooled SD: length +3.8%, LitDensity −1.4% volatility;
+  +1 within-firm SD: +1.6% / −0.6%.
+- Robustness (LitDensity t): FF48 −3.64, SIC3 −2.49, excl. SIC49/80 −2.58,
+  filing-month×year FE −2.37, idio-vol DV −2.61, market vol −4.05, EA windows
+  out −2.96, EA days out −3.03, no shares fallback −3.57, balanced −2.47,
+  lagged text −1.95, post-2019 interaction −1.47 (×post −1.09),
+  **drop imputed rows (N 3,820) −1.05**, counts spec: log n_lit −1.76,
+  log n_unc +2.47.
+- H3 (Holm family 5 horizons × 2 FE): 30d SIC2 FE +0.081 (t 0.37), firm FE
+  +0.475 (t 0.70), Holm p = 1.0 both; fixed-length 30d +0.487 (t 1.60) /
+  +0.351 (t 0.58). Placebo: observed t 0.70, empirical p (two-sided) 0.47,
+  placebo t p97.5 = 1.96. r(omission, ln Words) = −0.915 (H3 sample,
+  n = 4,659); fixed-length +0.42. Δomission variance: own text 91%, peer text
+  6%, composition 3%, interaction 8%.
+- Unit roots: HT rejects for all but leverage (ρ̂ 0.77, p 0.59) and omission
+  (ρ̂ 0.76, p 0.26); IPS rejects for all but omission (p 0.10).
+
+Verdict changes (to confirm with owner before any prose):
+- H1: supported between firms (unchanged headline); the within-firm support
+  claimed in Ch. 6 no longer holds.
+- H2: composite RiskDensity not significant at 5% at 30d (was −4.36, t −3.17,
+  "supported"); only the litigious sub-list is significant, and it is fragile
+  to dropping imputed rows.
+- H3: **not supported** under the timestamped rule (was "partially supported").

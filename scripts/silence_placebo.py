@@ -64,6 +64,7 @@ def main():
 
     sec = bs.load_sections("item_1a")
     spaces = bs.prepare_spaces(sec, verbose=False)
+    sec = sec.drop(columns=["doc"])          # workers need no text
     base = load_text_panel(H, xvars=CONTROLS + [LEN_VAR, DENS_VAR])
     real = fit(load_text_panel(H, xvars=X), X, absorb=("ticker", "fiscal_year"))
     t_obs = float(real.tstats["omission_1a"])

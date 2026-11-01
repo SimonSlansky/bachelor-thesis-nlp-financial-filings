@@ -1,0 +1,24 @@
+{
+  "verdict": "not supported",
+  "rule": "docs/revision_log.md, H3 decision rule (#42)",
+  "evidence": {
+    "ind+year": {
+      "positive": false,
+      "negative": false,
+      "coef": 0.08082466227831242,
+      "p": 0.7145666218328419,
+      "p_holm": 1.0,
+      "coef_fixedlen": 0.4867662149900626,
+      "p_fixedlen": 0.11040940392220784
+    },
+    "firm+year": {
+      "positive": false,
+      "negative": false,
+      "coef": 0.4751872971587009,
+      "p": 0.48404804457435635,
+      "p_holm": 1.0,
+      "coef_fixedlen": 0.35053012435556297,
+      "p_fixedlen": 0.5588601962145597
+    }
+  }
+}

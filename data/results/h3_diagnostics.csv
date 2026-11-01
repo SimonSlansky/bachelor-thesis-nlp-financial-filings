@@ -1,0 +1,9 @@
+stat,value,n,sample
+corr_omission_1a_log_words_1a,-0.9148140204715924,4659,"H3 regression sample, h=30d"
+corr_omission_fixedlen_1a_log_words_1a,0.42396486038659426,4659,"H3 regression sample, h=30d"
+corr_omission_pooled_1a_log_words_1a,-0.9334155846153026,4659,"H3 regression sample, h=30d"
+corr_om_resid_log_words_1a,1.0767936887980326e-17,4608,"H3 regression sample, h=30d"
+corr_omission_1a_log_words_1a_all_valid,-0.9143273235723809,5197,all firm-years with omission and >=100 words
+decile_n_dropped_cells_lt10,992.0,4659,H3 sample
+decile_n_kept,3667.0,4659,H3 sample
+fixedlen_short_share,0.0506546469199399,4659,H3 sample

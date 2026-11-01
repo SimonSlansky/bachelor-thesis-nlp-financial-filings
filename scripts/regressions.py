@@ -182,6 +182,7 @@ def fit(df: pd.DataFrame, xvars: list[str], absorb=("ind", "fiscal_year"),
     else:
         res = mod.fit(cov_type="robust")
     y_w = np.asarray(mod.absorbed_dependent).ravel()
+    y_w = y_w - y_w.mean()     # absorbed_dependent keeps the overall mean
     res.r2_within = float(1 - (np.asarray(res.resids) ** 2).sum() / (y_w ** 2).sum())
     res.n_firms = int(d["ticker"].nunique())
     res.sample = d
@@ -400,6 +401,8 @@ def wild_bootstrap(h: str = HEADLINE, B: int = 9999, seed: int = 20261101
             yw = pd.Series(np.asarray(mod.absorbed_dependent).ravel(), name="y")
             Xw = pd.DataFrame(np.asarray(mod.absorbed_exog), columns=mod.exog.cols)
             Xw = Xw.drop(columns=[c for c in Xw.columns if c == "const"])
+            # absorbed_* keep the overall means; centre instead of a constant
+            yw, Xw = yw - yw.mean(), Xw - Xw.mean()
             ols = sm.OLS(yw.values, Xw)
             cl = r.sample["fiscal_year"].to_numpy()
             for v in SPEC_COLUMNS[col]:
