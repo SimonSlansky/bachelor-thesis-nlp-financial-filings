@@ -59,9 +59,16 @@ REQUEST_SLEEP = 0.15
 # ---------------------------------------------------------------------------
 # Sample selection
 # ---------------------------------------------------------------------------
-# Number of top companies (by SEC market-cap rank) to process.
+# Number of top companies to process.  Source: the SEC file
+# https://www.sec.gov/files/company_tickers.json, whose entries are listed in
+# (approximately) descending market-capitalisation order.  The file carries
+# no market-cap values and no date; the list used in the thesis was frozen
+# to data/universe.csv on UNIVERSE_SNAPSHOT_DATE.  Because the ranking is
+# as of that date (not point-in-time), the sample is tilted toward firms
+# that are large *today* (look-ahead / survivorship; see Phase-0 decision 1).
 # Set to None to use the full SEC EDGAR universe.
 SAMPLE_SIZE: int | None = 1000
+UNIVERSE_SNAPSHOT_DATE = "see data/universe_meta.json"
 
 # SIC 6000–6999 = Finance, Insurance, Real Estate → incomparable financials
 EXCLUDED_SIC_RANGE = range(6000, 7000)
@@ -86,10 +93,29 @@ POST_FILING_LAG_TRADING_DAYS = 2
 ANNUAL_RETURN_WINDOW = 365   # calendar days (window length after start)
 MIN_TRADING_DAYS_ANNUAL = 200   # minimum closes -> min returns = 199
 
-# Price download range (cached in data/prices/ for reproducibility).
+# Price source: Yahoo Finance via the ``yfinance`` package.
+#   data/prices/{T}.csv      adjusted closes (auto_adjust=True: split- AND
+#                            dividend-adjusted) -> used for returns/volatility.
+#   data/prices_raw/{T}.csv  split-adjusted close + split events
+#                            (auto_adjust=False) -> used to rebuild the
+#                            as-traded price for market capitalisation.
+# Price download range (cached for reproducibility).
 PRICE_START = "2009-01-01"
 PRICE_END: str | None = None    # None = today at first download
-MIN_FIRM_COVERAGE = 0.90
+MARKET_TICKER = "SPY"           # market proxy for market / idiosyncratic vol
+# Data cut-off: a post-filing window whose calendar end lies after the last
+# trading day of the market series is set to NaN (never truncated).
+MIN_FIRM_COVERAGE = 0.90        # legacy; the post-filing coverage filter is OFF
+
+# Pre-filing liquidity rule (replaces the post-filing 90% filter, #5):
+# a filing is "liquid" if the stock has >= PRE_LIQ_MIN_DAYS closes in the
+# PRE_LIQ_WINDOW trading days before the filing date.
+PRE_LIQ_WINDOW = 252
+PRE_LIQ_MIN_DAYS = 200
+
+# Pre-filing volatility windows (trading days ending the day before filing).
+PRE_VOL_SHORT = 60
+PRE_VOL_LONG = 252
 
 # ---------------------------------------------------------------------------
 # Winsorization
@@ -114,9 +140,12 @@ METRICS_WITH_PRIORITY: list[tuple[str, str, int]] = [
     ("StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest",
                                         "stockholders_equity",   1),
     ("StockholdersEquity",              "stockholders_equity",   2),
-    # Net Income (flow)
-    ("NetIncomeLoss",                   "net_income",            1),
-    ("ProfitLoss",                      "net_income",            2),
+    # Net Income (flow).  CONSOLIDATED basis (incl. NCI), consistent with
+    # equity incl. NCI above, so that ROA and leverage share one reporting
+    # entity (#13).  ProfitLoss is only reported when NCI exists; otherwise
+    # NetIncomeLoss is by definition the consolidated figure.
+    ("ProfitLoss",                      "net_income",            1),
+    ("NetIncomeLoss",                   "net_income",            2),
     ("IncomeLossFromContinuingOperations",
                                         "net_income",            3),
     # Operating Income (flow) — EBIT proxy for operating ROA
@@ -126,18 +155,43 @@ METRICS_WITH_PRIORITY: list[tuple[str, str, int]] = [
                                         "operating_cash_flow",   1),
     ("NetCashProvidedByUsedInOperatingActivitiesContinuingOperations",
                                         "operating_cash_flow",   2),
+    # ── Diagnostic single-tag metrics (never locked; used for the tag-overlap
+    #    diagnostic #14/#15 and for book-to-market / market cap) ──────────
+    ("NetIncomeLoss",                   "ni_parent",             1),
+    ("ProfitLoss",                      "ni_consol",             1),
+    ("NetIncomeLossAttributableToNoncontrollingInterest",
+                                        "ni_nci",                1),
+    ("NetCashProvidedByUsedInOperatingActivities",
+                                        "ocf_total",             1),
+    ("NetCashProvidedByUsedInOperatingActivitiesContinuingOperations",
+                                        "ocf_cont",              1),
+    ("StockholdersEquity",              "equity_parent",         1),
 ]
 
-FLOW_METRICS = {"net_income", "operating_income", "operating_cash_flow"}
+FLOW_METRICS = {"net_income", "operating_income", "operating_cash_flow",
+                "ni_parent", "ni_consol", "ni_nci", "ocf_total", "ocf_cont"}
+
+# Share counts (unit "shares"), matched to the 10-K by accession number.
+# dei cover-page count (date close to filing) preferred; balance-sheet count
+# as fallback.
+SHARE_TAGS: list[tuple[str, str]] = [
+    ("dei", "EntityCommonStockSharesOutstanding"),
+    ("us-gaap", "CommonStockSharesOutstanding"),
+]
+
+# Materiality threshold for paired-tag disagreements (#15): share of assets.
+TAG_DIFF_MATERIAL = 0.01
 
 # ---------------------------------------------------------------------------
 # Tags that are economically equivalent and safe to mix within a firm.
 # Operating cash flow: the "ContinuingOperations" variant was introduced in
 #   later XBRL taxonomies; for firms without material discontinued operations
 #   (the vast majority) both tags report the identical figure.
-# Net income: ProfitLoss includes NCI, NetIncomeLoss excludes it.  For large
-#   US firms NCI is typically <0.5 % of total assets, making the ROA impact
-#   negligible (Hribar & Collins 2002 treat OCF the same way).
+# Net income: ProfitLoss (consolidated, incl. NCI) is preferred; NetIncomeLoss
+#   is used only when ProfitLoss is absent, which under US GAAP (ASC 810)
+#   means there is no NCI, so the two are the same consolidated quantity.
+#   Disagreements in firm-years reporting both (= NCI) are quantified in
+#   data/tag_overlap.csv.
 # IncomeLossFromContinuingOperations is NOT included — it deliberately
 #   excludes discontinued operations, which can be material.
 # ---------------------------------------------------------------------------

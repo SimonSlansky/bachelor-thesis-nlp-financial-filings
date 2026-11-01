@@ -28,7 +28,7 @@ from panel import (
     filter_transitions_and_duplicates, drop_earliest_year,
     drop_low_return_coverage, cap_fiscal_year,
     save_panel, ANNUAL_COLS,
-    lock_firm_tags, save_tag_diagnostics,
+    lock_firm_tags, save_tag_diagnostics, tag_overlap_diagnostics,
 )
 from text_parser import load_cik_map, build_text_dataset
 
@@ -74,7 +74,23 @@ def _track(df: pd.DataFrame, label: str) -> pd.DataFrame:
 
     print(header)
     _prev_snapshot = cur
+    ATTRITION.append({"stage": label, "firms": cur["firms"], "firm_years": cur["rows"]})
     return df
+
+
+# Sample-attrition log (#20) -> data/sample_attrition.csv
+ATTRITION: list[dict] = []
+_ATTR_PRE = DATA_DIR / "sample_attrition_universe.json"
+
+
+def _save_attrition() -> None:
+    import json
+    rows = []
+    if _ATTR_PRE.exists():
+        rows = json.loads(_ATTR_PRE.read_text())
+    rows += ATTRITION
+    pd.DataFrame(rows).to_csv(DATA_DIR / "sample_attrition.csv", index=False)
+    print(f"  Sample attrition -> sample_attrition.csv ({len(rows)} stages)")
 
 
 def main() -> None:
@@ -105,6 +121,7 @@ def _extract_raw() -> pd.DataFrame | None:
     #    rerun from it would silently change the sample.  If a frozen list
     #    exists (data/universe.csv: ticker, cik) it is used instead.
     frozen = DATA_DIR / "universe.csv"
+    meta_path = DATA_DIR / "universe_meta.json"
     if frozen.exists():
         sec_df = pd.read_csv(frozen, dtype=str)
         sec_df["cik"] = sec_df["cik"].str.zfill(10)
@@ -113,11 +130,23 @@ def _extract_raw() -> pd.DataFrame | None:
         sec_df = fetch_universe(SAMPLE_SIZE)
         print(f"Universe: {len(sec_df)} companies (top {SAMPLE_SIZE or 'all'} by market cap)\n")
         sec_df.to_csv(frozen, index=False)
+    if not meta_path.exists():
+        import json, datetime as dt
+        snap = dt.date.fromtimestamp(frozen.stat().st_mtime).isoformat()
+        meta_path.write_text(json.dumps({
+            "source": "https://www.sec.gov/files/company_tickers.json",
+            "ordering": "SEC file order (approx. descending market cap); "
+                        "no market-cap values in file",
+            "n": len(sec_df), "snapshot_date": snap,
+            "snapshot_date_basis": "file modification time of data/universe.csv",
+        }, indent=2))
 
     # 2. Load metadata
     print("Loading company metadata …")
     companies = load_company_metadata(sec_df)
     print(f"  Loaded {len(companies)}/{len(sec_df)} companies\n")
+    stages = [{"stage": "universe (SEC list, top N)", "firms": len(sec_df), "firm_years": None},
+              {"stage": "operating, non-financial, valid FYE", "firms": len(companies), "firm_years": None}]
 
     # 3. Extract XBRL
     print("Extracting annual XBRL data …")
@@ -138,8 +167,13 @@ def _extract_raw() -> pd.DataFrame | None:
         return None
     df_all = pd.concat(frames, ignore_index=True)
     print(f"\n  Total: {df_all['ticker'].nunique()} firms, {len(df_all)} firm-years\n")
+    import json
+    stages.append({"stage": f">= {MIN_VALID_YEARS} years of 10-K XBRL data",
+                   "firms": int(df_all["ticker"].nunique()), "firm_years": len(df_all)})
+    _ATTR_PRE.write_text(json.dumps(stages, indent=2))
 
-    # Merge SIC and fiscal_year_end from metadata
+    # Merge SIC and fiscal_year_end from metadata (SIC = today's snapshot;
+    # the historical SIC at each filing is added by backfill_filing_metadata.py)
     meta_df = pd.DataFrame(companies.values())[["ticker", "sic", "fiscal_year_end"]]
     return df_all.merge(meta_df, on="ticker", how="left")
 
@@ -155,6 +189,7 @@ def _process(df_all: pd.DataFrame, skip_text: bool = False) -> None:
     print("\nLocking per-firm XBRL tags …")
     df_all = lock_firm_tags(df_all)
     save_tag_diagnostics(df_all, DATA_DIR / "tag_provenance.csv")
+    tag_overlap_diagnostics(df_all, DATA_DIR / "tag_overlap.csv")
     df_all = _track(df_all, "tag locking")
 
     # 5. Clean transitions & duplicates
@@ -208,6 +243,12 @@ def _process(df_all: pd.DataFrame, skip_text: bool = False) -> None:
         lambda s: s.notna().mean() < MIN_FIRM_COVERAGE).sum()
     print(f"  (info) {n_cov} firms would have failed the old "
           f"{MIN_FIRM_COVERAGE:.0%} coverage rule; they are kept.")
+
+    # Years per firm in the final panel (for min-years sensitivity, #6) and
+    # explicit naming of today's SIC snapshot.
+    df_all["n_years_firm"] = df_all.groupby("ticker")["fiscal_year"].transform("nunique")
+    df_all["sic_snapshot"] = df_all["sic"]
+    _save_attrition()
 
     # 8c. Winsorisation is NOT applied to the stored panel: it is applied to
     #     each regression sample (regressions.load_text_panel, silence tables)

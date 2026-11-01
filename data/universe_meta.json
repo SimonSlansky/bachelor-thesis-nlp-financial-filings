@@ -1,0 +1,7 @@
+{
+  "source": "https://www.sec.gov/files/company_tickers.json",
+  "ordering": "SEC file order (approx. descending market cap); no market-cap values in file",
+  "n": 548,
+  "snapshot_date": "2026-10-31",
+  "snapshot_date_basis": "file modification time of data/universe.csv"
+}

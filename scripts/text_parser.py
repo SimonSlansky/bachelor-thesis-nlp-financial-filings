@@ -599,14 +599,18 @@ def extract_filing_text(cik: str, accn: str,
 
     for target, out_key in [("1a", "item_1a"), ("7", "item_7")]:
         section = _extract(text, target, positions)
+        src = "main" if section is not None else "none"
 
         # Exhibit fallback for stubs that reference an exhibit / annual report
         if section is None:
             section, exhibit_map = _try_exhibit_fallback(
                 cik, accn, target, text, positions, exhibit_map,
             )
+            if section is not None:
+                src = "exhibit"
 
         result[out_key] = _clean_section(section) if section else None
+        result[f"src_{target}"] = src
 
     return result
 
@@ -624,18 +628,22 @@ def build_text_dataset(panel: pd.DataFrame, cik_map: dict[str, str]) -> pd.DataF
     """
     out_path = DATA_DIR / "text_sections.csv"
 
-    # Resume: load already-extracted rows
+    # Resume: a filing counts as done only if at least one section was
+    # extracted.  Rows where both sections are empty (earlier network errors
+    # or parse failures) are retried and then replaced, not duplicated.
     done: set[str] = set()
     if out_path.exists():
-        prev = pd.read_csv(out_path, usecols=["ticker", "fiscal_year"],
+        prev = pd.read_csv(out_path, usecols=["ticker", "fiscal_year",
+                                              "item_1a", "item_7"],
                            on_bad_lines="skip")
-        done = set(prev["ticker"] + "_" + prev["fiscal_year"].astype(int).astype(str))
-        print(f"  Resuming: {len(done)} filings already extracted")
+        ok = prev["item_1a"].notna() | prev["item_7"].notna()
+        done = set(prev.loc[ok, "ticker"] + "_"
+                   + prev.loc[ok, "fiscal_year"].astype(int).astype(str))
+        print(f"  Resuming: {len(done)} filings already extracted, "
+              f"{int((~ok).sum())} empty rows will be retried")
 
-    # Skip 10-K/A amendments (cover pages only, no extractable text)
-    if "form_type" in panel.columns:
-        panel = panel[panel["form_type"] != "10-K/A"]
-
+    # 10-K/A rows are kept: since the point-in-time fix they only occur when
+    # no original 10-K exists, and a full 10-K/A can hold the sections.
     rows = panel[["ticker", "accession_number", "fiscal_year"]].dropna(
         subset=["accession_number"]
     ).drop_duplicates()
@@ -661,15 +669,22 @@ def build_text_dataset(panel: pd.DataFrame, cik_map: dict[str, str]) -> pd.DataF
             failed += 1
             continue
 
-        try:
-            sections = extract_filing_text(cik, r.accession_number,
-                                           doc_maps.get(cik))
-        except Exception as e:
-            print(f"  ✗ {r.ticker} FY{int(r.fiscal_year)}: {e}")
-            sections = {"item_1a": None, "item_7": None}
+        sections = None
+        for attempt in range(4):
+            try:
+                sections = extract_filing_text(cik, r.accession_number,
+                                               doc_maps.get(cik))
+                break
+            except Exception as e:
+                wait = 2 ** attempt * 5
+                print(f"  ✗ {r.ticker} FY{int(r.fiscal_year)} "
+                      f"(attempt {attempt + 1}/4): {e}; retry in {wait}s")
+                time.sleep(wait)
+        if sections is None:
+            # Do NOT write a row: the filing stays "not done" and is
+            # retried on the next run instead of becoming a silent NaN.
             failed += 1
-
-        # Replace newlines with spaces so each CSV row = 1 physical line
+            continue        # Replace newlines with spaces so each CSV row = 1 physical line
         # (prevents "EOF inside string" on crash-interrupted writes)
         i1a_text = sections["item_1a"]
         i7_text = sections["item_7"]
@@ -684,6 +699,13 @@ def build_text_dataset(panel: pd.DataFrame, cik_map: dict[str, str]) -> pd.DataF
             "item_1a": i1a_text,
             "item_7": i7_text,
         }
+        # Section source (main document vs exhibit fallback) kept in a
+        # separate file so text_sections.csv keeps its 4-column layout.
+        src_path = DATA_DIR / "text_sources.csv"
+        pd.DataFrame([{"ticker": r.ticker, "fiscal_year": int(r.fiscal_year),
+                       "src_1a": sections.get("src_1a"),
+                       "src_7": sections.get("src_7")}]).to_csv(
+            src_path, mode="a", header=not src_path.exists(), index=False)
 
         # Append incrementally (one row at a time for crash safety)
         pd.DataFrame([rec]).to_csv(
@@ -702,7 +724,17 @@ def build_text_dataset(panel: pd.DataFrame, cik_map: dict[str, str]) -> pd.DataF
     print(f"\n  Done: {extracted} extracted, {skipped} resumed, {failed} failed"
           f" / {total} total")
 
-    return pd.read_csv(out_path)
+    # Collapse retried filings: keep one row per (ticker, fiscal_year),
+    # preferring the row with extracted text (the latest attempt wins ties).
+    full = pd.read_csv(out_path)
+    full["_has"] = full["item_1a"].notna().astype(int) + full["item_7"].notna().astype(int)
+    full["_ord"] = range(len(full))
+    full = (full.sort_values(["_has", "_ord"])
+                .drop_duplicates(["ticker", "fiscal_year"], keep="last")
+                .sort_values("_ord")
+                .drop(columns=["_has", "_ord"]))
+    full.to_csv(out_path, index=False)
+    return full
 
 
 def load_cik_map() -> dict[str, str]:

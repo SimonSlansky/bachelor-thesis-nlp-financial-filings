@@ -28,10 +28,32 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 
-from config import DATA_DIR, POST_FILING_LAG_TRADING_DAYS, PRICE_START, PRICE_END
+from config import (DATA_DIR, POST_FILING_LAG_TRADING_DAYS, PRICE_START,
+                    PRICE_END, MARKET_TICKER, PRE_LIQ_WINDOW,
+                    PRE_VOL_SHORT, PRE_VOL_LONG)
 
 ANNUALISATION_FACTOR = float(np.sqrt(252))
 PRICE_DIR = DATA_DIR / "prices"
+PRICE_RAW_DIR = DATA_DIR / "prices_raw"
+
+_MARKET: pd.Series | None = None
+
+
+def market_closes() -> pd.Series:
+    """Adjusted closes of the market proxy (cached)."""
+    global _MARKET
+    if _MARKET is None:
+        m = load_closes(MARKET_TICKER)
+        if m is None:
+            raise RuntimeError(f"no price data for market proxy {MARKET_TICKER}")
+        _MARKET = m
+    return _MARKET
+
+
+def data_cutoff() -> pd.Timestamp:
+    """Last trading day in the price data (market proxy).  Windows ending
+    after this date are incomplete and are set to NaN (#36)."""
+    return market_closes().index.max()
 
 
 # ── price loading with on-disk cache ─────────────────────────────────────────
@@ -61,7 +83,125 @@ def load_closes(ticker: str, refresh: bool = False) -> pd.Series | None:
     return s if len(s) else None
 
 
-# ── window statistics ────────────────────────────────────────────────────────
+# ── window statistics ─────────────────────────────────────────────────────
+
+def window_bounds(closes: pd.Series, filing_date: pd.Timestamp,
+                  window_days: int, end_cap: pd.Timestamp | None = None
+                  ) -> tuple[pd.Timestamp, pd.Timestamp] | None:
+    """(start, end) calendar bounds of the post-filing window, or None.
+
+    Day 0 is located on the MARKET calendar so that a firm with a missing
+    close on the filing day does not shift its window."""
+    mkt_idx = market_closes().index
+    day0 = mkt_idx.searchsorted(pd.Timestamp(filing_date), side="left")
+    start_pos = day0 + POST_FILING_LAG_TRADING_DAYS
+    if start_pos >= len(mkt_idx):
+        return None
+    start = mkt_idx[start_pos]
+    end = start + pd.Timedelta(days=window_days)
+    if end_cap is not None:
+        end = min(end, pd.Timestamp(end_cap))
+    elif end > data_cutoff():
+        return None
+    return start, end
+
+
+def _window_returns(s: pd.Series, start, end) -> pd.Series:
+    w = s.loc[start:end]
+    return np.log(w / w.shift(1)).dropna()
+
+
+def window_market_stats(closes: pd.Series, filing_date: pd.Timestamp,
+                        window_days: int, min_returns: int
+                        ) -> tuple[float, float]:
+    """(market vol, idiosyncratic vol) over the same post-filing window.
+
+    Idiosyncratic vol is the annualised SD of residuals from a within-window
+    market-model regression r_i = a + b r_m + e (#30)."""
+    bounds = window_bounds(closes, filing_date, window_days)
+    if bounds is None:
+        return np.nan, np.nan
+    rm = _window_returns(market_closes(), *bounds)
+    ri = _window_returns(closes, *bounds)
+    mkt_vol = (float(rm.std(ddof=1) * ANNUALISATION_FACTOR)
+               if len(rm) >= min_returns else np.nan)
+    j = pd.concat([ri, rm], axis=1, join="inner").dropna()
+    if len(j) < max(min_returns, 3):
+        return mkt_vol, np.nan
+    x, y = j.iloc[:, 1].to_numpy(), j.iloc[:, 0].to_numpy()
+    X = np.column_stack([np.ones_like(x), x])
+    coef, *_ = np.linalg.lstsq(X, y, rcond=None)
+    resid = y - X @ coef
+    dof = len(y) - 2
+    idio = float(np.sqrt((resid ** 2).sum() / dof) * ANNUALISATION_FACTOR) if dof > 0 else np.nan
+    return mkt_vol, (idio if np.isfinite(idio) and idio > 0 else np.nan)
+
+
+def earnings_in_window(ea_dates: np.ndarray, closes: pd.Series,
+                       filing_date: pd.Timestamp, window_days: int) -> float:
+    """1 if an earnings release (8-K Item 2.02) falls inside the window."""
+    bounds = window_bounds(closes, filing_date, window_days)
+    if bounds is None:
+        return np.nan
+    if ea_dates is None or len(ea_dates) == 0:
+        return 0.0
+    s, e = np.datetime64(bounds[0]), np.datetime64(bounds[1])
+    return float(((ea_dates >= s) & (ea_dates <= e)).any())
+
+
+def pre_filing_stats(closes: pd.Series, filing_date: pd.Timestamp) -> dict:
+    """Pre-filing (public-at-filing) price variables.
+
+    All windows END on the last market trading day strictly before the
+    filing date:
+      pre_vol      — annualised vol, last PRE_VOL_SHORT trading days
+      pre_vol_252  — annualised vol, last PRE_VOL_LONG trading days
+      ret_pre_12m  — log return over the last 252 trading days
+      n_pre_days   — firm closes in the last PRE_LIQ_WINDOW market days
+                     (pre-filing liquidity rule, #5)
+    """
+    mkt_idx = market_closes().index
+    day0 = mkt_idx.searchsorted(pd.Timestamp(filing_date), side="left")
+    out = {"pre_vol": np.nan, "pre_vol_252": np.nan,
+           "ret_pre_12m": np.nan, "n_pre_days": 0}
+    if day0 < 2:
+        return out
+    last = mkt_idx[day0 - 1]
+    first_liq = mkt_idx[max(day0 - PRE_LIQ_WINDOW, 0)]
+    out["n_pre_days"] = int(closes.loc[first_liq:last].notna().sum())
+    for n, key, min_ret in ((PRE_VOL_SHORT, "pre_vol", int(PRE_VOL_SHORT * 2 / 3)),
+                            (PRE_VOL_LONG, "pre_vol_252", int(PRE_VOL_LONG * 2 / 3))):
+        first = mkt_idx[max(day0 - n - 1, 0)]
+        r = _window_returns(closes, first, last)
+        if len(r) >= min_ret:
+            v = float(r.std(ddof=1) * ANNUALISATION_FACTOR)
+            out[key] = v if np.isfinite(v) and v > 0 else np.nan
+    w = closes.loc[mkt_idx[max(day0 - 253, 0)]:last]
+    if len(w) >= int(PRE_LIQ_WINDOW * 2 / 3):
+        out["ret_pre_12m"] = float(np.log(w.iloc[-1] / w.iloc[0]))
+    return out
+
+
+def as_traded_close(ticker: str, date: pd.Timestamp) -> float:
+    """As-traded (unadjusted) close on the last trading day before *date*.
+
+    data/prices_raw/{T}.csv holds the split-adjusted close and split events
+    (fetch_market_data.py); multiplying by the product of all split ratios
+    AFTER the date undoes the split adjustment.  Dividends do not affect
+    yfinance's (non-auto-adjusted) Close."""
+    p = PRICE_RAW_DIR / f"{ticker}.csv"
+    if not p.exists():
+        return np.nan
+    raw = pd.read_csv(p, index_col=0, parse_dates=True)
+    raw.index = pd.DatetimeIndex(raw.index).tz_localize(None)
+    before = raw.loc[raw.index < pd.Timestamp(date)]
+    if before.empty:
+        return np.nan
+    d = before.index[-1]
+    close = float(before["Close"].iloc[-1])
+    splits = raw.loc[raw.index > d, "Stock Splits"]
+    factor = float(splits[splits > 0].prod()) if (splits > 0).any() else 1.0
+    return close * factor
 
 def window_stats(closes: pd.Series, filing_date: pd.Timestamp,
                  window_days: int, min_returns: int,
@@ -69,17 +209,13 @@ def window_stats(closes: pd.Series, filing_date: pd.Timestamp,
     """(log return, annualised vol) over the post-filing window.
 
     *end_cap* (inclusive) truncates the window; used for lagged windows so
-    that they end strictly before the next filing.
+    that they end strictly before the next filing.  An *uncapped* window
+    whose nominal end lies past the data cut-off is NaN (incomplete).
     """
-    idx = closes.index
-    day0 = idx.searchsorted(pd.Timestamp(filing_date), side="left")
-    start_pos = day0 + POST_FILING_LAG_TRADING_DAYS
-    if start_pos >= len(idx):
+    bounds = window_bounds(closes, filing_date, window_days, end_cap)
+    if bounds is None:
         return np.nan, np.nan
-    start = idx[start_pos]
-    end = start + pd.Timedelta(days=window_days)
-    if end_cap is not None:
-        end = min(end, pd.Timestamp(end_cap))
+    start, end = bounds
     w = closes.loc[start:end]
     if len(w) < 2:
         return np.nan, np.nan

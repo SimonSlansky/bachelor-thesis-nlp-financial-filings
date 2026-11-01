@@ -2,6 +2,7 @@
 
 import numpy as np
 import pandas as pd
+from pathlib import Path
 
 from config import (
     WINSORIZE_LOWER, WINSORIZE_UPPER, METRICS_WITH_PRIORITY,
@@ -10,6 +11,9 @@ from config import (
 
 
 # ── per-firm tag locking ──────────────────────────────────────────────────
+
+# Filled by lock_firm_tags(); written by save_tag_diagnostics() (#16).
+LOCK_SUMMARY: list[dict] = []
 
 def _metrics_with_alternatives() -> dict[str, list[str]]:
     """Return {metric_name: [tag1, tag2, ...]} for metrics with >1 source tag."""
@@ -78,6 +82,14 @@ def lock_firm_tags(df: pd.DataFrame) -> pd.DataFrame:
             df.loc[mask, tag_col] = np.nan
         after_valid = df[metric].notna().sum()
         nulled = before_valid - after_valid
+        n_switchers = int(
+            firm_tag_counts.groupby("ticker")[tag_col].nunique().gt(1).sum())
+        LOCK_SUMMARY.append({
+            "metric": metric, "values_nulled": int(nulled),
+            "values_before": int(before_valid),
+            "firms_with_multiple_tags": n_switchers,
+            "firms": int(len(dominant)),
+        })
 
         # Summary statistics per tag
         for tag in tags:
@@ -123,6 +135,46 @@ def save_tag_diagnostics(df: pd.DataFrame, path) -> None:
     if rows:
         pd.DataFrame(rows).to_csv(path, index=False)
         print(f"  Tag diagnostics -> {path.name}")
+    if LOCK_SUMMARY:
+        p = Path(path).with_name("tag_locking_summary.csv")
+        pd.DataFrame(LOCK_SUMMARY).to_csv(p, index=False)
+        print(f"  Tag-locking losses -> {p.name}")
+
+
+def tag_overlap_diagnostics(df: pd.DataFrame, path) -> pd.DataFrame:
+    """Paired-tag disagreement in firm-years that report both tags (#14/#15).
+
+    Differences are scaled by total assets (i.e. in ROA / OCF-to-assets
+    units).  'Material' = |diff| / assets > TAG_DIFF_MATERIAL.
+    """
+    from config import TAG_DIFF_MATERIAL
+    pairs = [("net_income", "ni_consol", "ni_parent"),
+             ("operating_cash_flow", "ocf_total", "ocf_cont")]
+    rows = []
+    for metric, a, b in pairs:
+        if not {a, b, "total_assets"}.issubset(df.columns):
+            continue
+        m = df[a].notna() & df[b].notna() & (df["total_assets"] > 0)
+        d = ((df.loc[m, a] - df.loc[m, b]).abs() / df.loc[m, "total_assets"])
+        if d.empty:
+            continue
+        rows.append({
+            "metric": metric, "tag_a": a, "tag_b": b, "n_both": int(m.sum()),
+            "median_pp": 100 * d.median(), "mean_pp": 100 * d.mean(),
+            "p90_pp": 100 * d.quantile(.90), "p95_pp": 100 * d.quantile(.95),
+            "p99_pp": 100 * d.quantile(.99), "max_pp": 100 * d.max(),
+            "share_identical": float((d < 1e-9).mean()),
+            "n_material": int((d > TAG_DIFF_MATERIAL).sum()),
+            "share_material": float((d > TAG_DIFF_MATERIAL).mean()),
+            "material_threshold": TAG_DIFF_MATERIAL,
+        })
+    out = pd.DataFrame(rows)
+    out.to_csv(path, index=False)
+    print(f"  Tag-overlap diagnostic -> {Path(path).name}")
+    for _, r in out.iterrows():
+        print(f"    {r.metric:20s} n={r.n_both:5d}  median={r.median_pp:.3f}pp "
+              f"p99={r.p99_pp:.3f}pp  material={r.n_material}")
+    return out
 
 
 # ── missing-metric imputation ─────────────────────────────────────────────
@@ -130,11 +182,14 @@ def save_tag_diagnostics(df: pd.DataFrame, path) -> None:
 def compute_missing_components(df: pd.DataFrame) -> pd.DataFrame:
     """Fill missing total_liabilities from total_assets − stockholders_equity."""
     df = df.copy()
+    df["imputed_liab_identity"] = False
 
     # total_liabilities = total_assets − stockholders_equity
     if {"total_assets", "stockholders_equity"}.issubset(df.columns):
         mask = df["total_liabilities"].isna() & df["total_assets"].notna() & df["stockholders_equity"].notna()
         df.loc[mask, "total_liabilities"] = df.loc[mask, "total_assets"] - df.loc[mask, "stockholders_equity"]
+        df.loc[mask, "imputed_liab_identity"] = True
+        print(f"  total_liabilities: {int(mask.sum())} values from A - E identity")
 
     return df
 
@@ -150,10 +205,13 @@ def impute_balance_sheet(df: pd.DataFrame, date_col: str, limit: int = 1) -> pd.
     consecutive = df.groupby("ticker")["fiscal_year"].diff() == 1
     for col in ("total_assets", "total_liabilities"):
         if col in df.columns:
+            flag = f"imputed_ffill_{col}"
+            df[flag] = False
             before = df[col].isna().sum()
             prev = df.groupby("ticker")[col].shift(1)
             fill = df[col].isna() & consecutive & prev.notna()
             df.loc[fill, col] = prev[fill]
+            df.loc[fill, flag] = True
             filled = before - df[col].isna().sum()
             if filled:
                 print(f"  {col}: forward-filled {filled} values from year t-1")
@@ -331,6 +389,13 @@ ANNUAL_COLS = [
     "return_next_year", "vol_next_year", "lagged_vol",
     "log_total_assets", "leverage", "roa", "asset_growth",
     "current_ratio", "ocf_to_assets",
+    # equity / shares for market cap & book-to-market (built downstream)
+    "stockholders_equity", "equity_parent", "shares_out", "_tag_shares_out",
+    # imputation flags (#17)
+    "imputed_liab_identity", "imputed_ffill_total_assets",
+    "imputed_ffill_total_liabilities",
+    # sample bookkeeping
+    "n_years_firm", "sic_snapshot",
 ]
 
 

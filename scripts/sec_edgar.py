@@ -8,7 +8,7 @@ from config import (
     SEC_HEADERS, REQUEST_SLEEP, MAX_FILING_LAG_DAYS,
     METRICS_WITH_PRIORITY, FLOW_METRICS,
     EXCLUDED_SIC_RANGE,
-    ANNUAL_FLOW_RANGE,
+    ANNUAL_FLOW_RANGE, SHARE_TAGS,
 )
 
 # ── public helpers ─────────────────────────────────────────────────────────
@@ -109,8 +109,11 @@ def extract_annual_facts(meta: dict, n_years: int) -> pd.DataFrame:
     This avoids the bug where an amendment discovered mid-loop clears
     metrics populated by earlier tags that the loop won't revisit.
     """
-    us_gaap = _fetch_company_facts(meta)
-    if us_gaap is None:
+    facts_all = _fetch_company_facts(meta)
+    if facts_all is None:
+        return pd.DataFrame()
+    us_gaap = facts_all.get("us-gaap") or {}
+    if not us_gaap:
         return pd.DataFrame()
 
     fye = meta["fiscal_year_end"]
@@ -136,55 +139,70 @@ def extract_annual_facts(meta: dict, n_years: int) -> pd.DataFrame:
 
             raw_facts[end].append((tag, metric, priority, fact))
 
-    # ── Pass 2: resolve amendments and priorities per end_date ─────────────
+    # ── Pass 2: point-in-time resolution per end_date ─────────────────────
+    # The panel must only contain information that was public when the
+    # ORIGINAL 10-K was filed, because the volatility window is anchored on
+    # that date.  Therefore:
+    #   * values, filing_date and accession come from the original 10-K;
+    #   * a 10-K/A is used only when no original 10-K facts exist for the
+    #     period (then everything, including the date, comes from the 10-K/A,
+    #     so values and timing stay consistent);
+    #   * restated values published later in a 10-K/A are NOT mixed in
+    #     (that would be look-ahead).
     records: dict[pd.Timestamp, dict] = {}
 
     for end, fact_list in raw_facts.items():
-        # Determine whether we have an amendment for this period
-        has_amendment = any(f.get("form", "").endswith("/A") for _, _, _, f in fact_list)
-
-        # If amendment exists, keep only amendment facts; otherwise only originals
-        if has_amendment:
-            fact_list = [(t, m, p, f) for t, m, p, f in fact_list
-                         if f.get("form", "").endswith("/A")]
-        else:
-            fact_list = [(t, m, p, f) for t, m, p, f in fact_list
-                         if not f.get("form", "").endswith("/A")]
-
-        if not fact_list:
+        originals = [x for x in fact_list
+                     if not x[3].get("form", "").endswith("/A")]
+        amendments = [x for x in fact_list
+                      if x[3].get("form", "").endswith("/A")]
+        use_amend = not originals
+        chosen = amendments if use_amend else originals
+        if not chosen:
             continue
 
-        # filing_date = earliest amendment date (when corrected info first
-        # became public), used to anchor the return-measurement window.
-        all_filed = [pd.to_datetime(f.get("filed"), errors="coerce")
-                     for _, _, _, f in fact_list]
-        earliest_filing = min(d for d in all_filed if pd.notna(d))
+        filed = [pd.to_datetime(f.get("filed"), errors="coerce")
+                 for _, _, _, f in chosen]
+        filed_ok = [d for d in filed if pd.notna(d)]
+        if not filed_ok:
+            continue
+        first_filed = min(filed_ok)
+        # Keep only facts from the first filing of this form type (same
+        # day); later same-form facts would be look-ahead.
+        chosen = [x for x, d in zip(chosen, filed) if d == first_filed]
+        accns = pd.Series([f.get("accn") for _, _, _, f in chosen]).dropna()
+        accn = accns.mode().iloc[0] if len(accns) else None
 
         rec = {
             "ticker": meta["ticker"],
             "company_name": meta["company_name"],
             "year_end": end,
-            "filing_date": earliest_filing,
+            "filing_date": first_filed,
             "fiscal_year": _fiscal_year(end, fye),
-            "accession_number": None,  # set below from winning fact
-            "form_type": "10-K/A" if has_amendment else "10-K",
+            "accession_number": accn,
+            "form_type": "10-K/A" if use_amend else "10-K",
+            "has_amendment": bool(amendments) and not use_amend,
         }
 
-        # Resolve metric priorities: lowest priority number wins.
-        # Among same-priority facts, prefer the LATEST filing — the
-        # most recent amendment supersedes all prior values.
-        for tag, metric, priority, fact in fact_list:
-            fd = pd.to_datetime(fact.get("filed"), errors="coerce")
+        # Resolve metric priorities: lowest priority number wins; facts
+        # come from the single chosen filing, so values are point-in-time.
+        for tag, metric, priority, fact in chosen:
+            if fact.get("accn") != accn:
+                continue
             cur_pri = rec.get(f"_p_{metric}", 999)
-            cur_fd = rec.get(f"_fd_{metric}")
-            if priority < cur_pri or (priority == cur_pri and cur_fd is not None and fd > cur_fd):
+            if priority < cur_pri:
                 rec[metric] = fact["val"]
                 rec[f"_p_{metric}"] = priority
                 rec[f"_tag_{metric}"] = tag
-                rec[f"_fd_{metric}"] = fd
-                rec["accession_number"] = fact.get("accn")
 
         records[end] = rec
+
+    # Share counts, matched to the chosen filing by accession number.
+    shares_by_accn = _shares_by_accession(facts_all)
+    for rec in records.values():
+        val, src = shares_by_accn.get(rec.get("accession_number"), (None, None))
+        rec["shares_out"] = val
+        rec["_tag_shares_out"] = src
 
     df = pd.DataFrame(records.values())
     if df.empty:
@@ -217,9 +235,38 @@ def _fetch_company_facts(meta: dict) -> dict | None:
         )
         if r.status_code != 200:
             return None
-        return r.json().get("facts", {}).get("us-gaap", {}) or None
+        return r.json().get("facts", {}) or None
     except Exception:
         return None
+
+
+def _shares_by_accession(facts_all: dict) -> dict[str, tuple[float, str]]:
+    """{accession: (shares outstanding, source tag)} from 10-K / 10-K/A facts.
+
+    Tags are tried in ``SHARE_TAGS`` order; within one accession and tag the
+    latest-dated instant is used (cover-page date for dei).  Multi-class
+    filers report one dei fact per class with the same date; these are summed.
+    """
+    out: dict[str, tuple[float, str]] = {}
+    for ns, tag in SHARE_TAGS:
+        units = (facts_all.get(ns) or {}).get(tag, {}).get("units", {})
+        facts = units.get("shares", [])
+        by_accn: dict[str, dict[str, float]] = {}
+        for f in facts:
+            if f.get("form") not in ("10-K", "10-K/A"):
+                continue
+            accn, end, val = f.get("accn"), f.get("end"), f.get("val")
+            if not accn or end is None or val is None:
+                continue
+            by_accn.setdefault(accn, {})
+            by_accn[accn][end] = by_accn[accn].get(end, 0.0) + float(val)
+        for accn, by_end in by_accn.items():
+            if accn in out:
+                continue
+            v = by_end[max(by_end)]
+            if v > 0:
+                out[accn] = (v, f"{ns}:{tag}")
+    return out
 
 
 def _usd_facts(us_gaap: dict, tag: str) -> list[dict]:

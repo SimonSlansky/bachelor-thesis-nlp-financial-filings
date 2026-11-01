@@ -96,6 +96,10 @@ def compute_section_scores(text_df: pd.DataFrame,
     """
     if lm is None:
         lm = load_lm_dictionary()
+    both = lm["uncertainty"] & lm["litigious"]
+    if verbose:
+        print(f"  LM uncertainty ∩ litigious: {len(both)} words "
+              f"{sorted(both)[:10]} — such tokens count in BOTH sub-densities")
 
     rows = []
     n = len(text_df)
@@ -116,6 +120,8 @@ def compute_section_scores(text_df: pd.DataFrame,
             "neg_1a": s_1a["negative"],
             "words_mda": s_mda["n_words"],
             "words_1a": s_1a["n_words"],
+            "n_unc_1a": s_1a["n_unc"],
+            "n_lit_1a": s_1a["n_lit"],
         })
     return pd.DataFrame(rows)
 

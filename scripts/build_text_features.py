@@ -33,7 +33,49 @@ from text_features import (
     save_lambda_diagnostic,
 )
 
-HORIZON_COLS = ["vol_5d", "vol_10d", "vol_30d", "vol_90d", "vol_180d"]
+HORIZON_COLS = ["vol_5d", "vol_10d", "vol_30d", "vol_90d", "vol_180d", "vol_365d"]
+
+
+def _merge_filing_metadata(p: pd.DataFrame, text_df: pd.DataFrame) -> pd.DataFrame:
+    """Historical SIC and section source (main document vs exhibit)."""
+    import numpy as np
+    meta_p = DATA_DIR / "filing_metadata.csv"
+    if meta_p.exists():
+        m = (pd.read_csv(meta_p).drop_duplicates(["ticker", "fiscal_year"], keep="last")
+             [["ticker", "fiscal_year", "sic_at_filing", "src_1a", "src_7"]])
+        p = p.drop(columns=[c for c in ("sic_at_filing", "src_1a", "src_7") if c in p])
+        p = p.merge(m, on=["ticker", "fiscal_year"], how="left")
+        # 'exhibit_or_none' + stored text present => text came from the exhibit.
+        for sec, wcol in (("1a", "words_1a"), ("7", "words_mda")):
+            c = f"src_{sec}"
+            amb = p[c].eq("exhibit_or_none")
+            p.loc[amb & (p[wcol] >= 100), c] = "exhibit"
+            p.loc[amb & ~(p[wcol] >= 100), c] = "none"
+        p["sic_hist"] = p["sic_at_filing"].fillna(p["sic"])
+        print(f"  filing metadata: SIC coverage {p['sic_at_filing'].notna().mean():.1%}, "
+              f"SIC changed vs today in {(p['sic_at_filing'].notna() & (p['sic_at_filing'] != p['sic'])).mean():.1%}; "
+              f"1A from exhibit: {(p['src_1a'] == 'exhibit').sum()}")
+    else:
+        print("  [warn] filing_metadata.csv missing: run backfill_filing_metadata.py")
+        p["sic_hist"] = p["sic"]
+    return p
+
+
+def _coverage_by_year(p: pd.DataFrame) -> None:
+    """Actual extraction coverage on the full panel, by fiscal year (#23)."""
+    g = p.groupby("fiscal_year")
+    cov = pd.DataFrame({
+        "filings": g.size(),
+        "item_1a_ok": g["words_1a"].apply(lambda s: (s >= 100).sum()),
+        "item_7_ok": g["words_mda"].apply(lambda s: (s >= 100).sum()),
+    })
+    cov["item_1a_rate"] = cov["item_1a_ok"] / cov["filings"]
+    cov["item_7_rate"] = cov["item_7_ok"] / cov["filings"]
+    tot = cov[["filings", "item_1a_ok", "item_7_ok"]].sum()
+    cov.loc["all"] = [*tot, tot["item_1a_ok"] / tot["filings"], tot["item_7_ok"] / tot["filings"]]
+    cov.to_csv(DATA_DIR / "text_coverage_by_year.csv")
+    print(f"  coverage (all years): Item 1A {cov.loc['all', 'item_1a_rate']:.1%}, "
+          f"Item 7 {cov.loc['all', 'item_7_rate']:.1%} -> text_coverage_by_year.csv")
 
 
 def main() -> None:
@@ -84,6 +126,12 @@ def main() -> None:
     import numpy as np  # local import keeps the module-level imports tidy
     p["log_words_1a"] = np.log(p["words_1a"].clip(lower=1))
     p["log_words_mda"] = np.log(p["words_mda"].clip(lower=1))
+    # Ratio-free count variables (#33): log(1 + dictionary-word counts).
+    p["log_n_unc_1a"] = np.log1p(p["n_unc_1a"])
+    p["log_n_lit_1a"] = np.log1p(p["n_lit_1a"])
+
+    p = _merge_filing_metadata(p, text_df)
+    _coverage_by_year(p)
 
     print("Calibrating λ …")
     lam = calibrate_lambda(p, "delta_sentiment", "delta_roa")
@@ -104,7 +152,9 @@ def main() -> None:
         if len(lcols) != len(hcols):
             sys.exit("volatility_horizons.csv lacks lagged_* columns; "
                      "re-run build_volatility_horizons.py")
-        extra = [c for c in ("pre_vol",) if c in h.columns]
+        extra = [c for c in h.columns
+                 if c not in ("ticker", "year_end", *hcols, *lcols)]
+        p = p.drop(columns=[c for c in extra if c in p.columns])
         p = p.merge(h[["ticker", "year_end", *hcols, *lcols, *extra]],
                     on=["ticker", "year_end"], how="left")
         # Lagged short-horizon vols come from build_volatility_horizons.py:
