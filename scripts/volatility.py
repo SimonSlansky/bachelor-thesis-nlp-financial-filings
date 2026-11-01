@@ -149,6 +149,29 @@ def earnings_in_window(ea_dates: np.ndarray, closes: pd.Series,
     return float(((ea_dates >= s) & (ea_dates <= e)).any())
 
 
+def vol_excluding_ea(closes: pd.Series, filing_date: pd.Timestamp,
+                     window_days: int, min_returns: int,
+                     ea_dates: np.ndarray | None) -> float:
+    """Outcome-window volatility without the returns of earnings-release
+    reaction days: the first trading day on or after each 8-K Item 2.02 date
+    and the next trading day (covers after-close releases)."""
+    bounds = window_bounds(closes, filing_date, window_days)
+    if bounds is None:
+        return np.nan
+    r = _window_returns(closes, *bounds)
+    if ea_dates is not None and len(ea_dates):
+        cal = closes.index
+        drop = set()
+        for d in ea_dates:
+            k = cal.searchsorted(pd.Timestamp(d), side="left")
+            drop.update(cal[k:k + 2])
+        r = r[~r.index.isin(list(drop))]
+    if len(r) < min_returns:
+        return np.nan
+    v = float(r.std(ddof=1) * ANNUALISATION_FACTOR)
+    return v if np.isfinite(v) and v > 0 else np.nan
+
+
 def pre_filing_stats(closes: pd.Series, filing_date: pd.Timestamp) -> dict:
     """Pre-filing (public-at-filing) price variables.
 

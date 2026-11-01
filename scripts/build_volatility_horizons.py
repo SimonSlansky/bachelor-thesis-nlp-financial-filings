@@ -25,6 +25,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from config import DATA_DIR, PRE_LIQ_MIN_DAYS
 from volatility import (load_closes, current_and_lagged, pre_filing_stats,
                         window_market_stats, earnings_in_window,
+                        vol_excluding_ea,
                         as_traded_close, data_cutoff)
 
 # (window_days, column, minimum number of daily RETURNS)
@@ -106,6 +107,8 @@ def main() -> None:
             ea = ea_map.get(ticker) if ea_map else None
             out[f"ea_in_{h}"] = ([earnings_in_window(ea, closes, fd, window_days)
                                   for fd in fds] if ea_map else np.nan)
+            out[f"vol_{h}_exea"] = [vol_excluding_ea(closes, fd, window_days, min_ret, ea)
+                                    for fd in fds]
         pre = pd.DataFrame([pre_filing_stats(closes, fd) for fd in fds],
                            index=out.index)
         out = out.join(pre)

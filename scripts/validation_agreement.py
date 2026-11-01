@@ -3,7 +3,9 @@
 Reads the owner-filled admin/human_labels_template.csv (columns correct_section,
 start_ok, end_ok coded 1/0) and data/extraction_validation.csv.  LLM ratings
 Pass/Minor = 1, Fail = 0.  Reports per criterion and for "all three OK":
-Cohen's kappa, raw agreement, and the human error rate with a Wilson 95% CI.
+raw agreement and Cohen's kappa on all labelled rows, and the human error rate
+with a Wilson 95% CI on the random-draw rows only (admin/human_labels_design.csv;
+the LLM-flagged rows are oversampled).
 Writes data/results/validation_agreement.csv.  Exits cleanly if no labels yet.
 """
 import sys
@@ -40,6 +42,8 @@ def main():
         print("No human labels filled in yet — nothing to compute.")
         return
     llm = pd.read_csv(DATA_DIR / "extraction_validation.csv")
+    dp = LABELS.with_name("human_labels_design.csv")
+    design = dict(pd.read_csv(dp).values) if dp.exists() else None
     llm = llm[["ticker", "fiscal_year", "section", *PAIRS.values()]].rename(
         columns={v: f"llm_{v}" for v in PAIRS.values()})
     m = h.merge(llm, on=["ticker", "fiscal_year", "section"], how="inner")
@@ -48,14 +52,18 @@ def main():
     L.columns = list(PAIRS)
     H["all"], L["all"] = H.all(axis=1), L.all(axis=1)
     rows = []
+    rand = m["label_id"].map(design).eq("random") if design is not None else pd.Series(True, index=m.index)
     for c in H.columns:
         hv, lv = H[c], L[c]
         n = len(m)
-        err = int((~hv).sum())
-        lo, hi = wilson_ci(err, n)
+        err = int((~hv[rand]).sum())
+        nr = int(rand.sum())
+        lo, hi = wilson_ci(err, nr)
         rows.append({"criterion": c, "n": n, "agreement": float((hv == lv).mean()),
-                     "kappa": cohen_kappa(hv, lv), "human_errors": err,
-                     "human_error_rate": err / n, "ci_lo": lo, "ci_hi": hi})
+                     "kappa": cohen_kappa(hv, lv), "llm_fail": int((~lv).sum()),
+                     "human_fail": int((~hv).sum()), "n_random": nr,
+                     "human_errors_random": err, "human_error_rate": err / nr,
+                     "ci_lo": lo, "ci_hi": hi})
     res = pd.DataFrame(rows)
     OUT.parent.mkdir(exist_ok=True)
     res.to_csv(OUT, index=False)

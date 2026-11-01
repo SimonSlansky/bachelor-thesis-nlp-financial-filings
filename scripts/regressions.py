@@ -82,6 +82,25 @@ def _read_panel() -> pd.DataFrame:
     return _CACHE["panel"].copy()
 
 
+FF48_FILE = DATA_DIR / "external" / "Siccodes48.txt"
+
+
+def ff48_map() -> dict[int, int]:
+    """SIC4 -> Fama-French 48 industry (Ken French data library,
+    Siccodes48.txt); SIC codes outside every range -> 48 (Other)."""
+    import re
+    out, ind = {}, None
+    for line in FF48_FILE.read_text(encoding="latin-1").splitlines():
+        m = re.match(r"\s*(\d+)\s+\w+", line)
+        r = re.match(r"\s*(\d{4})-(\d{4})", line)
+        if r:
+            for s in range(int(r.group(1)), int(r.group(2)) + 1):
+                out.setdefault(s, ind)
+        elif m:
+            ind = int(m.group(1))
+    return out
+
+
 def industry_code(df: pd.DataFrame, ind: str) -> pd.Series:
     """Industry identifier for the FE.  Default: historical SIC2 (#72)."""
     hist = df["sic_hist"] if "sic_hist" in df.columns else df["sic"]
@@ -92,9 +111,8 @@ def industry_code(df: pd.DataFrame, ind: str) -> pd.Series:
     if ind == "sic3":
         return hist // 10
     if ind == "ff48":
-        raise NotImplementedError(
-            "FF48 needs the Fama-French SIC->industry map, a new data "
-            "source (owner approval pending).")
+        mp = ff48_map()
+        return hist.map(lambda s: mp.get(int(s), 48) if pd.notna(s) else np.nan)
     raise ValueError(ind)
 
 
@@ -114,13 +132,14 @@ def load_text_panel(h: str = HEADLINE, ind: str = "sic2_hist",
                     ) -> pd.DataFrame:
     """Regression sample for horizon *h* (e.g. "30d").
 
-    Adds  log_vol (DV: ln vol_h, or ln idio_vol_h if dv="idio"),
+    Adds  log_vol (DV: ln vol_h; dv="idio": ln idio_vol_h; dv="exea": ln
+          vol_h without earnings-release reaction days),
           pre_log_vol, lagged_log_vol, log_mkt_vol, ea, ind, fm_year, post2019.
     Keeps rows with every variable in *xvars* (default CONTROLS+TEXT_VARS)
     and *extra* non-missing; winsorises WINSORIZE_COLS on that sample.
     """
     df = _read_panel()
-    vcol = f"vol_{h}" if dv == "vol" else f"idio_vol_{h}"
+    vcol = {"vol": f"vol_{h}", "idio": f"idio_vol_{h}", "exea": f"vol_{h}_exea"}[dv]
     df["log_vol"] = _log_pos(df[vcol])
     df["pre_log_vol"] = _log_pos(df["pre_vol"])
     df["lagged_log_vol"] = _log_pos(df.get(f"lagged_vol_{h}", np.nan))
@@ -284,9 +303,16 @@ def run_robustness(h: str = HEADLINE) -> pd.DataFrame:
     base = load_text_panel(h)
     add("baseline", fit(base, X5), absorb="ind+year", cluster="firm+year")
 
-    # #30/#32 market volatility + earnings announcement in window
-    d = load_text_panel(h, extra=("log_mkt_vol", "ea"))
-    add("mktvol_ea", fit(d, X5 + ["log_mkt_vol", "ea"]), absorb="ind+year", cluster="firm+year")
+    # #30 market volatility over the outcome window
+    d = load_text_panel(h, extra=("log_mkt_vol",))
+    add("mktvol", fit(d, X5 + ["log_mkt_vol"]), absorb="ind+year", cluster="firm+year")
+    # #32 earnings releases: the EA dummy is ~0 at h <= 30d and ~1 at h >= 90d,
+    # so (i) drop windows that contain a release and (ii) drop release days
+    d = base[pd.to_numeric(base["ea"], errors="coerce") != 1]
+    add("excl_ea_windows", fit(d, X5), absorb="ind+year", cluster="firm+year",
+        n_ea_windows_dropped=int(len(base) - len(d)))
+    d = load_text_panel(h, dv="exea")
+    add("vol_excl_ea_days", fit(d, X5), absorb="ind+year", cluster="firm+year", dv="exea")
     # #30 filing-month x year FE
     d = load_text_panel(h, extra=("fm_year",))
     add("fm_year_fe", fit(d, X5, absorb=("ind", "fm_year")), absorb="ind+filing_month_x_year",
@@ -302,6 +328,12 @@ def run_robustness(h: str = HEADLINE) -> pd.DataFrame:
     add("sic3_fe", fit(d, X5), absorb="sic3+year", cluster="firm+year")
     d = load_text_panel(h, ind="sic2")
     add("sic2_snapshot_fe", fit(d, X5), absorb="sic2_today+year", cluster="firm+year")
+    d = load_text_panel(h, ind="ff48")
+    add("ff48_fe", fit(d, X5), absorb="ff48+year", cluster="firm+year")
+    # market cap from weighted-average basic shares (multi-class filers)
+    fb = base["shares_source"].astype(str).str.contains("WeightedAverage")
+    add("drop_shares_fallback", fit(base[~fb], X5), absorb="ind+year",
+        cluster="firm+year", n_dropped=int(fb.sum()))
     hist = base["sic_hist"] if "sic_hist" in base else base["sic"]
     d = base[~(hist.between(4900, 4999) | hist.between(8000, 8099))]
     add("excl_sic49_80", fit(d, X5), absorb="ind+year", cluster="firm+year")
