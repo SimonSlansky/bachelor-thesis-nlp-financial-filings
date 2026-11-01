@@ -288,7 +288,7 @@ README run order and frozen-input rule; this register.
 | 19 | ✅ | One control vector, consistent count |
 | 20 | ✅ | Sample-attrition table |
 | 21 | ✅ | True stratification (5 × 3-year strata, 20 per section) and failure counts (21 strict / 13 lenient) |
-| 22 | ⏳ | Second independent LLM audit added (Claude Opus 5.5, κ 0.68 vs Gemini); model input limitation stated; human labels (51-section template) **not done — owner to label, or keep as stated limitation** |
+| 22 | ✅ | Two LLM audits (Gemini; Claude Opus 5.5, κ 0.68) plus manual check by the author of 51 sections against EDGAR, blind: 4 deficient (all boundary), error rate 6.0% on 50 random (Wilson 2.1–16.2%), agrees with Gemini on 51/51, Claude 50/51; LLM input limitation stated |
 | 23 | ✅ | Actual coverage (Item 1A 96.3%, Item 7 94.9%) by year |
 | 24 | ✅ | Comparative "fewer false positives" claim deleted |
 | 25 | ✅ | Item 1C date corrected |
@@ -343,6 +343,6 @@ README run order and frozen-input rule; this register.
 Open for the owner: write `02_literature_review.tex` and `uvod.tex`
 (verdicts to state: H1 supported between firms only; H2 composite not
 supported at 5%, litigious sub-list significant but fragile; H3 not
-supported); human labels or keep #22 limitation; the 9 `% TODO` items
+supported); the 9 `% TODO` items
 (acknowledgements, Campbell sample size, cited window lengths and control
 sets, three end pages Crossref does not list, one reference not on Crossref).

@@ -114,7 +114,7 @@ def main():
     agp = RES / "validation_llm_agreement.csv"
     ag = pd.read_csv(agp).set_index("criterion") if agp.exists() else None
     L = [r"\begin{table}[htbp]", r"  \centering", r"  \small",
-         r"  \caption{LLM extraction audits: sections rated acceptable"
+         r"  \caption{Extraction audits: sections rated acceptable"
          rf" ($n = {n}$ sections, {n // 2} Item~1A and {n // 2} Item~7)}}",
          r"  \label{tab:ai_validation}",
          r"  \begin{tabular}{l r r l r r r}", r"    \toprule",
@@ -142,6 +142,22 @@ def main():
         f" Both audits fail the same {int(ag.loc['all', 'both_fail'])} sections on the overall"
         f" criterion; {int(ag.loc['all', 'gemini_only_fail'])} fail only under Gemini and"
         f" {int(ag.loc['all', 'claude_only_fail'])} only under Claude.")
+    hp = RES / "validation_agreement.csv"
+    if hp.exists():
+        hm = pd.read_csv(hp).set_index(["llm", "criterion"])
+        a = hm.loc[("gemini", "all")]
+        L += [r"    \midrule",
+              r"    \multicolumn{7}{l}{\emph{Manual check by the author (51 sections, correct"
+              r" section and both boundaries)}} \\"]
+        for lab, key in (("Correct section", "correct_section"), ("Start boundary", "start_ok"),
+                         ("End boundary", "end_ok"), ("All three", "all")):
+            g, c = hm.loc[("gemini", key)], hm.loc[("claude", key)]
+            L.append(f"    \\quad {lab} & \\multicolumn{{3}}{{l}}{{{int(g['human_fail'])} deficient;"
+                     f" agrees with Gemini {100 * g['agreement']:.1f}\\%}} & "
+                     f"\\multicolumn{{3}}{{l}}{{agrees with Claude {100 * c['agreement']:.1f}\\%}} \\\\")
+        both += (f" Manual check: error rate on the {int(a['n_random'])} random sections"
+                 f" {100 * a['human_error_rate']:.1f}\\% (Wilson {100 * a['ci_lo']:.1f}--"
+                 f"{100 * a['ci_hi']:.1f}\\%), against the original filings, blind to both audits.")
     L += [r"    \bottomrule", r"  \end{tabular}",
           r"  \begin{minipage}{0.95\linewidth}\vspace{4pt}\footnotesize",
           r"  \emph{Notes.} Strict = rated Pass; lenient = Pass or Minor issue."

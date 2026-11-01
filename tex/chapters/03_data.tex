@@ -302,8 +302,10 @@ excerpt and the word count, without the first audit's ratings. Neither saw
 the rest of the filing, so boundary judgements rest on the extracted text
 alone. LLMs perform well on text-classification tasks compared with crowd
 workers \parencite{gilardi2023}, but their judgements are not a substitute
-for an expert reading of the filings, and no human audit was completed for
-this version.
+for an expert reading of the filings. The author therefore also checked 51
+of the sections by hand against the original filings on EDGAR, without
+seeing the LLM ratings: 50 drawn at random within the same strata and the
+one further section flagged by an LLM.
 
 Under the first audit, 187 of 200 sections (93.5\%, Wilson 95\% interval
 89.2--96.2\%) were acceptable on all five criteria (Pass or Minor) and 179
@@ -313,6 +315,12 @@ with no extracted text; by stratum, five fall in 2010--2012, three in
 Under the second audit 190 sections (95.0\%, 91.0--97.3\%) were acceptable;
 the two audits agree on 96.5\% of sections ($\kappa = 0.68$) and both reject
 the same eight (Table~\ref{tab:ai_validation} in Appendix~\ref{app:ai-usage}).
+In the manual check every one of the 51 sections was the correct section;
+four had a boundary error (two started inside Item~1, one ran a few lines into the
+financial statements and one ran through Item~8), three of them among the
+50 random sections, an error rate of 6.0\% (Wilson 95\% interval
+2.1--16.2\%). The manual verdict on the three criteria matches the first
+audit on all 51 sections and the second on 50.
 Errors are more frequent in early filings, whose structure is less
 standardised.
 

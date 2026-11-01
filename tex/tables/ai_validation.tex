@@ -1,7 +1,7 @@
 \begin{table}[htbp]
   \centering
   \small
-  \caption{LLM extraction audits: sections rated acceptable ($n = 200$ sections, 100 Item~1A and 100 Item~7)}
+  \caption{Extraction audits: sections rated acceptable ($n = 200$ sections, 100 Item~1A and 100 Item~7)}
   \label{tab:ai_validation}
   \begin{tabular}{l r r l r r r}
     \toprule
@@ -23,9 +23,15 @@
     \quad FY 2016--2018 & \multicolumn{6}{l}{2 of 40} \\
     \quad FY 2019--2021 & \multicolumn{6}{l}{2 of 40} \\
     \quad FY 2022--2024 & \multicolumn{6}{l}{1 of 40} \\
+    \midrule
+    \multicolumn{7}{l}{\emph{Manual check by the author (51 sections, correct section and both boundaries)}} \\
+    \quad Correct section & \multicolumn{3}{l}{0 deficient; agrees with Gemini 94.1\%} & \multicolumn{3}{l}{agrees with Claude 98.0\%} \\
+    \quad Start boundary & \multicolumn{3}{l}{2 deficient; agrees with Gemini 100.0\%} & \multicolumn{3}{l}{agrees with Claude 100.0\%} \\
+    \quad End boundary & \multicolumn{3}{l}{2 deficient; agrees with Gemini 100.0\%} & \multicolumn{3}{l}{agrees with Claude 98.0\%} \\
+    \quad All three & \multicolumn{3}{l}{4 deficient; agrees with Gemini 100.0\%} & \multicolumn{3}{l}{agrees with Claude 98.0\%} \\
     \bottomrule
   \end{tabular}
   \begin{minipage}{0.95\linewidth}\vspace{4pt}\footnotesize
-  \emph{Notes.} Strict = rated Pass; lenient = Pass or Minor issue. The sample is stratified into five three-year fiscal-year strata with 20 sections per stratum and section type; Item~1A and Item~7 were drawn independently (197 distinct filings). 5 sections with no extracted text are counted as Fail on every criterion. Gemini saw the whole extracted section; Claude saw its first and last 1{,}200 and a middle 600 characters and the word count, blind to the Gemini verdicts. Neither saw the surrounding filing. Agreement and Cohen's $\kappa$ on acceptable (1) versus Fail (0). Wilson score intervals. Both audits fail the same 8 sections on the overall criterion; 5 fail only under Gemini and 2 only under Claude.
+  \emph{Notes.} Strict = rated Pass; lenient = Pass or Minor issue. The sample is stratified into five three-year fiscal-year strata with 20 sections per stratum and section type; Item~1A and Item~7 were drawn independently (197 distinct filings). 5 sections with no extracted text are counted as Fail on every criterion. Gemini saw the whole extracted section; Claude saw its first and last 1{,}200 and a middle 600 characters and the word count, blind to the Gemini verdicts. Neither saw the surrounding filing. Agreement and Cohen's $\kappa$ on acceptable (1) versus Fail (0). Wilson score intervals. Both audits fail the same 8 sections on the overall criterion; 5 fail only under Gemini and 2 only under Claude. Manual check: error rate on the 50 random sections 6.0\% (Wilson 2.1--16.2\%), against the original filings, blind to both audits.
   \end{minipage}
 \end{table}

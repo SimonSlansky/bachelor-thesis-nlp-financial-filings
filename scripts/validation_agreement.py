@@ -41,29 +41,34 @@ def main():
     if h.empty:
         print("No human labels filled in yet — nothing to compute.")
         return
-    llm = pd.read_csv(DATA_DIR / "extraction_validation.csv")
     dp = LABELS.with_name("human_labels_design.csv")
     design = dict(pd.read_csv(dp).values) if dp.exists() else None
-    llm = llm[["ticker", "fiscal_year", "section", *PAIRS.values()]].rename(
-        columns={v: f"llm_{v}" for v in PAIRS.values()})
-    m = h.merge(llm, on=["ticker", "fiscal_year", "section"], how="inner")
-    H = m[list(PAIRS)].astype(int).astype(bool)
-    L = m[[f"llm_{v}" for v in PAIRS.values()]].isin(["Pass", "Minor"])
-    L.columns = list(PAIRS)
-    H["all"], L["all"] = H.all(axis=1), L.all(axis=1)
     rows = []
-    rand = m["label_id"].map(design).eq("random") if design is not None else pd.Series(True, index=m.index)
-    for c in H.columns:
-        hv, lv = H[c], L[c]
-        n = len(m)
-        err = int((~hv[rand]).sum())
-        nr = int(rand.sum())
-        lo, hi = wilson_ci(err, nr)
-        rows.append({"criterion": c, "n": n, "agreement": float((hv == lv).mean()),
-                     "kappa": cohen_kappa(hv, lv), "llm_fail": int((~lv).sum()),
-                     "human_fail": int((~hv).sum()), "n_random": nr,
-                     "human_errors_random": err, "human_error_rate": err / nr,
-                     "ci_lo": lo, "ci_hi": hi})
+    for name, path in (("gemini", DATA_DIR / "extraction_validation.csv"),
+                       ("claude", DATA_DIR / "extraction_validation_claude.csv")):
+        if not path.exists():
+            continue
+        llm = pd.read_csv(path)[["ticker", "fiscal_year", "section", *PAIRS.values()]].rename(
+            columns={v: f"llm_{v}" for v in PAIRS.values()})
+        m = h.merge(llm, on=["ticker", "fiscal_year", "section"], how="inner")
+        H = m[list(PAIRS)].astype(int).astype(bool)
+        L = m[[f"llm_{v}" for v in PAIRS.values()]].isin(["Pass", "Minor"])
+        L.columns = list(PAIRS)
+        H["all"], L["all"] = H.all(axis=1), L.all(axis=1)
+        rand = (m["label_id"].map(design).eq("random") if design is not None
+                else pd.Series(True, index=m.index))
+        for c in H.columns:
+            hv, lv = H[c], L[c]
+            err, nr = int((~hv[rand]).sum()), int(rand.sum())
+            lo, hi = wilson_ci(err, nr)
+            # kappa is undefined when one rater never reports a failure
+            k = cohen_kappa(hv, lv) if hv.nunique() > 1 and lv.nunique() > 1 else float("nan")
+            rows.append({"llm": name, "criterion": c, "n": len(m),
+                         "agreement": float((hv == lv).mean()), "kappa": k,
+                         "llm_fail": int((~lv).sum()), "human_fail": int((~hv).sum()),
+                         "both_fail": int((~hv & ~lv).sum()), "n_random": nr,
+                         "human_errors_random": err, "human_error_rate": err / nr,
+                         "ci_lo": lo, "ci_hi": hi})
     res = pd.DataFrame(rows)
     OUT.parent.mkdir(exist_ok=True)
     res.to_csv(OUT, index=False)

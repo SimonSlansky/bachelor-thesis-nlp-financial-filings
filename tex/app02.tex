@@ -45,10 +45,14 @@ two models agree on the overall verdict for 96.5\% of the sections.
 
 \paragraph{Limitations.} Both audits are LLM judgements of the extracted text
 without the original filing, and the second model is used as a check of the
-first, not as ground truth. No human audit was completed for this version: a
-blind labelling sheet of 51 sections (50 random and the remaining
-LLM-flagged section) and the code to compute agreement with the LLM ratings
-are part of the repository. The audits do not compare the parser with other
+first, not as ground truth. The author checked 51 sections by hand against
+the filings on EDGAR, blind to both audits (50 random sections and the
+remaining LLM-flagged section; labels in
+\texttt{admin/human\_labels\_template.csv}). The manual verdict on correct
+section, start and end boundary agrees with audit~1 on all 51 sections and
+with audit~2 on 50; the four sections the author marked as deficient are the
+four that audit~1 failed on these criteria. The audits do not compare the
+parser with other
 extraction methods, so no claim is made about its accuracy relative to
 plain-text or XBRL-based extraction.
 
