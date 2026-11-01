@@ -173,11 +173,15 @@ FLOW_METRICS = {"net_income", "operating_income", "operating_cash_flow",
 
 # Share counts (unit "shares"), matched to the 10-K by accession number.
 # dei cover-page count (date close to filing) preferred; balance-sheet count
-# as fallback.
+# next; the fiscal-year weighted-average basic count last.  The last one is
+# the only undimensioned count many multi-class filers report (their cover
+# page counts are per class, i.e. dimensional, and absent from Company Facts).
 SHARE_TAGS: list[tuple[str, str]] = [
     ("dei", "EntityCommonStockSharesOutstanding"),
     ("us-gaap", "CommonStockSharesOutstanding"),
+    ("us-gaap", "WeightedAverageNumberOfSharesOutstandingBasic"),
 ]
+SHARE_DURATION_TAGS = {"WeightedAverageNumberOfSharesOutstandingBasic"}
 
 # Materiality threshold for paired-tag disagreements (#15): share of assets.
 TAG_DIFF_MATERIAL = 0.01

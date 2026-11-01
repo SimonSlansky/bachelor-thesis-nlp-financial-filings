@@ -29,6 +29,7 @@ from text_features import (
     calibrate_lambda,
     compute_section_scores,
     compute_textsim,
+    load_text_sections,
     merge_text_features,
     save_lambda_diagnostic,
 )
@@ -93,7 +94,7 @@ def main() -> None:
         sys.exit(1)
 
     print("Loading inputs …")
-    text_df = pd.read_csv(text_path)
+    text_df = load_text_sections()
     panel = pd.read_csv(panel_path)
     lm = load_lm_dictionary()
     print(f"  text rows: {len(text_df):,}  panel rows: {len(panel):,}  "

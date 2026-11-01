@@ -58,3 +58,38 @@ computed mechanically by `scripts/silence_table.py` (`h3_verdict.json`).
   columns are reported and discussed, but do not change the label.
 - Wording: never "pre-specified"; the rule is described as the decision rule
   stated in the methodology.
+
+## Phase 1 — working notes (1 Nov 2026)
+- First background run (12:22) died silently at step 1 (no traceback, log held
+  only the header); restarted 12:25 with `caffeinate` + unbuffered output.
+- **Bug: fiscal-year labels (new).** `fiscal_year` was derived from today's SEC
+  `fiscalYearEnd` field, which drifts for 52/53-week filers (e.g. "0101").
+  ~20 firms (DAR, SNA, SWK, TXT, MASI, ILMN, TRMB, LHX, DPZ, EXEL, LSCC, JNJ, TDY,
+  USFD, …; 249 raw rows) carried labels one year too high → wrong year FE, wrong
+  t−1 matching and lost FY2024 under the FY ≤ 2024 cap; the text-era panel had
+  156 such rows. Fix: `fiscal_year = year(year_end − 7 days)`
+  (`sec_edgar.fiscal_year_from_end`), and stored text re-keyed by its own
+  period end via `data/text_accessions.csv` (text untouched; built from the
+  panel of commit 280b73c, the last commit that changed `text_sections.csv`).
+- **Bug: removed LM words counted.** `lm_loader` counted words whose LM code is
+  negative (= removed in 2020) as members: 2 litigious ("para", "terminus"),
+  7 positive, 10 negative. Fixed (`> 0`).
+- **Shares coverage.** Multi-class filers (CMCSA, V, MA, META, F, UPS, …) report
+  cover-page shares per class only (dimensional facts are absent from Company
+  Facts) → shares/mcap coverage 91% of the regression-eligible sample and B/M
+  90% → the Phase-0 control vector would drop ~11% (> 5% rule). Fix attempt:
+  fallback to the annual `WeightedAverageNumberOfSharesOutstandingBasic` of the
+  same accession (flag `shares_source`); book equity falls back to TA − TL.
+- Accession check (#18): of 6,587 text firm-years, 7 changed accession (the
+  text came from a 10-K/A; the point-in-time rule now picks the original 10-K)
+  → `text_mismatch = 1` for 7 (0.11%).
+- The existing `data/silence.csv` (thesis numbers) came from an older,
+  non-point-in-time version of `build_silence.py` (5,367 valid vs 5,020); the
+  refactored `build_silence.py` reproduces the committed point-in-time code to
+  1.8e-7.
+- 6 universe firms never had Yahoo price files (BLD, CTRA, GTLS, HOLX, MASI,
+  PSTG: "possibly delisted"); they had no outcome before either.
+- `ea_in_30d` mean = 0.01 (guide expected 0.2–0.5): for most firms the Q4
+  earnings release precedes the 10-K and the next one falls > 30 days later, so
+  the 30-day window rarely contains an EA; `ea_in_90d` = 0.99. The dummy has
+  almost no variation at 30d.

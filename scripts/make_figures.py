@@ -244,6 +244,37 @@ def fig_omission_length() -> None:
     _save(fig, "fig_omission_length.pdf")
 
 
+def fig_timeline() -> None:
+    """Timing of the variables around one filing (#29); schematic, no data."""
+    fig, ax = plt.subplots(figsize=(6.6, 2.6))
+    ax.set_xlim(-4.2, 7.0)
+    ax.set_ylim(-1.5, 1.6)
+    ax.axis("off")
+    ax.axhline(0, color="black", linewidth=1.0, xmin=0.02, xmax=0.98)
+    marks = [(-2.2, "fiscal year\nend $t$"), (0.0, "10-K filing\n(day 0)"),
+             (1.9, "day 0 + 2\ntrading days")]
+    for x, lab in marks:
+        ax.plot([x, x], [-0.12, 0.12], color="black", linewidth=1.2)
+        ax.text(x, -0.22, lab, ha="center", va="top", fontsize=8)
+    ax.annotate("", xy=(6.6, 0.4), xytext=(1.9, 0.4),
+                arrowprops=dict(arrowstyle="<->", color="black", linewidth=1.2))
+    ax.text(4.25, 0.5, "outcome window: $h$ calendar days\n"
+            r"$\ln\sigma^{[h]}_{i,t+1}$, market and idiosyncratic vol, EA dummy",
+            ha="center", va="bottom", fontsize=8)
+    ax.annotate("", xy=(-0.05, 1.05), xytext=(-1.4, 1.05),
+                arrowprops=dict(arrowstyle="<->", color="0.4", linewidth=1.0))
+    ax.text(-0.72, 1.12, r"60 trading days: $\ln\sigma^{\mathrm{pre}}_{i,t}$",
+            ha="center", va="bottom", fontsize=7.5, color="0.3")
+    ax.annotate("", xy=(-0.05, 0.4), xytext=(-4.0, 0.4),
+                arrowprops=dict(arrowstyle="<->", color="0.4", linewidth=1.0))
+    ax.text(-2.0, 0.48, "252 trading days: past return,\nliquidity rule",
+            ha="center", va="bottom", fontsize=7.5, color="0.3")
+    ax.text(-4.0, -1.2, "Accounting controls: fiscal year $t$ (reported in this 10-K); "
+            "text variables: Item 1A of this 10-K.  Not to scale.",
+            ha="left", va="center", fontsize=7.5, color="0.3")
+    _save(fig, "fig_timeline.pdf")
+
+
 def main() -> None:
     print("Building thesis figures...")
     fig_volatility_time()

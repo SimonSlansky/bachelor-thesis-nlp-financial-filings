@@ -21,7 +21,8 @@ from config import (
     ANNUAL_RETURN_WINDOW, MIN_TRADING_DAYS_ANNUAL, REQUEST_SLEEP,
     MIN_FIRM_COVERAGE,
 )
-from sec_edgar import fetch_universe, load_company_metadata, extract_annual_facts
+from sec_edgar import (fetch_universe, load_company_metadata, extract_annual_facts,
+                       relabel_fiscal_years)
 from returns import compute_returns_and_volatility
 from panel import (
     compute_missing_components, impute_balance_sheet, add_financial_ratios,
@@ -183,6 +184,7 @@ def _process(df_all: pd.DataFrame, skip_text: bool = False) -> None:
     print("=" * 66)
     print("  PIPELINE STAGE TRACKER")
     print("=" * 66)
+    df_all = relabel_fiscal_years(df_all)
     df_all = _track(df_all, "raw extraction")
 
     # 4b. Per-firm tag locking (ensures within-firm XBRL tag consistency)
@@ -195,6 +197,7 @@ def _process(df_all: pd.DataFrame, skip_text: bool = False) -> None:
     # 5. Clean transitions & duplicates
     print("\nCleaning transitions & duplicates …")
     df_all = filter_transitions_and_duplicates(df_all)
+    assert not df_all.duplicated(["ticker", "fiscal_year"]).any(), "duplicate (ticker, FY)"
     df_all = _track(df_all, "transitions & dedup")
 
     # 6. Impute

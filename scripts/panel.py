@@ -390,7 +390,7 @@ ANNUAL_COLS = [
     "log_total_assets", "leverage", "roa", "asset_growth",
     "current_ratio", "ocf_to_assets",
     # equity / shares for market cap & book-to-market (built downstream)
-    "stockholders_equity", "equity_parent", "shares_out", "_tag_shares_out",
+    "stockholders_equity", "equity_parent", "shares_out", "shares_source",
     # imputation flags (#17)
     "imputed_liab_identity", "imputed_ffill_total_assets",
     "imputed_ffill_total_liabilities",

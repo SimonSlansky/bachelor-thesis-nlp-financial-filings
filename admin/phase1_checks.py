@@ -76,7 +76,7 @@ def main():
 
     # 4 shares coverage
     rec(4, "shares_out coverage", f"{new['shares_out'].notna().mean():.4f}")
-    rec(4, "shares_out source", json.dumps(new["_tag_shares_out"].value_counts().to_dict()))
+    rec(4, "shares_out source", json.dumps(new["shares_source"].value_counts().to_dict()))
 
     vh = pd.read_csv(DATA_DIR / "volatility_horizons.csv", parse_dates=["year_end"])
     p = new[["ticker", "fiscal_year", "year_end", "filing_date", "shares_out"]].copy()

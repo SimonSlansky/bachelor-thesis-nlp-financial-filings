@@ -68,6 +68,37 @@ def section_source(cik: str, accn: str, doc_map: dict) -> tuple[str, str]:
     return out[0], out[1]
 
 
+MAX_RATE = 5.0   # requests per second across all threads (SEC limit is 10)
+
+
+def _sic_parallel(todo, cmap, n_total, workers: int = 4) -> None:
+    """Header-page SIC look-ups in a small thread pool under one global
+    rate limit; rows are appended from the main thread (resumable)."""
+    import threading
+    from concurrent.futures import ThreadPoolExecutor, as_completed
+    lock, last = threading.Lock(), [0.0]
+
+    def throttled(r):
+        with lock:
+            wait = last[0] + 1.0 / MAX_RATE - time.monotonic()
+            if wait > 0:
+                time.sleep(wait)
+            last[0] = time.monotonic()
+        return r, sic_at_filing(cmap[r.ticker], r.accession_number)
+
+    with ThreadPoolExecutor(workers) as ex:
+        futs = [ex.submit(throttled, r) for r in todo]
+        for i, f in enumerate(as_completed(futs), 1):
+            r, sic = f.result()
+            pd.DataFrame([{"ticker": r.ticker, "fiscal_year": int(r.fiscal_year),
+                           "accession_number": r.accession_number,
+                           "sic_at_filing": sic, "src_1a": None, "src_7": None}]
+                         ).to_csv(OUT, mode="a", header=not OUT.exists(), index=False)
+            if i % 250 == 0:
+                print(f"  [{i}/{len(todo)} of {n_total}] {r.ticker} FY{int(r.fiscal_year)} sic={sic}",
+                      flush=True)
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--with-section-source", action="store_true",
@@ -85,9 +116,13 @@ def main() -> None:
         done = set(prev["accession_number"])
     doc_maps: dict[str, dict] = {}
     n = len(panel)
-    for i, r in enumerate(panel.itertuples(index=False), 1):
-        if r.accession_number in done or r.ticker not in cmap:
-            continue
+    todo = [r for r in panel.itertuples(index=False)
+            if r.accession_number not in done and r.ticker in cmap]
+    if a.sic_only:
+        _sic_parallel(todo, cmap, n)
+        print(f"Saved {OUT.name}")
+        return
+    for i, r in enumerate(todo, 1):
         cik = cmap[r.ticker]
         sic = sic_at_filing(cik, r.accession_number)
         time.sleep(REQUEST_SLEEP)

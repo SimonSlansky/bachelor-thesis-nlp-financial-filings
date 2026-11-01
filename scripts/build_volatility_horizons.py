@@ -120,18 +120,20 @@ def main() -> None:
 
     # Market capitalisation and book-to-market (public at filing).
     fin = panel[["ticker", "year_end", "shares_out", "stockholders_equity",
-                 "equity_parent"]] if "shares_out" in panel else None
+                 "equity_parent", "total_assets", "total_liabilities"]] \
+        if "shares_out" in panel else None
     if fin is not None:
         out = out.merge(fin, on=["ticker", "year_end"], how="left")
         out["mcap"] = out["price_pre"] * out["shares_out"]
         out.loc[~(out["mcap"] > 0), "mcap"] = np.nan
         out["log_mcap"] = np.log(out["mcap"])
         # Book equity attributable to common holders (parent); fall back to
-        # total equity when the parent tag is absent.
-        be = out["equity_parent"].fillna(out["stockholders_equity"])
+        # total equity, then to total assets minus total liabilities.
+        be = (out["equity_parent"].fillna(out["stockholders_equity"])
+              .fillna(out["total_assets"] - out["total_liabilities"]))
         out["bm"] = be / out["mcap"]
         out = out.drop(columns=["shares_out", "stockholders_equity",
-                                "equity_parent"])
+                                "equity_parent", "total_assets", "total_liabilities"])
     else:
         print("  [warn] annual_panel.csv has no shares_out — rerun build_annual_panel.py")
 

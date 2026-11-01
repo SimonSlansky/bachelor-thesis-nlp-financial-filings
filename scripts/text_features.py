@@ -41,6 +41,30 @@ from panel import consecutive_lag
 _TOKEN_RE = re.compile(r"[a-z]+")
 
 
+# ── Stored text ─────────────────────────────────────────────────────────────────────
+
+def rekey_text(t: pd.DataFrame) -> pd.DataFrame:
+    """Re-key stored text rows to the panel's fiscal-year rule (calendar
+    year of the text filing's period end, 1-7 Jan -> previous year) via
+    data/text_accessions.csv.  The text itself is untouched."""
+    m = pd.read_csv(DATA_DIR / "text_accessions.csv",
+                    usecols=["ticker", "fiscal_year", "fiscal_year_text_label"])
+    m = m.rename(columns={"fiscal_year": "fy_new",
+                          "fiscal_year_text_label": "fiscal_year"})
+    t = t.merge(m, on=["ticker", "fiscal_year"], how="left", validate="one_to_one")
+    assert t["fy_new"].notna().all(), "text rows without accession map"
+    t["fiscal_year"] = t.pop("fy_new").astype(int)
+    assert not t.duplicated(["ticker", "fiscal_year"]).any()
+    return t
+
+
+def load_text_sections(cols=("item_1a", "item_7")) -> pd.DataFrame:
+    """data/text_sections.csv, re-keyed with :func:`rekey_text`."""
+    t = pd.read_csv(DATA_DIR / "text_sections.csv",
+                    usecols=["ticker", "fiscal_year", *cols])
+    return rekey_text(t)
+
+
 # ── Tokenisation & per-document scoring ───────────────────────────────────
 
 def tokenise(text: str) -> list[str]:

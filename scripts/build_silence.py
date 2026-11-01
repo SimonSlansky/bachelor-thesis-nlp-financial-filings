@@ -48,6 +48,8 @@ import pandas as pd
 import scipy.sparse as sp
 from sklearn.feature_extraction.text import TfidfVectorizer
 
+from text_features import load_text_sections, rekey_text
+
 ROOT = Path(__file__).resolve().parent.parent
 DATA = ROOT / "data"
 CACHE = Path.home() / "scratch" / "bak" / "silence_cache"
@@ -72,9 +74,9 @@ def load_sections(col: str = "item_1a") -> pd.DataFrame:
     pk = CACHE.parent / "text_sections.pkl"
     src = DATA / "text_sections.csv"
     if pk.exists() and pk.stat().st_mtime >= src.stat().st_mtime:
-        sec = pd.read_pickle(pk)[["ticker", "fiscal_year", col]]
+        sec = rekey_text(pd.read_pickle(pk)[["ticker", "fiscal_year", col]])
     else:
-        sec = pd.read_csv(src, usecols=["ticker", "fiscal_year", col])
+        sec = load_text_sections((col,))
     pcols = ["ticker", "fiscal_year", "sic", "filing_date"]
     panel = pd.read_csv(DATA / "annual_panel_text.csv", low_memory=False)
     if "sic_hist" in panel.columns:

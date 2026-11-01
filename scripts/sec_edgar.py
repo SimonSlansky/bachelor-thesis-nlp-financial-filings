@@ -178,7 +178,7 @@ def extract_annual_facts(meta: dict, n_years: int) -> pd.DataFrame:
             "company_name": meta["company_name"],
             "year_end": end,
             "filing_date": first_filed,
-            "fiscal_year": _fiscal_year(end, fye),
+            "fiscal_year": fiscal_year_from_end(end),
             "accession_number": accn,
             "form_type": "10-K/A" if use_amend else "10-K",
             "has_amendment": bool(amendments) and not use_amend,
@@ -202,7 +202,7 @@ def extract_annual_facts(meta: dict, n_years: int) -> pd.DataFrame:
     for rec in records.values():
         val, src = shares_by_accn.get(rec.get("accession_number"), (None, None))
         rec["shares_out"] = val
-        rec["_tag_shares_out"] = src
+        rec["shares_source"] = src
 
     df = pd.DataFrame(records.values())
     if df.empty:
@@ -246,17 +246,27 @@ def _shares_by_accession(facts_all: dict) -> dict[str, tuple[float, str]]:
     Tags are tried in ``SHARE_TAGS`` order; within one accession and tag the
     latest-dated instant is used (cover-page date for dei).  Multi-class
     filers report one dei fact per class with the same date; these are summed.
+    Duration tags (weighted-average basic shares) use only annual (350-380
+    day) facts of the latest period and are not summed.
     """
+    from config import SHARE_DURATION_TAGS
     out: dict[str, tuple[float, str]] = {}
     for ns, tag in SHARE_TAGS:
         units = (facts_all.get(ns) or {}).get(tag, {}).get("units", {})
         facts = units.get("shares", [])
+        dur = tag in SHARE_DURATION_TAGS
         by_accn: dict[str, dict[str, float]] = {}
         for f in facts:
             if f.get("form") not in ("10-K", "10-K/A"):
                 continue
             accn, end, val = f.get("accn"), f.get("end"), f.get("val")
             if not accn or end is None or val is None:
+                continue
+            if dur:
+                s = pd.to_datetime(f.get("start"), errors="coerce")
+                if pd.isna(s) or not 350 <= (pd.to_datetime(end) - s).days <= 380:
+                    continue
+                by_accn.setdefault(accn, {})[end] = float(val)
                 continue
             by_accn.setdefault(accn, {})
             by_accn[accn][end] = by_accn[accn].get(end, 0.0) + float(val)
@@ -277,6 +287,26 @@ def _usd_facts(us_gaap: dict, tag: str) -> list[dict]:
                 "USD/shares", "iso4217:USD/shares"):
         facts.extend(units.get(key, []))
     return facts
+
+
+def fiscal_year_from_end(end_date) -> int:
+    """Calendar year in which the fiscal year ends; period ends on 1-7 January
+    belong to the previous year (52/53-week years ending near 31 December).
+
+    Depends only on the period end, not on the SEC ``fiscalYearEnd`` field,
+    which is today's value and drifts for 52/53-week filers (e.g. "0101")."""
+    return int((pd.Timestamp(end_date) - pd.Timedelta(days=7)).year)
+
+
+def relabel_fiscal_years(df: pd.DataFrame) -> pd.DataFrame:
+    """Recompute ``fiscal_year`` with :func:`fiscal_year_from_end`.  Raw
+    duplicates (two period ends in one filing) are left to
+    panel.filter_transitions_and_duplicates."""
+    df = df.copy()
+    old = df["fiscal_year"].copy()
+    df["fiscal_year"] = [fiscal_year_from_end(d) for d in pd.to_datetime(df["year_end"])]
+    print(f"  relabel: fiscal_year changed for {int((old != df['fiscal_year']).sum())} rows")
+    return df
 
 
 def _fiscal_year(end_date: pd.Timestamp, fye_month: int) -> int:

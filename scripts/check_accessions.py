@@ -65,7 +65,8 @@ def filings_index(cik: str) -> pd.DataFrame:
 
 
 def main():
-    txt = pd.read_csv(DATA_DIR / "text_accessions.csv")
+    txt = pd.read_csv(DATA_DIR / "text_accessions.csv",
+                      usecols=["ticker", "fiscal_year", "accession_text"])
     new = pd.read_csv(DATA_DIR / "annual_panel.csv",
                       usecols=["ticker", "fiscal_year", "year_end", "accession_number",
                                "form_type"])
