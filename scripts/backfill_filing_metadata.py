@@ -21,6 +21,7 @@ import time
 from pathlib import Path
 
 import pandas as pd
+import numpy as np
 import requests
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -53,6 +54,42 @@ def sic_at_filing(cik: str, accn: str) -> int | None:
         return None
     m = _SIC_RE.search(html)
     return int(m.group(1)) if m else None
+
+
+_INDEX_SIC_RE = re.compile(r"[?;&]SIC=(\d{3,4})")
+
+
+def sic_from_index(cik: str, accn: str) -> int | None:
+    """Fallback: the filing index page (≈ 15 KB, not the 10-K document);
+    used when the index-headers page does not exist (older filings)."""
+    nod = accn.replace("-", "")
+    html = _get(f"https://www.sec.gov/Archives/edgar/data/{int(cik)}/{nod}/{accn}-index.html")
+    if not html:
+        return None
+    m = _INDEX_SIC_RE.search(html)
+    return int(m.group(1)) if m else None
+
+
+def retry_missing(cmap) -> None:
+    """Fill rows without SIC from the filing index page (sic_source=index)."""
+    d = pd.read_csv(OUT)
+    if "sic_source" not in d:
+        d["sic_source"] = np.where(d["sic_at_filing"].notna(), "index-headers", None)
+    miss = d.index[d["sic_at_filing"].isna()]
+    print(f"  retrying {len(miss)} rows without SIC via the filing index page")
+    for k, i in enumerate(miss, 1):
+        tk = d.at[i, "ticker"]
+        if tk not in cmap:
+            continue
+        sic = sic_from_index(cmap[tk], d.at[i, "accession_number"])
+        time.sleep(1.0 / MAX_RATE)
+        if sic is not None:
+            d.at[i, "sic_at_filing"] = sic
+            d.at[i, "sic_source"] = "index"
+        if k % 200 == 0:
+            print(f"    [{k}/{len(miss)}]", flush=True)
+    d.to_csv(OUT, index=False)
+    print(f"  SIC coverage now {d['sic_at_filing'].notna().mean():.1%}")
 
 
 def section_source(cik: str, accn: str, doc_map: dict) -> tuple[str, str]:
@@ -92,7 +129,8 @@ def _sic_parallel(todo, cmap, n_total, workers: int = 4) -> None:
             r, sic = f.result()
             pd.DataFrame([{"ticker": r.ticker, "fiscal_year": int(r.fiscal_year),
                            "accession_number": r.accession_number,
-                           "sic_at_filing": sic, "src_1a": None, "src_7": None}]
+                           "sic_at_filing": sic, "src_1a": None, "src_7": None,
+                           "sic_source": "index-headers" if sic is not None else None}]
                          ).to_csv(OUT, mode="a", header=not OUT.exists(), index=False)
             if i % 250 == 0:
                 print(f"  [{i}/{len(todo)} of {n_total}] {r.ticker} FY{int(r.fiscal_year)} sic={sic}",
@@ -119,7 +157,13 @@ def main() -> None:
     todo = [r for r in panel.itertuples(index=False)
             if r.accession_number not in done and r.ticker in cmap]
     if a.sic_only:
+        if OUT.exists():
+            d = pd.read_csv(OUT)
+            if "sic_source" not in d:
+                d["sic_source"] = np.where(d["sic_at_filing"].notna(), "index-headers", None)
+                d.to_csv(OUT, index=False)
         _sic_parallel(todo, cmap, n)
+        retry_missing(cmap)
         print(f"Saved {OUT.name}")
         return
     for i, r in enumerate(todo, 1):
