@@ -136,7 +136,10 @@ Checklist (§4.2):
    Locking losses: equity 637 of 7,900 values nulled (171 firms with > 1 tag),
    NI 38 of 7,813, OCF 0. Imputations: liabilities from A − E 2,171; ffill
    assets 1, liabilities 32. Attrition 548 → 6,757 in `sample_attrition.csv`;
-   1,000 → 548 in `universe_stages.csv` (see below).
+   1,000 → 548 in `universe_stages.csv`: 1,000 → 753 operating → 600
+   non-financial → 599 with FYE → 550 with ≥ 5 XBRL years (today's metadata);
+   all 548 universe firms reproduced, plus ROIV and CRDO, which now have
+   exactly 5 years.
 7. Cut-off 2026-10-30; FY2022/23/24 vol_365d NaN 9 each (no-price firms only).
 8. vol_30d corr with backup 1.0000 (n = 6,344); idio < total in 88.3% (30d) /
    98.9% (365d) — at 30d the residual SD uses n − 2 dof, so for firms with a
