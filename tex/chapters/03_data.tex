@@ -50,13 +50,15 @@ growth, can be constructed while still leaving at least four years of usable
 panel observations. The filter reduces the sample to 550 firms using current
 metadata; the frozen sample used in the final analysis contains 548 firms.
 
-Earlier versions of this panel also dropped firms with valid post-filing
-volatility for fewer than 90\% of their filings. That filter used prices
-\emph{after} each filing, that is, it selected on the outcome period, and it
-has been removed. Instead, a filing enters the regressions only if the stock
-has at least 200 daily closing prices in the 252 trading days \emph{before}
-the filing date; this removes thinly traded or newly listed stocks using
-information available at the filing date and affects 1.3\% of filings.
+To avoid conditioning sample inclusion on outcome-period information, filings 
+are not filtered on the basis of post-filing return availability. An earlier 
+version of the data pipeline excluded firms with valid post-filing volatility 
+for fewer than 90\% of their filings. Because this criterion relied on price 
+data from the outcome period, it could induce selection bias and was therefore 
+removed. Instead, a filing enters the regression sample only if at least 200 
+daily closing prices are available during the 252 trading days preceding the 
+filing date. This requirement excludes thinly traded and recently listed firms 
+using only information available at the time of filing and affects 1.3\% of filings.
 
 \paragraph{Sample size and look-ahead.} Large firms have complete
 machine-readable filing histories, are liquid, and their filings are
