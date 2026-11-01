@@ -273,7 +273,7 @@ def add_financial_ratios(df: pd.DataFrame, date_col: str) -> pd.DataFrame:
 
 
 WINSORIZE_COLS = ("leverage", "roa", "asset_growth", "current_ratio",
-                  "ocf_to_assets")
+                  "ocf_to_assets", "bm", "ret_pre_12m")
 
 
 def winsorize_ratios(df: pd.DataFrame, cols=WINSORIZE_COLS) -> pd.DataFrame:

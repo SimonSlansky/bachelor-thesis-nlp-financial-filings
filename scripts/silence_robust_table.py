@@ -1,163 +1,125 @@
-"""
-Generate tex/tables/silence_robust.tex — robustness panel for the
-H3 strategic-silence specification at h=30d under firm+year FE.
+"""H3 robustness (results store): firm+year FE (and SIC2+year FE), h = 30d.
 
-Six columns:
-  (1) baseline:   omission_1a + log_words_1a + RiskDensity + 5 fin + lagged
-  (2) decile:     omission_1a replaced by within-(sic2,year) decile rank
-  (3) length-resid: replace omission_1a with residual after regressing on log_words_1a within (sic2,year)
-  (4) large cells: restrict to peer_n_1a >= 20
-  (5) triple len:  add log_words_mda + log_words_1a^2 controls
-  (6) lag-1:       use omission_1a_lag1 instead of omission_1a
-
-Also report placebo results in a footnote / textual note.
+Columns (each the H3 specification with one change):
+  baseline        omission_1a
+  fixed_length    omission_fixedlen_1a (#38, #64)
+  length_resid    omission residual on ln Words1A within (SIC2, year) (#64)
+  decile_rank     decile rank within (SIC2, year), cells with >= 10 firms (#65)
+  tail_deciles    top / bottom decile dummies (#65)
+  peers_ge20      cells with >= 20 peers (#66)
+  extra_length    + ln Words MD&A + (ln Words1A)^2
+  prior_year      omission of fiscal year t-1 (#67: timing / reverse causality)
+  pooled_vocab    omission_pooled_1a (#37)
+  sic_today       omission with today's SIC2 peers (#72)
+  plus_lagged_dv  + lagged log volatility
+Also: r(omission, ln Words1A) on the H3 sample (#38), the decile N drop (#65)
+and the industry composition of the >= 20-peer sample (#66).
 """
-from pathlib import Path
-import numpy as np
-import pandas as pd
-from linearmodels.iv.absorbing import AbsorbingLS
+from __future__ import annotations
 
 import sys
+from pathlib import Path
+
+import numpy as np
+import pandas as pd
+
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from panel import winsorize_ratios, consecutive_lag
+from regressions import (CONTROLS, LEN_VAR, DENS_VAR, RESULTS_DIR,  # noqa: E402
+                         load_text_panel, fit, save, _read_panel)
+from panel import consecutive_lag  # noqa: E402
 
-ROOT = Path(__file__).resolve().parent.parent
-DATA = ROOT / "data"
-H = 30
-FIN = ["log_total_assets", "leverage", "roa", "current_ratio", "ocf_to_assets"]
-
-
-def fit(df, var, extra_controls=None, restrict=None):
-    extra_controls = extra_controls or []
-    cols = (["ticker", "fiscal_year", "sic", f"vol_{H}d", f"lagged_vol_{H}d",
-             "log_words_1a", "risk_1a", "peer_n_1a", var] + FIN + extra_controls)
-    cols = list(dict.fromkeys(cols))
-    cols = [c for c in cols if c in df.columns]
-    d = df[cols].dropna(subset=[c for c in cols if c != "peer_n_1a"]).copy()
-    d = d[(d[f"vol_{H}d"] > 0) & (d[f"lagged_vol_{H}d"] > 0)]
-    if restrict is not None:
-        d = restrict(d)
-    d = winsorize_ratios(d, cols=FIN[1:])   # regression-sample winsorisation
-    if len(d) < 200:
-        return None
-    d["fy"] = d["fiscal_year"].astype("category")
-    d["tk"] = d["ticker"].astype("category")
-    X = d[[f"lagged_vol_{H}d", *FIN, "log_words_1a", "risk_1a", var,
-           *extra_controls]].copy()
-    X[f"lagged_vol_{H}d"] = np.log(X[f"lagged_vol_{H}d"])
-    X.insert(0, "const", 1.0)
-    y = np.log(d[f"vol_{H}d"])
-    absorb = d[["tk", "fy"]]
-    clusters = absorb.apply(lambda c: c.cat.codes)
-    m = AbsorbingLS(y, X, absorb=absorb, drop_absorbed=True)
-    r = m.fit(cov_type="clustered", clusters=clusters)
-    return {"n": int(r.nobs),
-            "b": float(r.params.get(var, np.nan)),
-            "se": float(r.std_errors.get(var, np.nan)),
-            "t": float(r.tstats.get(var, np.nan)),
-            "p": float(r.pvalues.get(var, np.nan))}
+H = "30d"
+OM = "omission_1a"
+FE = {"firm+year": ("ticker", "fiscal_year"), "ind+year": ("ind", "fiscal_year")}
 
 
-def stars(p):
-    return ("***" if p < 0.01 else
-            "**" if p < 0.05 else
-            "*" if p < 0.1 else "")
+def _within_cell_resid(d: pd.DataFrame) -> pd.Series:
+    def one(g):
+        if len(g) < 5 or g[LEN_VAR].std() == 0:
+            return pd.Series(np.nan, index=g.index)
+        b = np.polyfit(g[LEN_VAR], g[OM], 1)
+        return g[OM] - np.polyval(b, g[LEN_VAR])
+    return d.groupby(["ind", "fiscal_year"], group_keys=False)[[LEN_VAR, OM]].apply(one)
+
+
+def _deciles(d: pd.DataFrame) -> pd.Series:
+    return d.groupby(["ind", "fiscal_year"])[OM].transform(
+        lambda s: pd.qcut(s, 10, labels=False, duplicates="drop") if s.nunique() >= 10
+        else pd.Series(np.nan, index=s.index))
 
 
 def main():
-    panel = pd.read_csv(DATA / "annual_panel_text.csv")
-    sil = pd.read_csv(DATA / "silence.csv")
-    df = panel.merge(sil, on=["ticker", "fiscal_year"], how="left")
+    base = load_text_panel(H, xvars=CONTROLS + [LEN_VAR, DENS_VAR, OM])
+    X = CONTROLS + [LEN_VAR, DENS_VAR]
+    base["om_resid"] = _within_cell_resid(base)
+    base["om_dec"] = _deciles(base)
+    base["om_top"] = (base["om_dec"] == base.groupby(["ind", "fiscal_year"])["om_dec"]
+                      .transform("max")).astype(float).where(base["om_dec"].notna())
+    base["om_bottom"] = (base["om_dec"] == 0).astype(float).where(base["om_dec"].notna())
+    base["log_words_1a_sq"] = base[LEN_VAR] ** 2
+    full = _read_panel()[["ticker", "fiscal_year", OM]].sort_values(["ticker", "fiscal_year"])
+    full["om_lag1"] = consecutive_lag(full.reset_index(drop=True), OM).values
+    base = base.merge(full[["ticker", "fiscal_year", "om_lag1"]], on=["ticker", "fiscal_year"],
+                      how="left")
 
-    # Length-residualised omission (within sic2, year)
-    df["sic2"] = (df["sic"] // 100).astype("Int64")
-    valid = df.dropna(subset=["omission_1a", "log_words_1a", "sic", "fiscal_year"]).copy()
-    def resid(g):
-        if len(g) < 5 or g["log_words_1a"].std() == 0:
-            return pd.Series(np.nan, index=g.index)
-        x = g["log_words_1a"].values
-        y = g["omission_1a"].values
-        b = np.cov(x, y)[0, 1] / np.var(x)
-        a = y.mean() - b * x.mean()
-        return pd.Series(y - (a + b * x), index=g.index)
-    valid["om_resid"] = (valid.groupby(["sic2", "fiscal_year"], group_keys=False)
-                              .apply(resid))
-    df = df.merge(valid[["ticker", "fiscal_year", "om_resid"]],
-                   on=["ticker", "fiscal_year"], how="left")
+    specs = {
+        "baseline": (OM, [], None),
+        "fixed_length": ("omission_fixedlen_1a", [], None),
+        "length_resid": ("om_resid", [], None),
+        "decile_rank": ("om_dec", [], None),
+        "tail_deciles": ("om_top", ["om_bottom"], None),
+        "peers_ge20": (OM, [], lambda d: d[d["peer_n_1a"] >= 20]),
+        "extra_length": (OM, ["log_words_mda", "log_words_1a_sq"], None),
+        "prior_year": ("om_lag1", [], None),
+        "pooled_vocab": ("omission_pooled_1a", [], None),
+        "sic_today": ("omission_1a_sicnow", [], None),
+        "plus_lagged_dv": (OM, ["lagged_log_vol"], None),
+    }
+    rows = []
+    for an, absorb in FE.items():
+        for name, (var, extra, restrict) in specs.items():
+            d = base.dropna(subset=[var, *extra])
+            if restrict is not None:
+                d = restrict(d)
+            r = fit(d, X + [var] + extra, absorb=absorb)
+            for v in [var] + extra:
+                rows.append({"model": "h3_robust", "column": name, "absorb": an, "var": v,
+                             "coef": float(r.params[v]), "se": float(r.std_errors[v]),
+                             "t": float(r.tstats[v]), "p": float(r.pvalues[v]),
+                             "n": int(r.nobs), "firms": r.n_firms, "h": H})
+            print(f"  {an:9s} {name:15s} {var:22s} b={r.params[var]:+.3f} "
+                  f"t={r.tstats[var]:+.2f} n={int(r.nobs)}")
+    save(rows, "h3_robust")
 
-    # Decile rank within sic2, year
-    valid2 = df.dropna(subset=["omission_1a", "sic2", "fiscal_year"]).copy()
-    valid2["om_dec"] = (
-        valid2.groupby(["sic2", "fiscal_year"])["omission_1a"]
-              .transform(lambda s: pd.qcut(s, 10, labels=False, duplicates="drop")
-                         if s.nunique() >= 10 else np.nan)
-    )
-    df = df.merge(valid2[["ticker", "fiscal_year", "om_dec"]],
-                   on=["ticker", "fiscal_year"], how="left")
+    # diagnostics
+    diag = []
+    for v in (OM, "omission_fixedlen_1a", "omission_pooled_1a", "om_resid"):
+        d = base[[v, LEN_VAR]].dropna()
+        diag.append({"stat": f"corr_{v}_log_words_1a", "value": d.corr().iloc[0, 1],
+                     "n": len(d), "sample": "H3 regression sample, h=30d"})
+    raw = _read_panel()[[OM, LEN_VAR, "words_1a"]].dropna()
+    raw = raw[raw["words_1a"] >= 100]
+    diag.append({"stat": "corr_omission_1a_log_words_1a_all_valid", "value":
+                 raw.corr().iloc[0, 1], "n": len(raw),
+                 "sample": "all firm-years with omission and >=100 words"})
+    cell_n = base.groupby(["ind", "fiscal_year"])[OM].transform("nunique")
+    diag += [{"stat": "decile_n_dropped_cells_lt10", "value": int((cell_n < 10).sum()),
+              "n": len(base), "sample": "H3 sample"},
+             {"stat": "decile_n_kept", "value": int(base["om_dec"].notna().sum()),
+              "n": len(base), "sample": "H3 sample"},
+             {"stat": "fixedlen_short_share", "value":
+              float(pd.to_numeric(base.get("fixedlen_short_1a"), errors="coerce").mean()),
+              "n": len(base), "sample": "H3 sample"}]
+    pd.DataFrame(diag).to_csv(RESULTS_DIR / "h3_diagnostics.csv", index=False)
 
-    # Squared length
-    df["log_words_1a_sq"] = df["log_words_1a"] ** 2
-    # Lag: strictly fiscal year t-1 (NaN across gaps)
-    df = df.sort_values(["ticker", "fiscal_year"]).reset_index(drop=True)
-    df["om_lag1"] = consecutive_lag(df, "omission_1a")
-    # Pre-filing volatility (60 trading days before the filing)
-    df["pre_log_vol"] = np.log(df["pre_vol"].where(df["pre_vol"] > 0))
-
-    cols = []
-    cols.append(("(1) Baseline", fit(df, "omission_1a")))
-    cols.append(("(2) Decile rank", fit(df, "om_dec")))
-    cols.append(("(3) Length-resid", fit(df, "om_resid")))
-    cols.append(("(4) $\\geq 20$ peers", fit(df, "omission_1a",
-                                              restrict=lambda d: d[d["peer_n_1a"] >= 20])))
-    cols.append(("(5) Triple length",
-                  fit(df, "omission_1a",
-                      extra_controls=["log_words_mda", "log_words_1a_sq"])))
-    cols.append(("(6) Prior-year",   fit(df, "om_lag1")))
-    cols.append(("(7) Pre-filing vol",
-                  fit(df, "omission_1a", extra_controls=["pre_log_vol"])))
-
-    headers = " & ".join(c[0] for c in cols)
-    bs = " & ".join(f"{c[1]['b']:+.3f}{stars(c[1]['p'])}" for c in cols)
-    ts = " & ".join(f"({c[1]['t']:+.2f})" for c in cols)
-    ns = " & ".join(f"{c[1]['n']:,}" for c in cols)
-
-    tex = (
-        r"\begin{table}[htbp]" "\n"
-        r"\centering" "\n"
-        r"\caption{Robustness of the strategic-silence result (H3): firm $\times$ year fixed effects, $h = 30$ days.}" "\n"
-        r"\label{tab:silence_robust}" "\n"
-        r"\footnotesize" "\n"
-        r"\setlength{\tabcolsep}{2pt}" "\n" r"\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lccccccc@{}}" "\n"
-        r"\toprule" "\n"
-        f"& {headers} \\\\\n"
-        r"\midrule" "\n"
-        f"$\\textsc{{Omission}}_{{1A}}$ & {bs} \\\\\n"
-        f"& {ts} \\\\\n"
-        f"$N$ & {ns} \\\\\n"
-        r"\bottomrule" "\n"
-        r"\end{tabular*}" "\n"
-        r"\par\smallskip" "\n"
-        r"\begin{flushleft}\footnotesize" "\n"
-        r"\textit{Notes.} Each column is a separate firm $\times$ year fixed-effect regression at $h = 30$ days. "
-        r"Column~(1) reports the baseline H3 specification of equation~\ref{eq:silence_model}. "
-        r"Column~(2) replaces $\textsc{Omission}_{1A}$ with its decile rank within (SIC2, fiscal year) cells. "
-        r"Column~(3) replaces it with the residual after regressing $\textsc{Omission}_{1A}$ on $\ln(\textsc{Words}_{1A})$ within (SIC2, fiscal year) cells. "
-        r"Column~(4) restricts the sample to industry-year cells with at least 20 panel firms. "
-        r"Column~(5) adds $\ln(\textsc{Words}_{\mathrm{MDA}})$ and $\ln(\textsc{Words}_{1A})^2$ as additional length controls. "
-        r"Column~(6) replaces the contemporaneous omission with its value for fiscal year $t-1$ (missing if the firm has no filing for $t-1$). "
-        r"Column~(7) adds the log of pre-filing volatility (60 trading days ending the day before the filing) as an extra control. "
-        r"All regressions include lagged log-volatility, the five financial controls, $\ln(\textsc{Words}_{1A})$, and $\textsc{RiskDensity}_{1A}$. "
-        r"$t$-statistics in parentheses use two-way clustered standard errors on (ticker, fiscal year). "
-        r"$^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$." "\n"
-        r"\end{flushleft}" "\n"
-        r"\end{table}" "\n"
-    )
-    out = ROOT / "tex" / "tables" / "silence_robust.tex"
-    out.write_text(tex, encoding="utf-8")
-    print(f"Wrote {out}")
-    for label, r in cols:
-        print(f"  {label:24s}  β={r['b']:+.4f}  t={r['t']:+5.2f}  "
-              f"p={r['p']:.4f}  n={r['n']}")
+    big = base[base["peer_n_1a"] >= 20]
+    comp = (big.groupby("ind").agg(firm_years=("ticker", "size"), firms=("ticker", "nunique"))
+            .assign(share=lambda x: x.firm_years / x.firm_years.sum())
+            .sort_values("firm_years", ascending=False))
+    comp["share_full_h3"] = base.groupby("ind").size().reindex(comp.index) / len(base)
+    comp.to_csv(RESULTS_DIR / "h3_peers_ge20_composition.csv")
+    print(pd.DataFrame(diag).to_string(index=False))
+    print(comp.head(10))
 
 
 if __name__ == "__main__":

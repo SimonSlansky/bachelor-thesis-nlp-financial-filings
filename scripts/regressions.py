@@ -1,34 +1,24 @@
-"""Regression analysis for the Volume--Specificity--Silence volatility study.
+"""Estimation for H1/H2 and the shared infrastructure used by every model.
 
-Estimates two nested hypotheses on the disclosed-content side
-(H1 + H2 with the LM-list decomposition as the second stage of H2),
-jointly with financial controls and SIC2 + year fixed effects, with
-firm-clustered standard errors. The strategic-silence hypothesis (H3)
-is estimated separately by ``scripts/silence_table.py``.
+Everything that estimates a regression imports from here (the H3 scripts
+included), so the control vector, the sample rules, the FE/cluster choices
+and the results format are identical across hypotheses (#41).
 
-  H1 — Volume       : ``log_words_1a``  (length of Item~1A)
-  H2 — Specificity  : ``risk_1a``       (LM uncertainty + litigious density)
-                       Second-stage LM-list decomposition splits ``risk_1a``
-                       into ``unc_1a`` (LM uncertainty density) and
-                       ``lit_1a`` (LM litigious density); the negative
-                       effect on the composite is shown to be carried by
-                       the litigious component.
+  CONTROLS          common control vector (Phase-0 decision 2)
+  load_text_panel   one loader: liquidity rule, text-mismatch rule,
+                    horizon-specific outcome, industry definition,
+                    regression-sample winsorisation
+  fit               AbsorbingLS with absorbed FE and clustered SEs; adds the
+                    within-R^2
+  tidy / save       one results store: data/results/<name>.csv (long format)
 
-Produces the LaTeX tables consumed by ``tex/chapters/05_results.tex`` and
-``tex/chapters/06_robustness.tex``.
+The LaTeX tables are written by make_tables.py from data/results/.
 
-The dependent variable is ``log(vol_h)``: the natural log of the
-annualised standard deviation of daily log returns over a post-filing
-window of ``h`` calendar days. Coefficients on continuous regressors
-are therefore semi-elasticities.
-
-Multi-horizon support reuses the same specification at
-``h in {5, 10, 30, 90, 180, 365}`` so that the time-stability of the
-disclosure-volatility relation can be documented.
+Run:  python scripts/regressions.py [--only main horizons ...] [--boot B]
 """
-
 from __future__ import annotations
 
+import argparse
 from pathlib import Path
 
 import numpy as np
@@ -36,810 +26,445 @@ import pandas as pd
 from linearmodels.iv.absorbing import AbsorbingLS
 
 from config import DATA_DIR
-from panel import winsorize_ratios, WINSORIZE_COLS
+from panel import winsorize_ratios, WINSORIZE_COLS, consecutive_lag
 
-BASE_DIR = Path(__file__).resolve().parent.parent
-TEX_TABLE_DIR = BASE_DIR / "tex" / "tables"
-TEX_TABLE_DIR.mkdir(parents=True, exist_ok=True)
+RESULTS_DIR = DATA_DIR / "results"
+RESULTS_DIR.mkdir(exist_ok=True)
 
-# ── Variable labels for LaTeX output ──────────────────────────────────────
+# ── Variables ────────────────────────────────────────────────────────────
 
-LABELS = {
-    "log_vol":          r"$\ln(\sigma_{i,t+1})$",
-    "vol_next_year":    r"$\sigma_{i,t+1}$",
-    "lagged_log_vol":   r"$\ln(\sigma_{i,t})$",
-    "lagged_vol":       r"$\sigma_{i,t}$",
-    "log_total_assets": r"$\ln(\text{Total Assets})$",
-    "leverage":         "Leverage",
-    "roa":              "ROA",
-    "asset_growth":     "Asset Growth",
-    "log_words_1a":     r"$\ln(\text{Words}^{\text{1A}})$",
-    "risk_1a":          r"RiskDensity",
-    "unc_1a":           r"UncDensity",
-    "lit_1a":           r"LitDensity",
-    "sentiment_mda":    r"Sentiment$^{\text{MD\&A}}$",
+CONTROLS = ["pre_log_vol", "log_mcap", "leverage", "roa", "asset_growth",
+            "bm", "ret_pre_12m", "current_ratio", "ocf_to_assets"]
+
+LEN_VAR, DENS_VAR, UNC_VAR, LIT_VAR = "log_words_1a", "risk_1a", "unc_1a", "lit_1a"
+TEXT_VARS = [LEN_VAR, DENS_VAR, UNC_VAR, LIT_VAR]
+COUNT_VARS = [LEN_VAR, "log_n_unc_1a", "log_n_lit_1a"]
+
+# Pre-revision specification, kept only for old-vs-new comparisons.
+ORIG_CONTROLS = ["lagged_log_vol", "log_total_assets", "leverage", "roa",
+                 "asset_growth"]
+
+HORIZONS = ["5d", "10d", "30d", "90d", "180d", "365d"]
+HEADLINE = "30d"
+
+SPEC_COLUMNS = {           # the five nested columns of the headline table
+    "(1)": [],
+    "(2)": [LEN_VAR],
+    "(3)": [DENS_VAR],
+    "(4)": [LEN_VAR, DENS_VAR],
+    "(5)": [LEN_VAR, UNC_VAR, LIT_VAR],
 }
+DECOMP = SPEC_COLUMNS["(5)"]
+JOINT = SPEC_COLUMNS["(4)"]
 
-# Block of financial controls reused in every specification.
-FIN_VARS = ["log_total_assets", "leverage", "roa", "asset_growth"]
+# ── Loading ──────────────────────────────────────────────────────────────
 
-# Three text constructs of the headline test.
-LEN_VAR  = "log_words_1a"   # H1: verbosity of Item 1A
-DENS_VAR = "risk_1a"        # H2: composite LM risk-word density of Item 1A
-UNC_VAR  = "unc_1a"         # H2 second stage: LM-Uncertainty density
-LIT_VAR  = "lit_1a"         # H2 second stage: LM-Litigious   density
-
-# Variables for descriptive panel.
-PANEL_VARS = [
-    "log_vol", "lagged_log_vol", "log_total_assets",
-    "leverage", "roa", "asset_growth",
-    "log_words_1a", "risk_1a", "unc_1a", "lit_1a",
-]
-
-# Multi-horizon configuration: (label, vol col, lagged vol col).
-HORIZONS: list[tuple[str, str, str]] = [
-    ("5d",   "vol_5d",        "lagged_vol_5d"),
-    ("10d",  "vol_10d",       "lagged_vol_10d"),
-    ("30d",  "vol_30d",       "lagged_vol_30d"),
-    ("90d",  "vol_90d",       "lagged_vol_90d"),
-    ("180d", "vol_180d",      "lagged_vol_180d"),
-    ("365d", "vol_next_year", "lagged_vol"),
-]
+_CACHE: dict[str, pd.DataFrame] = {}
 
 
-# ── Data loading ──────────────────────────────────────────────────────────
+def _read_panel() -> pd.DataFrame:
+    if "panel" not in _CACHE:
+        p = pd.read_csv(DATA_DIR / "annual_panel_text.csv", low_memory=False)
+        sil = DATA_DIR / "silence.csv"
+        if sil.exists():
+            s = pd.read_csv(sil)
+            p = p.drop(columns=[c for c in s.columns
+                                if c in p.columns and c not in ("ticker", "fiscal_year")])
+            p = p.merge(s, on=["ticker", "fiscal_year"], how="left")
+        acc = DATA_DIR / "accession_changes.csv"
+        if acc.exists():
+            a = pd.read_csv(acc)[["ticker", "fiscal_year", "text_mismatch"]]
+            p = p.drop(columns=[c for c in ("text_mismatch",) if c in p.columns])
+            p = p.merge(a, on=["ticker", "fiscal_year"], how="left")
+        p["text_mismatch"] = p.get("text_mismatch", 0)
+        p["text_mismatch"] = pd.to_numeric(p["text_mismatch"], errors="coerce").fillna(0)
+        _CACHE["panel"] = p
+    return _CACHE["panel"].copy()
 
-def _add_log_vol(df: pd.DataFrame, vol_col: str, lag_col: str) -> pd.DataFrame:
-    """Return a copy with log(vol) and lagged log(vol) added.
 
-    Non-positive volatilities are dropped (not clipped): clipping a zero SD
-    to 1e-6 creates ln(sigma) = -13.8 outliers that dominate short horizons.
+def industry_code(df: pd.DataFrame, ind: str) -> pd.Series:
+    """Industry identifier for the FE.  Default: historical SIC2 (#72)."""
+    hist = df["sic_hist"] if "sic_hist" in df.columns else df["sic"]
+    if ind == "sic2_hist":
+        return hist // 100
+    if ind == "sic2":                      # today's SIC snapshot
+        return df["sic"] // 100
+    if ind == "sic3":
+        return hist // 10
+    if ind == "ff48":
+        raise NotImplementedError(
+            "FF48 needs the Fama-French SIC->industry map, a new data "
+            "source (owner approval pending).")
+    raise ValueError(ind)
+
+
+def _log_pos(s: pd.Series) -> pd.Series:
+    s = pd.to_numeric(s, errors="coerce")
+    return np.log(s.where(s > 0))
+
+
+def _bool(s: pd.Series) -> pd.Series:
+    return s.astype(str).str.lower().isin(["true", "1", "1.0"])
+
+
+def load_text_panel(h: str = HEADLINE, ind: str = "sic2_hist",
+                    xvars: list[str] | None = None, extra: tuple = (),
+                    dv: str = "vol", liquid: bool = True,
+                    drop_mismatch: bool = True, winsor: bool = True
+                    ) -> pd.DataFrame:
+    """Regression sample for horizon *h* (e.g. "30d").
+
+    Adds  log_vol (DV: ln vol_h, or ln idio_vol_h if dv="idio"),
+          pre_log_vol, lagged_log_vol, log_mkt_vol, ea, ind, fm_year, post2019.
+    Keeps rows with every variable in *xvars* (default CONTROLS+TEXT_VARS)
+    and *extra* non-missing; winsorises WINSORIZE_COLS on that sample.
     """
-    out = df.loc[(df[vol_col] > 0) & (df[lag_col] > 0)].copy()
-    out["log_vol"]        = np.log(out[vol_col])
-    out["lagged_log_vol"] = np.log(out[lag_col])
+    df = _read_panel()
+    vcol = f"vol_{h}" if dv == "vol" else f"idio_vol_{h}"
+    df["log_vol"] = _log_pos(df[vcol])
+    df["pre_log_vol"] = _log_pos(df["pre_vol"])
+    df["lagged_log_vol"] = _log_pos(df.get(f"lagged_vol_{h}", np.nan))
+    df["log_mkt_vol"] = _log_pos(df.get(f"mkt_vol_{h}", np.nan))
+    df["ea"] = pd.to_numeric(df.get(f"ea_in_{h}", np.nan), errors="coerce")
+    df["ind"] = industry_code(df, ind)
+    df["fm_year"] = (pd.to_numeric(df["filing_month"], errors="coerce") * 10000
+                     + df["fiscal_year"])
+    df["post2019"] = (df["fiscal_year"] >= 2020).astype(float)
+    if liquid:
+        df = df[_bool(df["liquid_pre"])]
+    if drop_mismatch:
+        df = df[df["text_mismatch"] != 1]
+    xvars = list(CONTROLS + TEXT_VARS) if xvars is None else list(xvars)
+    need = list(dict.fromkeys(["log_vol", "ind", "fiscal_year", "ticker",
+                               *xvars, *extra]))
+    df = df.dropna(subset=need)
+    if winsor:
+        df = winsorize_ratios(df, cols=[c for c in WINSORIZE_COLS if c in df.columns])
+    return df.reset_index(drop=True)
+
+
+# ── Estimation ───────────────────────────────────────────────────────────
+
+def fit(df: pd.DataFrame, xvars: list[str], absorb=("ind", "fiscal_year"),
+        cluster=("ticker", "fiscal_year"), y: str = "log_vol"):
+    """AbsorbingLS: FE in *absorb* absorbed, SEs clustered on *cluster*
+    (one- or two-way; None = heteroskedasticity-robust).  Adds
+    ``res.r2_within`` = 1 - SSR / SSR(y on the absorbed FE only)."""
+    d = df.dropna(subset=[y, *xvars, *absorb])
+    X = d[xvars].astype(float)
+    X.insert(0, "const", 1.0)
+    A = pd.DataFrame({f"fe_{a}": d[a].astype(str).astype("category") for a in absorb},
+                     index=d.index)
+    mod = AbsorbingLS(d[y].astype(float), X, absorb=A, drop_absorbed=True)
+    if cluster:
+        cl = pd.DataFrame({c: d[c].astype("category").cat.codes for c in cluster},
+                          index=d.index)
+        res = mod.fit(cov_type="clustered", clusters=cl)
+    else:
+        res = mod.fit(cov_type="robust")
+    y_w = np.asarray(mod.absorbed_dependent).ravel()
+    res.r2_within = float(1 - (np.asarray(res.resids) ** 2).sum() / (y_w ** 2).sum())
+    res.n_firms = int(d["ticker"].nunique())
+    res.sample = d
+    return res
+
+
+def tidy(res, model: str, column: str = "", **meta) -> list[dict]:
+    rows = []
+    for v in res.params.index:
+        if v == "const":
+            continue
+        rows.append({"model": model, "column": column, "var": v,
+                     "coef": float(res.params[v]), "se": float(res.std_errors[v]),
+                     "t": float(res.tstats[v]), "p": float(res.pvalues[v]),
+                     "n": int(res.nobs), "firms": res.n_firms,
+                     "r2_within": res.r2_within, "r2": float(res.rsquared),
+                     "r2_adj": float(res.rsquared_adj), **meta})
+    return rows
+
+
+def save(rows: list[dict], name: str) -> pd.DataFrame:
+    out = pd.DataFrame(rows)
+    out.to_csv(RESULTS_DIR / f"{name}.csv", index=False)
+    print(f"  -> data/results/{name}.csv ({len(out)} rows)")
     return out
 
 
-def load_text_panel(vol_col: str = "vol_next_year",
-                    lag_col: str = "lagged_vol",
-                    with_pre: bool = False) -> pd.DataFrame:
-    """Load the text-extended panel and prune to rows usable for one horizon.
+def wald_equal(res, a: str, b: str) -> dict:
+    from scipy.stats import norm
+    c = res.cov
+    var = c.loc[a, a] + c.loc[b, b] - 2 * c.loc[a, b]
+    z = float((res.params[a] - res.params[b]) / np.sqrt(var))
+    return {"diff": float(res.params[a] - res.params[b]), "z": z,
+            "p": float(2 * (1 - norm.cdf(abs(z))))}
 
-    Substitutes ``lag_col`` for the AR(1) control so each horizon uses its
-    own lagged volatility. Drops rows missing any regression variable.
-    Adds the SIC-2 industry code, the log(vol) dependent variable and its
-    lagged counterpart.  With *with_pre*, also requires and adds
-    ``pre_log_vol`` (log volatility over the 60 trading days before filing).
-    """
-    df = pd.read_csv(DATA_DIR / "annual_panel_text.csv")
-    if vol_col not in df.columns or lag_col not in df.columns:
-        raise FileNotFoundError(
-            f"{vol_col} or {lag_col} not in panel — "
-            "run build_volatility_horizons.py first."
-        )
-    df["sic2"] = (df["sic"] // 100).astype(int)
-    if "log_words_1a" not in df.columns:
-        df["log_words_1a"] = np.log(df["words_1a"].clip(lower=1))
-    needed = [vol_col, lag_col, *FIN_VARS, LEN_VAR, DENS_VAR,
-              UNC_VAR, LIT_VAR,
-              "sic2", "fiscal_year", "ticker"]
-    if with_pre:
-        needed.append("pre_vol")
-    df = df[needed].dropna().copy()
-    if with_pre:
-        df = df.loc[df["pre_vol"] > 0].copy()
-        df["pre_log_vol"] = np.log(df["pre_vol"])
-    df = _add_log_vol(df, vol_col, lag_col)
-    # Winsorise financial ratios at the 1st/99th pct of THIS regression sample.
-    df = winsorize_ratios(df, cols=[c for c in WINSORIZE_COLS if c in df.columns])
+
+def _show(res, vars_: list[str], label: str = "") -> None:
+    print(f"  {label}  N={int(res.nobs):,} firms={res.n_firms} "
+          f"R2w={res.r2_within:.3f}")
+    for v in vars_:
+        if v in res.params.index:
+            print(f"     {v:16s} {res.params[v]:+9.4f}  t={res.tstats[v]:+6.2f}  "
+                  f"p={res.pvalues[v]:.4f}")
+
+
+# ── H1/H2 analyses (§6.1) ────────────────────────────────────────────────
+
+def run_main(h: str = HEADLINE) -> pd.DataFrame:
+    """Five nested columns on one common sample; incremental within-R^2."""
+    df = load_text_panel(h)
+    rows, base_r2 = [], None
+    for col, text in SPEC_COLUMNS.items():
+        r = fit(df, CONTROLS + text)
+        base_r2 = r.r2_within if base_r2 is None else base_r2
+        rows += tidy(r, f"main_{h}", col, h=h, absorb="ind+year",
+                     cluster="firm+year", incr_r2_within=r.r2_within - base_r2)
+        _show(r, text, f"main {h} {col}")
+        if col == "(5)":
+            w = wald_equal(r, UNC_VAR, LIT_VAR)
+            rows.append({"model": f"main_{h}", "column": col, "var": "wald_unc_eq_lit",
+                         "coef": w["diff"], "t": w["z"], "p": w["p"],
+                         "n": int(r.nobs), "firms": r.n_firms, "h": h})
+    return save(rows, f"main_{h}")
+
+
+def run_horizons() -> pd.DataFrame:
+    rows = []
+    for h in HORIZONS:
+        df = load_text_panel(h)
+        for col in ("(4)", "(5)"):
+            r = fit(df, CONTROLS + SPEC_COLUMNS[col])
+            rows += tidy(r, "horizons", col, h=h, absorb="ind+year", cluster="firm+year")
+        _show(r, DECOMP, f"horizon {h}")
+    return save(rows, "horizons")
+
+
+def run_firm_fe(h: str = HEADLINE) -> pd.DataFrame:
+    """Firm+year FE without the lagged DV (pre_log_vol is the dynamic
+    control); the LDV version is reported for the Nickell comparison (#44)."""
+    rows = []
+    df = load_text_panel(h, extra=("lagged_log_vol",))
+    for col in ("(4)", "(5)"):
+        for tag, xs in (("no_ldv", CONTROLS), ("with_ldv", CONTROLS + ["lagged_log_vol"])):
+            for absorb, an in ((("ticker", "fiscal_year"), "firm+year"),
+                               (("ind", "fiscal_year"), "ind+year")):
+                r = fit(df, xs + SPEC_COLUMNS[col], absorb=absorb)
+                rows += tidy(r, "firm_fe", f"{col}_{tag}_{an}", h=h, absorb=an,
+                             cluster="firm+year", ldv=tag == "with_ldv")
+                if col == "(5)":
+                    _show(r, DECOMP + ["lagged_log_vol"], f"{an} {tag}")
+    return save(rows, "firm_fe")
+
+
+def _timing_panel(h: str) -> pd.DataFrame:
+    df = load_text_panel(h, xvars=CONTROLS)
+    full = _read_panel()[["ticker", "fiscal_year", *TEXT_VARS]]
+    full = full.sort_values(["ticker", "fiscal_year"]).reset_index(drop=True)
+    for v in TEXT_VARS:
+        full[f"{v}_lag1"] = consecutive_lag(full, v)
+    df = df.drop(columns=[f"{v}_lag1" for v in TEXT_VARS if f"{v}_lag1" in df])
+    df = df.merge(full[["ticker", "fiscal_year", *[f"{v}_lag1" for v in TEXT_VARS]]],
+                  on=["ticker", "fiscal_year"], how="left")
+    for v in TEXT_VARS:
+        df[f"d_{v}"] = df[v] - df[f"{v}_lag1"]
     return df
 
 
-# ── Estimation helpers ────────────────────────────────────────────────────
+def run_robustness(h: str = HEADLINE) -> pd.DataFrame:
+    """Every H1/H2 robustness model, decomposition spec (col 5) unless noted."""
+    rows = []
+    X5 = CONTROLS + DECOMP
 
-def _fit(df: pd.DataFrame, xvars: list[str]):
-    """Fit one absorbing-LS model with industry+year FE and two-way
-    (firm + year) clustered standard errors."""
-    y = df["log_vol"]
-    X = df[xvars].copy()
-    X.insert(0, "const", 1.0)
-    absorb = df[["sic2", "fiscal_year"]].astype("category")
-    clusters = df[["ticker", "fiscal_year"]].astype("category").apply(
-        lambda c: c.cat.codes
-    )
-    return AbsorbingLS(y, X, absorb=absorb).fit(
-        cov_type="clustered", clusters=clusters,
-    )
+    def add(name, r, **m):
+        rows.extend(tidy(r, "robustness", name, h=h, **m))
+        _show(r, [v for v in r.params.index if v in DECOMP + COUNT_VARS
+                  or v.endswith("_x_post") or v.startswith("d_") or v.endswith("_lag1")
+                  or v in ("log_mkt_vol", "ea", "lagged_log_vol")], name)
 
+    base = load_text_panel(h)
+    add("baseline", fit(base, X5), absorb="ind+year", cluster="firm+year")
 
-def run_main(df: pd.DataFrame | None = None,
-             vol_col: str = "vol_next_year",
-             lag_col: str = "lagged_vol"):
-    """Estimate the five nested specifications for the headline table.
-
-    Columns are:
-        (1) baseline financial controls
-        (2) +H1                       : log_words_1a
-        (3) +H2                       : composite risk_1a
-        (4) +H1 + H2                  : both jointly
-        (5) +H1 + H3 (decomposition)  : log_words_1a + unc_1a + lit_1a
-    """
-    if df is None:
-        df = load_text_panel(vol_col=vol_col, lag_col=lag_col)
-    base = ["lagged_log_vol", *FIN_VARS]
-    specs = [
-        list(base),
-        list(base) + [LEN_VAR],
-        list(base) + [DENS_VAR],
-        list(base) + [LEN_VAR, DENS_VAR],
-        list(base) + [LEN_VAR, UNC_VAR, LIT_VAR],
-    ]
-    results = [_fit(df, x) for x in specs]
-    return results, df, specs
-
-
-def run_horizons():
-    """Estimate the H1 + H3-decomposition model on every available horizon."""
-    out = []
-    for label, vol_col, lag_col in HORIZONS:
-        try:
-            df = load_text_panel(vol_col=vol_col, lag_col=lag_col)
-        except FileNotFoundError as e:
-            print(f"  [skip] horizon {label}: {e}")
-            continue
-        if df.empty:
-            print(f"  [skip] horizon {label}: empty after dropna")
-            continue
-        xvars = ["lagged_log_vol", *FIN_VARS, LEN_VAR, UNC_VAR, LIT_VAR]
-        res = _fit(df, xvars)
-        out.append((label, res, df))
-    return out
-
-
-# ── (Removed) Decay-of-information half-life fit ──────────────────────────
-# The earlier H3 framing as an information half-life was superseded by the
-# H3 boilerplate-decomposition (see ``run_main`` columns 3-5 and the
-# horizons table). The half-life code and its LaTeX writer are no longer
-# needed.
-
-
-# ── LaTeX table formatting ────────────────────────────────────────────────
-
-def _stars(pval: float) -> str:
-    if pval < 0.01:
-        return "***"
-    if pval < 0.05:
-        return "**"
-    if pval < 0.10:
-        return "*"
-    return ""
+    # #30/#32 market volatility + earnings announcement in window
+    d = load_text_panel(h, extra=("log_mkt_vol", "ea"))
+    add("mktvol_ea", fit(d, X5 + ["log_mkt_vol", "ea"]), absorb="ind+year", cluster="firm+year")
+    # #30 filing-month x year FE
+    d = load_text_panel(h, extra=("fm_year",))
+    add("fm_year_fe", fit(d, X5, absorb=("ind", "fm_year")), absorb="ind+filing_month_x_year",
+        cluster="firm+year")
+    # #30 idiosyncratic volatility as DV
+    d = load_text_panel(h, dv="idio")
+    add("idio_vol", fit(d, X5), absorb="ind+year", cluster="firm+year", dv="idio")
+    # #33 count specification
+    d = load_text_panel(h, xvars=CONTROLS + COUNT_VARS)
+    add("counts", fit(d, CONTROLS + COUNT_VARS), absorb="ind+year", cluster="firm+year")
+    # #52 finer industry; regulated industries out
+    d = load_text_panel(h, ind="sic3")
+    add("sic3_fe", fit(d, X5), absorb="sic3+year", cluster="firm+year")
+    d = load_text_panel(h, ind="sic2")
+    add("sic2_snapshot_fe", fit(d, X5), absorb="sic2_today+year", cluster="firm+year")
+    hist = base["sic_hist"] if "sic_hist" in base else base["sic"]
+    d = base[~(hist.between(4900, 4999) | hist.between(8000, 8099))]
+    add("excl_sic49_80", fit(d, X5), absorb="ind+year", cluster="firm+year")
+    # #60 post-2019 interaction (main effect absorbed by year FE)
+    d = base.copy()
+    for v in DECOMP:
+        d[f"{v}_x_post"] = d[v] * d["post2019"]
+    add("post2019_interaction", fit(d, X5 + [f"{v}_x_post" for v in DECOMP]),
+        absorb="ind+year", cluster="firm+year")
+    # #47 timing: lagged text; level(t-1) + change
+    d = _timing_panel(h)
+    lag = [f"{v}_lag1" for v in DECOMP]
+    dd = d.dropna(subset=lag)
+    add("text_lag1", fit(dd, CONTROLS + lag), absorb="ind+year", cluster="firm+year")
+    dch = [f"d_{v}" for v in DECOMP]
+    dd = d.dropna(subset=lag + dch)
+    add("text_lag1_plus_change", fit(dd, CONTROLS + lag + dch), absorb="ind+year",
+        cluster="firm+year")
+    # #48 balanced sub-panel: firms present in every FY 2012-2024
+    d = base[base["fiscal_year"].between(2012, 2024)]
+    full = d.groupby("ticker")["fiscal_year"].nunique() == 13
+    d = d[d["ticker"].isin(full[full].index)]
+    add("balanced_2012_2024", fit(d, X5), absorb="ind+year", cluster="firm+year")
+    # #6 minimum years per firm in the estimation sample
+    ny = base.groupby("ticker")["fiscal_year"].transform("nunique")
+    for k in (3, 5, 7):
+        add(f"min_years_{k}", fit(base[ny >= k], X5), absorb="ind+year",
+            cluster="firm+year")
+    # #17 drop imputed rows
+    flags = [c for c in base.columns if c.startswith("imputed_")]
+    imp = base[flags].apply(_bool).any(axis=1) if flags else pd.Series(False, index=base.index)
+    add("drop_imputed", fit(base[~imp], X5), absorb="ind+year", cluster="firm+year",
+        n_imputed_dropped=int(imp.sum()))
+    # lagged DV as an optional extra
+    d = load_text_panel(h, extra=("lagged_log_vol",))
+    add("plus_lagged_dv", fit(d, X5 + ["lagged_log_vol"]), absorb="ind+year",
+        cluster="firm+year")
+    # #8 one-way clustering alternatives
+    add("cluster_firm", fit(base, X5, cluster=("ticker",)), absorb="ind+year", cluster="firm")
+    add("cluster_year", fit(base, X5, cluster=("fiscal_year",)), absorb="ind+year",
+        cluster="year")
+    return save(rows, f"robustness_{h}")
 
 
-def main_table_to_latex(results, df, specs,
-                        path: Path | None = None,
-                        caption: str | None = None,
-                        label: str = "tab:main_30d",
-                        horizon_label: str = "30 days") -> str:
-    """Headline four-column nested table for the main horizon."""
-    n_cols = len(results)
-    # Union of all variables across specs, preserving first-seen order so
-    # that a variable that appears only in some columns still gets its row.
-    all_vars: list[str] = []
-    for x in specs:
-        for v in x:
-            if v not in all_vars:
-                all_vars.append(v)
-    n_firms = df["ticker"].nunique()
-
-    if caption is None:
-        caption = (rf"Item~1A Length, Risk-Word Density, and the "
-                   rf"Boilerplate Decomposition ({horizon_label} window)")
-
-    lines = []
-    lines.append(r"\begin{table}[htbp]")
-    lines.append(r"\centering")
-    lines.append(rf"\caption{{{caption}}}")
-    lines.append(rf"\label{{{label}}}")
-    lines.append(r"\begin{tabular}{l" + "c" * n_cols + "}")
-    lines.append(r"\toprule")
-    header = " & ".join([f"({i+1})" for i in range(n_cols)])
-    lines.append(f" & {header} \\\\")
-    lines.append(r"\midrule")
-
-    for var in all_vars:
-        label_v = LABELS.get(var, var)
-        coefs, tstats = [], []
-        for res, xvars in zip(results, specs):
-            if var in xvars:
-                c = res.params[var]
-                t = res.tstats[var]
-                p = res.pvalues[var]
-                coefs.append(f"${c:+.4f}${_stars(p)}")
-                tstats.append(f"$({t:+.2f})$")
-            else:
-                coefs.append("")
-                tstats.append("")
-        lines.append(f"{label_v} & " + " & ".join(coefs) + r" \\")
-        lines.append(" & " + " & ".join(tstats) + r" \\[4pt]")
-
-    lines.append(r"\midrule")
-    lines.append("Industry FE & " + " & ".join(["Yes"] * n_cols) + r" \\")
-    lines.append("Year FE & "     + " & ".join(["Yes"] * n_cols) + r" \\")
-    obs   = [f"{int(res.nobs):,}"        for res in results]
-    firms = [str(n_firms)] * n_cols
-    r2    = [f"{res.rsquared_adj:.3f}"   for res in results]
-    lines.append("Observations & " + " & ".join(obs)   + r" \\")
-    lines.append("Firms & "        + " & ".join(firms) + r" \\")
-    lines.append(r"Adj.\ $R^2$ & " + " & ".join(r2)    + r" \\")
-    lines.append(r"\bottomrule")
-    lines.append(r"\end{tabular}")
-    lines.append(r"\par\smallskip")
-    lines.append(r"\noindent\footnotesize ")
-    lines.append(
-        r"\textit{Note:} "
-        r"The dependent variable is $\ln(\sigma_{i,t+1})$, the natural "
-        rf"log of annualised post-filing volatility over a {horizon_label}~"
-        r"window starting two trading days after the 10-K filing date. "
-        r"Column~(1) reports the financial baseline; column~(2) adds the log "
-        r"word count of Item~1A (H1); column~(3) adds the composite LM "
-        r"risk-word density (H2); column~(4) adds H1 and H2 jointly; "
-        r"column~(5) replaces the H2 composite by its LM-list decomposition into "
-        r"the LM-Uncertainty and LM-Litigious densities of Item~1A. All "
-        r"specifications include two-digit SIC industry and fiscal-year "
-        r"fixed effects. $t$-statistics in parentheses use two-way "
-        r"(firm and fiscal-year) clustered "
-        r"standard errors. ***, **, * denote significance at the 1\%, 5\%, "
-        r"and 10\% levels."
-    )
-    lines.append(r"\end{table}")
-
-    tex = "\n".join(lines)
-    if path is not None:
-        path.write_text(tex, encoding="utf-8")
-        print(f"  Table saved → {path.name}")
-    return tex
+def wild_bootstrap(h: str = HEADLINE, B: int = 9999, seed: int = 20261101
+                   ) -> pd.DataFrame:
+    """Wild-cluster bootstrap by fiscal year (Webb weights, null imposed),
+    FE partialled out (FWL), for the text coefficients (#8)."""
+    import statsmodels.api as sm
+    from wildboottest.wildboottest import wildboottest
+    rows = []
+    base = load_text_panel(h)
+    for absorb, an in ((("ind", "fiscal_year"), "ind+year"),
+                       (("ticker", "fiscal_year"), "firm+year")):
+        for col in ("(4)", "(5)"):
+            xs = CONTROLS + SPEC_COLUMNS[col]
+            r = fit(base, xs, absorb=absorb)
+            mod = AbsorbingLS(r.sample["log_vol"],
+                              r.sample[xs].astype(float).assign(const=1.0),
+                              absorb=pd.DataFrame({a: r.sample[a].astype(str).astype("category")
+                                                   for a in absorb}),
+                              drop_absorbed=True)
+            mod.fit()
+            yw = pd.Series(np.asarray(mod.absorbed_dependent).ravel(), name="y")
+            Xw = pd.DataFrame(np.asarray(mod.absorbed_exog), columns=mod.exog.cols)
+            Xw = Xw.drop(columns=[c for c in Xw.columns if c == "const"])
+            ols = sm.OLS(yw.values, Xw)
+            cl = r.sample["fiscal_year"].to_numpy()
+            for v in SPEC_COLUMNS[col]:
+                out = wildboottest(ols, B=B, cluster=cl, param=v, weights_type="webb",
+                                   seed=seed, show=False)
+                p_boot = float(np.asarray(out["p-value"]).ravel()[0])
+                rows.append({"model": "wild_bootstrap", "column": f"{col}_{an}", "var": v,
+                             "coef": float(r.params[v]), "t_twoway": float(r.tstats[v]),
+                             "p_twoway": float(r.pvalues[v]), "p_wild_year": p_boot,
+                             "B": B, "weights": "webb", "clusters": int(len(np.unique(cl))),
+                             "n": int(r.nobs), "h": h, "absorb": an})
+                print(f"  wild {an} {col} {v}: p2way={r.pvalues[v]:.4f}  pboot={p_boot:.4f}")
+    return save(rows, f"wild_bootstrap_{h}")
 
 
-def horizons_to_latex(runs, path: Path | None = None) -> str:
-    """One column per horizon for the joint H1+H2 specification."""
-    if not runs:
-        return ""
-
-    show = [
-        ("lagged_log_vol", LABELS["lagged_log_vol"]),
-        (LEN_VAR,          LABELS[LEN_VAR]),
-        (UNC_VAR,          LABELS[UNC_VAR]),
-        (LIT_VAR,          LABELS[LIT_VAR]),
-    ]
-    n_cols = len(runs)
-
-    lines = []
-    lines.append(r"\begin{table}[htbp]")
-    lines.append(r"\centering")
-    lines.append(r"\caption{Post-Filing Volatility at Alternative Horizons}")
-    lines.append(r"\label{tab:horizons}")
-    lines.append(r"\footnotesize")
-    lines.append(r"\setlength{\tabcolsep}{5pt}")
-    lines.append(r"\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}l" + "c" * n_cols + r"@{}}")
-    lines.append(r"\toprule")
-    header = " & ".join(f"({i+1}) {label}" for i, (label, _, _) in enumerate(runs))
-    lines.append(f" & {header} \\\\")
-    lines.append(r"\midrule")
-
-    for var, label_v in show:
-        coefs, tstats = [], []
-        for _, res, _ in runs:
-            if var not in res.params.index:
-                coefs.append("")
-                tstats.append("")
-                continue
-            c = res.params[var]; t = res.tstats[var]; p = res.pvalues[var]
-            coefs.append(f"${c:+.4f}${_stars(p)}")
-            tstats.append(f"$({t:+.2f})$")
-        lines.append(f"{label_v} & " + " & ".join(coefs) + r" \\")
-        lines.append(" & " + " & ".join(tstats) + r" \\[4pt]")
-
-    lines.append(r"\midrule")
-    lines.append("Financial controls & " + " & ".join(["Yes"] * n_cols) + r" \\")
-    lines.append("Industry FE & "        + " & ".join(["Yes"] * n_cols) + r" \\")
-    lines.append("Year FE & "            + " & ".join(["Yes"] * n_cols) + r" \\")
-    obs   = " & ".join(f"{int(res.nobs):,}"        for _, res, _   in runs)
-    firms = " & ".join(f"{df['ticker'].nunique()}" for _, _,   df  in runs)
-    r2    = " & ".join(f"{res.rsquared_adj:.3f}"   for _, res, _   in runs)
-    lines.append("Observations & " + obs   + r" \\")
-    lines.append("Firms & "        + firms + r" \\")
-    lines.append(r"Adj.\ $R^2$ & " + r2    + r" \\")
-    lines.append(r"\bottomrule")
-    lines.append(r"\end{tabular*}")
-    lines.append(r"\par\smallskip")
-    lines.append(r"\begin{flushleft}\footnotesize ")
-    lines.append(
-        r"\textit{Note:} "
-        r"Each column re-estimates the H1 + LM-list decomposition specification "
-        r"replacing the dependent variable with $\ln(\sigma_{i,t+1}^{[h]})$ "
-        r"measured over a post-filing window of length $h$. The lagged "
-        r"dependent variable is the same firm's log-volatility computed over "
-        r"the prior filing year's window of identical length. UncDensity "
-        r"and LitDensity are the LM-Uncertainty and LM-Litigious word "
-        r"densities on Item~1A; together they sum to RiskDensity (H2). "
-        r"Financial controls (size, leverage, ROA, asset growth) are "
-        r"included but suppressed. Industry and year fixed effects are "
-        r"absorbed; $t$-statistics in parentheses use two-way "
-        r"(firm and fiscal-year) clustered "
-        r"standard errors. ***, **, * denote significance at the 1\%, 5\%, "
-        r"and 10\% levels."
-    )
-    lines.append(r"\end{flushleft}")
-    lines.append(r"\end{table}")
-
-    tex = "\n".join(lines)
-    if path is not None:
-        path.write_text(tex, encoding="utf-8")
-        print(f"  Table saved → {path.name}")
-    return tex
+def effect_sizes(h: str = HEADLINE) -> pd.DataFrame:
+    """Effect of +1 pooled SD and +1 within-firm SD of each text variable,
+    in % volatility (#54), under industry FE and firm FE."""
+    base = load_text_panel(h)
+    rows = []
+    for an, absorb in (("ind+year", ("ind", "fiscal_year")),
+                       ("firm+year", ("ticker", "fiscal_year"))):
+        for col in ("(4)", "(5)"):
+            r = fit(base, CONTROLS + SPEC_COLUMNS[col], absorb=absorb)
+            for v in SPEC_COLUMNS[col]:
+                x = base[v]
+                sd_p = float(x.std())
+                sd_w = float((x - x.groupby(base["ticker"]).transform("mean")).std())
+                b = float(r.params[v])
+                rows.append({"var": v, "column": col, "absorb": an, "h": h, "coef": b,
+                             "t": float(r.tstats[v]), "p": float(r.pvalues[v]),
+                             "sd_pooled": sd_p, "sd_within": sd_w,
+                             "pct_per_sd_pooled": 100 * (np.exp(b * sd_p) - 1),
+                             "pct_per_sd_within": 100 * (np.exp(b * sd_w) - 1),
+                             "n": int(r.nobs)})
+    return save(rows, f"effect_sizes_{h}")
 
 
-def half_life_to_latex(*args, **kwargs) -> str:
-    """Removed. Kept as a no-op shim in case external callers import it."""
-    return ""
+def variance_decomposition(h: str = HEADLINE) -> pd.DataFrame:
+    """Within-firm / between-firm variance shares of each variable (#62)."""
+    base = load_text_panel(h)
+    cols = ["log_vol", *TEXT_VARS]
+    if "omission_1a" in base:
+        cols.append("omission_1a")
+    rows = []
+    for v in cols:
+        x = base[v].dropna()
+        g = base.loc[x.index, "ticker"]
+        within = x - x.groupby(g).transform("mean")
+        tot = float(((x - x.mean()) ** 2).sum())
+        w = float((within ** 2).sum())
+        yr = x - x.groupby(base.loc[x.index, "fiscal_year"]).transform("mean")
+        w_yr = yr - yr.groupby(g).transform("mean")
+        rows.append({"var": v, "n": int(len(x)), "sd_total": float(x.std()),
+                     "sd_within": float(within.std()), "share_within": w / tot,
+                     "share_between": 1 - w / tot,
+                     "share_within_net_of_year": float((w_yr ** 2).sum()) / tot})
+    return save(rows, f"variance_decomposition_{h}")
 
 
-# ── Descriptive statistics ────────────────────────────────────────────────
-
-def descriptive_stats_to_latex(df: pd.DataFrame,
-                               path: Path | None = None) -> str:
-    stats = df[PANEL_VARS].describe(percentiles=[0.25, 0.50, 0.75]).T
-    stats = stats[["mean", "std", "25%", "50%", "75%"]]
-    stats.columns = ["Mean", "SD", "P25", "Median", "P75"]
-
-    lines = []
-    lines.append(r"\begin{table}[htbp]")
-    lines.append(r"\centering")
-    lines.append(r"\caption{Summary Statistics}")
-    lines.append(r"\label{tab:summary}")
-    lines.append(r"\begin{tabular}{lccccc}")
-    lines.append(r"\toprule")
-    lines.append(r" & Mean & SD & P25 & Median & P75 \\")
-    lines.append(r"\midrule")
-    for var in PANEL_VARS:
-        label = LABELS.get(var, var)
-        row = stats.loc[var]
-        lines.append(
-            f"{label} & {row['Mean']:.3f} & {row['SD']:.3f} & "
-            f"{row['P25']:.3f} & {row['Median']:.3f} & {row['P75']:.3f} \\\\"
-        )
-    lines.append(r"\midrule")
-    lines.append(rf"Observations & \multicolumn{{5}}{{c}}{{{len(df):,}}} \\")
-    lines.append(rf"Firms & \multicolumn{{5}}{{c}}{{{df['ticker'].nunique()}}} \\")
-    lines.append(r"\bottomrule")
-    lines.append(r"\end{tabular}")
-    lines.append(r"\par\smallskip")
-    lines.append(r"\noindent\footnotesize ")
-    lines.append(
-        r"\textit{Note:} "
-        r"Summary statistics for the regression sample at the 30-day "
-        r"horizon. $\sigma_{i,t+1}$ is the annualised standard deviation "
-        r"of daily log returns over the 30-day window starting two trading "
-        r"days after the filing date; $\ln(\sigma_{i,t+1})$ is its natural "
-        r"logarithm. Words$^{\text{1A}}$ is the cleaned word count of Item~1A; "
-        r"RiskDensity is the share of LM uncertainty- and litigious-list "
-        r"words in Item~1A; UncDensity and LitDensity are the two "
-        r"sub-components separately. Financial ratios are winsorised at the "
-        r"1st and 99th percentiles."
-    )
-    lines.append(r"\end{table}")
-
-    tex = "\n".join(lines)
-    if path is not None:
-        path.write_text(tex, encoding="utf-8")
-        print(f"  Table saved → {path.name}")
-    return tex
+def descriptives(h: str = HEADLINE) -> pd.DataFrame:
+    base = load_text_panel(h)
+    base["vol"] = np.exp(base["log_vol"])
+    cols = ["vol", "log_vol", *CONTROLS, "words_1a", *TEXT_VARS, "log_n_unc_1a",
+            "log_n_lit_1a"]
+    q = base[cols].describe(percentiles=[.01, .25, .5, .75, .99]).T
+    q.index.name = "var"
+    q.to_csv(RESULTS_DIR / f"summary_stats_{h}.csv")
+    base[["log_vol", *CONTROLS, *TEXT_VARS]].corr().to_csv(
+        RESULTS_DIR / f"correlation_{h}.csv")
+    print(f"  -> summary_stats_{h}.csv, correlation_{h}.csv  "
+          f"(N={len(base):,}, firms={base['ticker'].nunique()}, "
+          f"median words={base['words_1a'].median():,.0f}, "
+          f"max RiskDensity={base[DENS_VAR].max():.4f})")
+    return q
 
 
-def correlation_to_latex(df: pd.DataFrame,
-                         path: Path | None = None) -> str:
-    from scipy.stats import pearsonr
-    n = len(PANEL_VARS)
-    corr = pd.DataFrame(np.nan, index=PANEL_VARS, columns=PANEL_VARS)
-    pvals = pd.DataFrame(np.nan, index=PANEL_VARS, columns=PANEL_VARS)
-    for i in range(n):
-        for j in range(n):
-            r, p = pearsonr(df[PANEL_VARS[i]], df[PANEL_VARS[j]])
-            corr.iloc[i, j]  = r
-            pvals.iloc[i, j] = p
-
-    lines = []
-    lines.append(r"\begin{table}[htbp]")
-    lines.append(r"\centering")
-    lines.append(r"\caption{Pearson Correlation Matrix}")
-    lines.append(r"\label{tab:correlation}")
-    lines.append(r"\scriptsize")
-    lines.append(r"\setlength{\tabcolsep}{0pt}")
-    col_spec = "l" + "c" * n
-    lines.append(r"\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}" + col_spec + r"@{}}")
-    lines.append(r"\toprule")
-    header = " & ".join([f"({i+1})" for i in range(n)])
-    lines.append(f" & {header} \\\\")
-    lines.append(r"\midrule")
-    for i in range(n):
-        label = LABELS.get(PANEL_VARS[i], PANEL_VARS[i])
-        cells = []
-        for j in range(n):
-            if j > i:
-                cells.append("")
-            elif i == j:
-                cells.append("1")
-            else:
-                r = corr.iloc[i, j]
-                p = pvals.iloc[i, j]
-                cells.append(f"{r:.2f}{_stars(p)}")
-        lines.append(f"({i+1}) {label} & " + " & ".join(cells) + r" \\")
-    lines.append(r"\bottomrule")
-    lines.append(r"\end{tabular*}")
-    lines.append(r"\par\smallskip")
-    lines.append(r"\begin{flushleft}\footnotesize ")
-    lines.append(
-        r"\textit{Note:} "
-        r"Pairwise Pearson correlation coefficients on the 30-day-horizon "
-        r"regression sample. ***, **, * denote significance at the 1\%, 5\%, "
-        r"and 10\% levels."
-    )
-    lines.append(r"\end{flushleft}")
-    lines.append(r"\end{table}")
-
-    tex = "\n".join(lines)
-    if path is not None:
-        path.write_text(tex, encoding="utf-8")
-        print(f"  Table saved → {path.name}")
-    return tex
-
-
-# ── Robustness: pre/post-COVID split ─────────────────────────────────────
-
-def run_subperiods(vol_col: str = "vol_30d",
-                   lag_col: str = "lagged_vol_30d") -> dict:
-    """Estimate the H1 + H3-decomposition model on pre/post-COVID samples."""
-    df = load_text_panel(vol_col=vol_col, lag_col=lag_col)
-    out = {}
-    for tag, mask in [("pre",  df["fiscal_year"] <= 2019),
-                      ("post", df["fiscal_year"] >= 2020)]:
-        sub = df[mask].copy()
-        if sub["fiscal_year"].nunique() < 2:
-            continue
-        xvars = ["lagged_log_vol", *FIN_VARS, LEN_VAR, UNC_VAR, LIT_VAR]
-        out[tag] = (_fit(sub, xvars), sub)
-    return out
-
-
-def subperiod_to_latex(results: dict, path: Path | None = None) -> str:
-    if not results:
-        return ""
-    cols = list(results.keys())
-    show = [
-        ("lagged_log_vol", LABELS["lagged_log_vol"]),
-        (LEN_VAR,          LABELS[LEN_VAR]),
-        (UNC_VAR,          LABELS[UNC_VAR]),
-        (LIT_VAR,          LABELS[LIT_VAR]),
-    ]
-    n_cols = len(cols)
-    pretty = {"pre": "Pre-COVID (2010--2019)",
-              "post": "COVID era (2020--2024)"}
-
-    lines = []
-    lines.append(r"\begin{table}[htbp]")
-    lines.append(r"\centering")
-    lines.append(r"\caption{Sub-Period Robustness (30-day horizon)}")
-    lines.append(r"\label{tab:subperiod}")
-    lines.append(r"\begin{tabular}{l" + "c" * n_cols + "}")
-    lines.append(r"\toprule")
-    header = " & ".join(f"({i+1}) {pretty[c]}" for i, c in enumerate(cols))
-    lines.append(f" & {header} \\\\")
-    lines.append(r"\midrule")
-
-    for var, label_v in show:
-        coefs, tstats = [], []
-        for c in cols:
-            res, _ = results[c]
-            v = res.params[var]; t = res.tstats[var]; p = res.pvalues[var]
-            coefs.append(f"${v:+.4f}${_stars(p)}")
-            tstats.append(f"$({t:+.2f})$")
-        lines.append(f"{label_v} & " + " & ".join(coefs) + r" \\")
-        lines.append(" & " + " & ".join(tstats) + r" \\[4pt]")
-
-    lines.append(r"\midrule")
-    lines.append("Financial controls & " + " & ".join(["Yes"] * n_cols) + r" \\")
-    lines.append("Industry FE & "        + " & ".join(["Yes"] * n_cols) + r" \\")
-    lines.append("Year FE & "            + " & ".join(["Yes"] * n_cols) + r" \\")
-    obs   = " & ".join(f"{int(results[c][0].nobs):,}" for c in cols)
-    firms = " & ".join(f"{results[c][1]['ticker'].nunique()}" for c in cols)
-    r2    = " & ".join(f"{results[c][0].rsquared_adj:.3f}"   for c in cols)
-    lines.append("Observations & " + obs + r" \\")
-    lines.append("Firms & "        + firms + r" \\")
-    lines.append(r"Adj.\ $R^2$ & " + r2    + r" \\")
-    lines.append(r"\bottomrule")
-    lines.append(r"\end{tabular}")
-    lines.append(r"\par\smallskip")
-    lines.append(r"\noindent\footnotesize ")
-    lines.append(
-        r"\textit{Note:} "
-        r"H1 + LM-list decomposition specification re-estimated on two "
-        r"non-overlapping sub-samples. The dependent variable is "
-        r"$\ln(\sigma_{i,t+1}^{[30]})$. UncDensity and LitDensity are the "
-        r"LM-Uncertainty and LM-Litigious word densities on Item~1A. All "
-        r"financial controls and SIC2$+$year fixed effects are included. "
-        r"Standard errors are two-way clustered by firm and fiscal year. ***, **, * denote significance "
-        r"at the 1\%, 5\%, and 10\% levels."
-    )
-    lines.append(r"\end{table}")
-
-    tex = "\n".join(lines)
-    if path is not None:
-        path.write_text(tex, encoding="utf-8")
-        print(f"  Table saved → {path.name}")
-    return tex
-
-
-# ── Robustness: firm fixed effects ───────────────────────────────────────
-
-def run_firm_fe(vol_col: str = "vol_30d",
-                lag_col: str = "lagged_vol_30d"):
-    """Re-estimate the H1 + H3-decomposition model with firm + year FE."""
-    df = load_text_panel(vol_col=vol_col, lag_col=lag_col)
-    y = df["log_vol"]
-    X = df[["lagged_log_vol", *FIN_VARS, LEN_VAR, UNC_VAR, LIT_VAR]].copy()
-    X.insert(0, "const", 1.0)
-    absorb = df[["ticker", "fiscal_year"]].astype("category")
-    clusters = df[["ticker", "fiscal_year"]].astype("category").apply(
-        lambda c: c.cat.codes
-    )
-    res = AbsorbingLS(y, X, absorb=absorb).fit(
-        cov_type="clustered", clusters=clusters,
-    )
-    return res, df
-
-
-def firm_fe_to_latex(res, df, path: Path | None = None) -> str:
-    show = [
-        ("lagged_log_vol", LABELS["lagged_log_vol"]),
-        (LEN_VAR,          LABELS[LEN_VAR]),
-        (UNC_VAR,          LABELS[UNC_VAR]),
-        (LIT_VAR,          LABELS[LIT_VAR]),
-    ]
-    lines = []
-    lines.append(r"\begin{table}[htbp]")
-    lines.append(r"\centering")
-    lines.append(r"\caption{Within-Firm Identification (Firm $+$ Year FE, 30-day horizon)}")
-    lines.append(r"\label{tab:firm_fe}")
-    lines.append(r"\begin{tabular}{lc}")
-    lines.append(r"\toprule")
-    lines.append(r" & Estimate \\")
-    lines.append(r"\midrule")
-    for var, label_v in show:
-        c = res.params[var]; t = res.tstats[var]; p = res.pvalues[var]
-        lines.append(f"{label_v} & ${c:+.4f}${_stars(p)} \\\\")
-        lines.append(f" & $({t:+.2f})$ \\\\[4pt]")
-    lines.append(r"\midrule")
-    lines.append(r"Financial controls & Yes \\")
-    lines.append(r"Firm FE & Yes \\")
-    lines.append(r"Year FE & Yes \\")
-    lines.append(rf"Observations & {int(res.nobs):,} \\")
-    lines.append(rf"Firms & {df['ticker'].nunique()} \\")
-    lines.append(rf"Adj.\ $R^2$ & {res.rsquared_adj:.3f} \\")
-    lines.append(r"\bottomrule")
-    lines.append(r"\end{tabular}")
-    lines.append(r"\par\smallskip")
-    lines.append(r"\noindent\footnotesize ")
-    lines.append(
-        r"\textit{Note:} "
-        r"H1 + LM-list decomposition specification with firm and fiscal-year "
-        r"fixed effects absorbed. Identification of $\ln(\text{Words}^{1A})$, "
-        r"UncDensity and LitDensity comes only from within-firm variation "
-        r"across years. Standard errors are two-way clustered by firm and "
-        r"fiscal year. ***, **, * denote "
-        r"significance at the 1\%, 5\%, and 10\% levels."
-    )
-    lines.append(r"\end{table}")
-
-    tex = "\n".join(lines)
-    if path is not None:
-        path.write_text(tex, encoding="utf-8")
-        print(f"  Table saved → {path.name}")
-    return tex
-
-
-# ── Robustness: pre-filing volatility control ─────────────────────────────
-
-PRE_SPECS: list[tuple[str, str, str, bool]] = [
-    # (header, vol col, lag col, add pre_log_vol)
-    ("(1) 30d, no pre-vol", "vol_30d",       "lagged_vol_30d", False),
-    ("(2) 30d",             "vol_30d",       "lagged_vol_30d", True),
-    ("(3) 90d",             "vol_90d",       "lagged_vol_90d", True),
-    ("(4) 365d",            "vol_next_year", "lagged_vol",     True),
-]
-
-
-def run_pre_filing():
-    """H1 + LM decomposition with the pre-filing volatility control.
-
-    Column (1) re-estimates the baseline on exactly the sample that has
-    pre-filing volatility, so (1) vs (2) isolates the effect of the control.
-    """
-    out = []
-    for header, vcol, lcol, add_pre in PRE_SPECS:
-        df = load_text_panel(vol_col=vcol, lag_col=lcol, with_pre=True)
-        xvars = ["lagged_log_vol", *FIN_VARS, LEN_VAR, UNC_VAR, LIT_VAR]
-        if add_pre:
-            xvars = ["pre_log_vol"] + xvars
-        out.append((header, _fit(df, xvars), df))
-    return out
-
-
-def pre_filing_to_latex(runs, path: Path | None = None) -> str:
-    show = [("pre_log_vol",    r"$\ln(\sigma^{\text{pre}}_{i,t})$"),
-            ("lagged_log_vol", LABELS["lagged_log_vol"]),
-            (LEN_VAR,          LABELS[LEN_VAR]),
-            (UNC_VAR,          LABELS[UNC_VAR]),
-            (LIT_VAR,          LABELS[LIT_VAR])]
-    n_cols = len(runs)
-    lines = [r"\begin{table}[htbp]", r"\centering",
-             r"\caption{Controlling for Pre-Filing Volatility}",
-             r"\label{tab:pre_filing}", r"\footnotesize",
-             r"\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}l"
-             + "c" * n_cols + r"@{}}",
-             r"\toprule",
-             " & " + " & ".join(h for h, _, _ in runs) + r" \\",
-             r"\midrule"]
-    for var, lab in show:
-        cs, ts = [], []
-        for _, res, _ in runs:
-            if var in res.params.index:
-                cs.append(f"${res.params[var]:+.4f}${_stars(res.pvalues[var])}")
-                ts.append(f"$({res.tstats[var]:+.2f})$")
-            else:
-                cs.append(""); ts.append("")
-        lines.append(f"{lab} & " + " & ".join(cs) + r" \\")
-        lines.append(" & " + " & ".join(ts) + r" \\[4pt]")
-    lines.append(r"\midrule")
-    lines.append("Financial controls & " + " & ".join(["Yes"] * n_cols) + r" \\")
-    lines.append("Industry FE & " + " & ".join(["Yes"] * n_cols) + r" \\")
-    lines.append("Year FE & " + " & ".join(["Yes"] * n_cols) + r" \\")
-    lines.append("Observations & " + " & ".join(f"{int(r.nobs):,}" for _, r, _ in runs) + r" \\")
-    lines.append("Firms & " + " & ".join(str(d['ticker'].nunique()) for _, _, d in runs) + r" \\")
-    lines.append(r"Adj.\ $R^2$ & " + " & ".join(f"{r.rsquared_adj:.3f}" for _, r, _ in runs) + r" \\")
-    lines += [r"\bottomrule", r"\end{tabular*}", r"\par\smallskip",
-              r"\begin{flushleft}\footnotesize",
-              r"\textit{Note:} H1 + LM-list decomposition specification. "
-              r"$\ln(\sigma^{\text{pre}}_{i,t})$ is the log of annualised "
-              r"volatility over the 60 trading days that end on the last "
-              r"trading day before the 10-K filing date, so it is known when "
-              r"the filing is released. Column~(1) is the baseline without "
-              r"this control, estimated on the same sample as column~(2). "
-              r"All columns include SIC2 and fiscal-year fixed effects; "
-              r"$t$-statistics in parentheses use two-way (firm and fiscal "
-              r"year) clustered standard errors. ***, **, * denote "
-              r"significance at the 1\%, 5\%, and 10\% levels.",
-              r"\end{flushleft}", r"\end{table}"]
-    tex = "\n".join(lines)
-    if path is not None:
-        path.write_text(tex, encoding="utf-8")
-        print(f"  Table saved → {path.name}")
-    return tex
-
-
-# ── Driver ────────────────────────────────────────────────────────────────
-
-def _print_result(res, vars_to_show: list[str]) -> None:
-    print(f"  N = {int(res.nobs):,}  Adj R² = {res.rsquared_adj:.4f}")
-    for var in vars_to_show:
-        if var not in res.params.index:
-            continue
-        c, t, p = res.params[var], res.tstats[var], res.pvalues[var]
-        print(f"    {var:18s}  β = {c:+10.4f}  t = {t:+6.2f}  p = {p:.4f} {_stars(p)}")
+ANALYSES = {
+    "describe": lambda a: descriptives(),
+    "main": lambda a: (run_main("30d"), run_main("365d")),
+    "horizons": lambda a: run_horizons(),
+    "firm_fe": lambda a: run_firm_fe(),
+    "robustness": lambda a: (run_robustness("30d"), run_robustness("365d")),
+    "bootstrap": lambda a: wild_bootstrap(B=a.boot),
+    "effects": lambda a: effect_sizes(),
+    "variance": lambda a: variance_decomposition(),
+}
 
 
 def main() -> None:
-    print("=== Loading panel at primary horizon (30-day) ===")
-    df30 = load_text_panel(vol_col="vol_30d", lag_col="lagged_vol_30d")
-    print(f"  {df30['ticker'].nunique()} firms, {len(df30):,} firm-years")
-
-    print("\n=== Summary statistics + correlation matrix (30d sample) ===")
-    descriptive_stats_to_latex(df30, TEX_TABLE_DIR / "summary_statistics.tex")
-    correlation_to_latex(df30,       TEX_TABLE_DIR / "correlation_matrix.tex")
-
-    print("\n=== Headline table (30-day horizon) ===")
-    res30, _, specs30 = run_main(df30)
-    for i, r in enumerate(res30, 1):
-        print(f"\n  Spec ({i}): {', '.join(specs30[i-1])}")
-        _print_result(r, specs30[i-1])
-    main_table_to_latex(res30, df30, specs30,
-                        path=TEX_TABLE_DIR / "main_30d.tex",
-                        horizon_label="30 days",
-                        label="tab:main_30d")
-
-    # ── H3 Wald test: β^unc = β^lit on the headline (column 5) ──
-    h3_res = res30[-1]
-    try:
-        import numpy as np
-        b_unc = h3_res.params[UNC_VAR]
-        b_lit = h3_res.params[LIT_VAR]
-        cov = h3_res.cov
-        var_diff = (cov.loc[UNC_VAR, UNC_VAR]
-                    + cov.loc[LIT_VAR, LIT_VAR]
-                    - 2 * cov.loc[UNC_VAR, LIT_VAR])
-        se_diff = float(np.sqrt(var_diff))
-        diff = float(b_unc - b_lit)
-        z = diff / se_diff
-        # two-sided p-value from standard normal
-        from scipy.stats import norm
-        p = 2 * (1 - norm.cdf(abs(z)))
-        # 95% CI on β^unc
-        se_unc = float(np.sqrt(cov.loc[UNC_VAR, UNC_VAR]))
-        ci_lo = b_unc - 1.96 * se_unc
-        ci_hi = b_unc + 1.96 * se_unc
-        print(f"\n  H3 Wald test  H0: β^unc = β^lit")
-        print(f"    diff = {diff:+.3f}  se = {se_diff:.3f}  "
-              f"z = {z:+.2f}  p = {p:.4f}")
-        print(f"  95% CI on β^unc: [{ci_lo:+.2f}, {ci_hi:+.2f}]")
-    except Exception as exc:  # pragma: no cover
-        print(f"  Wald test failed: {exc}")
-
-    print("\n=== Headline table (365-day horizon) ===")
-    df365 = load_text_panel(vol_col="vol_next_year", lag_col="lagged_vol")
-    res365, _, specs365 = run_main(df365)
-    for i, r in enumerate(res365, 1):
-        print(f"\n  Spec ({i}): {', '.join(specs365[i-1])}")
-        _print_result(r, specs365[i-1])
-    main_table_to_latex(res365, df365, specs365,
-                        path=TEX_TABLE_DIR / "main_365d.tex",
-                        horizon_label="365 days",
-                        label="tab:main_365d")
-
-    print("\n=== Multi-horizon table ===")
-    runs = run_horizons()
-    for label, res, _ in runs:
-        bL = res.params[LEN_VAR]; tL = res.tstats[LEN_VAR]
-        bU = res.params[UNC_VAR]; tU = res.tstats[UNC_VAR]
-        bI = res.params[LIT_VAR]; tI = res.tstats[LIT_VAR]
-        print(f"  {label:>5s}: N={int(res.nobs):>5,}  "
-              f"Adj R²={res.rsquared_adj:.3f}  "
-              f"len β={bL:+.4f} (t={tL:+.2f})  "
-              f"unc β={bU:+.3f} (t={tU:+.2f})  "
-              f"lit β={bI:+.3f} (t={tI:+.2f})")
-    horizons_to_latex(runs, path=TEX_TABLE_DIR / "horizons.tex")
-
-    print("\n=== Sub-period robustness ===")
-    subres = run_subperiods()
-    for tag, (res, sub) in subres.items():
-        print(f"  {tag:>4s}: N={int(res.nobs):>5,}  "
-              f"len β={res.params[LEN_VAR]:+.4f} (t={res.tstats[LEN_VAR]:+.2f})  "
-              f"unc β={res.params[UNC_VAR]:+.3f} (t={res.tstats[UNC_VAR]:+.2f})  "
-              f"lit β={res.params[LIT_VAR]:+.3f} (t={res.tstats[LIT_VAR]:+.2f})")
-    subperiod_to_latex(subres, path=TEX_TABLE_DIR / "subperiods.tex")
-
-    print("\n=== Firm-FE robustness ===")
-    res_ffe, df_ffe = run_firm_fe()
-    print(f"  N = {int(res_ffe.nobs):,}  Adj R² = {res_ffe.rsquared_adj:.4f}")
-    for v in [LEN_VAR, UNC_VAR, LIT_VAR]:
-        print(f"    {v:18s}  β = {res_ffe.params[v]:+.4f}  "
-              f"t = {res_ffe.tstats[v]:+.2f}")
-    firm_fe_to_latex(res_ffe, df_ffe, path=TEX_TABLE_DIR / "firm_fe.tex")
-
-    print("\n=== Pre-filing volatility robustness ===")
-    pre_runs = run_pre_filing()
-    for header, res, _ in pre_runs:
-        print(f"  {header}")
-        _print_result(res, ["pre_log_vol", "lagged_log_vol",
-                            LEN_VAR, UNC_VAR, LIT_VAR])
-    pre_filing_to_latex(pre_runs, path=TEX_TABLE_DIR / "pre_filing.tex")
-
-    # Drop any stale half-life table left over from previous runs.
-    stale = TEX_TABLE_DIR / "half_life.tex"
-    if stale.exists():
-        stale.unlink()
-        print(f"  Removed stale {stale.name}")
-
-    print("\nDone.")
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--only", nargs="*", default=list(ANALYSES))
+    ap.add_argument("--boot", type=int, default=9999)
+    a = ap.parse_args()
+    for k in a.only:
+        print(f"\n=== {k} ===")
+        ANALYSES[k](a)
 
 
 if __name__ == "__main__":

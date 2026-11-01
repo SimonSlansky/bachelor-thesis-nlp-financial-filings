@@ -30,3 +30,31 @@ Implications:
 - Lagged post-filing vol becomes irrelevant → replace it with pre_vol as the
   dynamic control (also mitigates Nickell bias, #44).
 - All effect-size statements in Ch. 5–6 must be rewritten after the rebuild.
+
+## H3 decision rule (#42) — written 2026-11-01 12:38:34 CET, before any H3 re-estimation
+Written before any H3 model is re-run on the rebuilt data; the verdict is
+computed mechanically by `scripts/silence_table.py` (`h3_verdict.json`).
+
+- Specification: eq. (silence_model) with the common control vector, ln Words1A
+  and RiskDensity; DV ln σ^[h]; two-way (firm, year) clustered SEs; industry =
+  historical SIC2; peers = point-in-time SIC2 cell, ≥ 5 peers.
+- Test family for Holm: h ∈ {5, 10, 30, 90, 180} days × {SIC2+year FE,
+  firm+year FE} = 10 two-sided tests of β_om = 0; Holm step-down at α = 0.05.
+  h = 365 is reported outside the family.
+- Primary design: h = 30 days, under both FE structures (treated symmetrically).
+- Evidence in FE structure s:
+  - positive: β_om(30d, s) > 0 with Holm-adjusted p < 0.05 AND the
+    length-invariant `omission_fixedlen_1a` coefficient (same spec, 30d, s) > 0
+    with p < 0.05;
+  - negative: the mirror image (both < 0, same significance conditions).
+- Verdict:
+  - **supported** — positive evidence under both FE structures;
+  - **partially supported** — positive evidence under exactly one structure and
+    no negative evidence under the other;
+  - **contradicted** — negative evidence under ≥ 1 structure and no positive
+    evidence under either;
+  - **not supported** — every other case.
+- The 1,000-draw placebo p-value, the decomposition and the other robustness
+  columns are reported and discussed, but do not change the label.
+- Wording: never "pre-specified"; the rule is described as the decision rule
+  stated in the methodology.

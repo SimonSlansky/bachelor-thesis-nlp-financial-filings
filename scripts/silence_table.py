@@ -1,134 +1,110 @@
-"""
-Generate tex/tables/silence_main.tex — main results table for the
-Silence Hypothesis (Item 1A omission relative to SIC2-year peers).
+"""H3 main results: omission gap and post-filing volatility (results store).
 
-Columns: horizons 5, 10, 30, 90, 180 days
-Panels:
-  A. Industry + year FE  (cross-section)
-  B. Firm + year FE      (within-firm — the headline test)
+Grid: h in {5,10,30,90,180} (Holm family) plus 365 (reported outside the
+family) x {SIC2+year FE, firm+year FE}, for the headline measure and the
+length-invariant measure.  Common controls and loader from regressions.py.
 
-Each cell reports β and t-statistic (two-way clustered on ticker, year)
-for omission_1a, on top of: log(lagged_vol_h), log_total_assets, leverage,
-roa, current_ratio, ocf_to_assets, log_words_1a, risk_1a.
+Writes data/results/h3_main.csv and data/results/h3_verdict.json; the
+verdict follows the rule recorded in docs/revision_log.md (#42).
 """
+from __future__ import annotations
+
+import json
+import sys
 from pathlib import Path
+
 import numpy as np
 import pandas as pd
-from linearmodels.iv.absorbing import AbsorbingLS
 
-import sys
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from panel import winsorize_ratios
+from regressions import (CONTROLS, LEN_VAR, DENS_VAR, RESULTS_DIR,  # noqa: E402
+                         load_text_panel, fit, save)
 
-ROOT = Path(__file__).resolve().parent.parent
-DATA = ROOT / "data"
-
-HORIZONS = [5, 10, 30, 90, 180]
-FIN = ["log_total_assets", "leverage", "roa", "current_ratio", "ocf_to_assets"]
-
-
-def fit(df, h, firm_fe):
-    cols = (["ticker", "fiscal_year", "sic", f"vol_{h}d", f"lagged_vol_{h}d",
-             "log_words_1a", "risk_1a", "omission_1a"] + FIN)
-    d = df[cols].dropna().copy()
-    d = d[(d[f"vol_{h}d"] > 0) & (d[f"lagged_vol_{h}d"] > 0)]
-    d = winsorize_ratios(d, cols=FIN[1:])   # regression-sample winsorisation
-    if len(d) < 200:
-        return None
-    d["sic2"] = (d["sic"] // 100).astype("category")
-    d["fy"] = d["fiscal_year"].astype("category")
-    d["tk"] = d["ticker"].astype("category")
-    X = d[[f"lagged_vol_{h}d", *FIN, "log_words_1a", "risk_1a",
-           "omission_1a"]].copy()
-    X[f"lagged_vol_{h}d"] = np.log(X[f"lagged_vol_{h}d"])
-    X.insert(0, "const", 1.0)
-    y = np.log(d[f"vol_{h}d"])
-    absorb = d[["tk", "fy"]] if firm_fe else d[["sic2", "fy"]]
-    clusters = d[["tk", "fy"]].apply(lambda c: c.cat.codes)
-    m = AbsorbingLS(y, X, absorb=absorb, drop_absorbed=True)
-    r = m.fit(cov_type="clustered", clusters=clusters)
-    return {"n": int(r.nobs), "r2": float(r.rsquared),
-            "b": float(r.params["omission_1a"]),
-            "se": float(r.std_errors["omission_1a"]),
-            "t": float(r.tstats["omission_1a"]),
-            "p": float(r.pvalues["omission_1a"])}
+FAMILY = ["5d", "10d", "30d", "90d", "180d"]
+OUTSIDE = ["365d"]
+FE = {"ind+year": ("ind", "fiscal_year"), "firm+year": ("ticker", "fiscal_year")}
+MEASURES = {"omission_1a": "headline", "omission_fixedlen_1a": "fixed_length"}
+ALPHA = 0.05
 
 
-def stars(p):
-    return ("***" if p < 0.01 else
-            "**" if p < 0.05 else
-            "*" if p < 0.1 else "")
+def h3_xvars(om: str = "omission_1a") -> list[str]:
+    return CONTROLS + [LEN_VAR, DENS_VAR, om]
+
+
+def h3_sample(h: str, om: str = "omission_1a", **kw) -> pd.DataFrame:
+    return load_text_panel(h, xvars=h3_xvars(om), **kw)
+
+
+def holm(p: pd.Series) -> pd.Series:
+    order = p.sort_values().index
+    m = len(p)
+    adj, run = {}, 0.0
+    for k, ix in enumerate(order):
+        run = max(run, min(1.0, (m - k) * p[ix]))
+        adj[ix] = run
+    return pd.Series(adj).reindex(p.index)
+
+
+def estimate() -> pd.DataFrame:
+    rows = []
+    for om, label in MEASURES.items():
+        for h in FAMILY + OUTSIDE:
+            df = h3_sample(h, om)
+            for an, absorb in FE.items():
+                r = fit(df, h3_xvars(om), absorb=absorb)
+                rows.append({"measure": om, "label": label, "h": h, "absorb": an,
+                             "in_family": h in FAMILY, "coef": float(r.params[om]),
+                             "se": float(r.std_errors[om]), "t": float(r.tstats[om]),
+                             "p": float(r.pvalues[om]), "n": int(r.nobs),
+                             "firms": r.n_firms, "r2_within": r.r2_within,
+                             "coef_len": float(r.params[LEN_VAR]),
+                             "t_len": float(r.tstats[LEN_VAR]),
+                             "coef_dens": float(r.params[DENS_VAR]),
+                             "t_dens": float(r.tstats[DENS_VAR]),
+                             "sd_within": float((df[om] - df.groupby("ticker")[om]
+                                                 .transform("mean")).std()),
+                             "sd_pooled": float(df[om].std())})
+                print(f"  {om:22s} {h:>4s} {an:9s} b={r.params[om]:+.3f} "
+                      f"t={r.tstats[om]:+.2f} p={r.pvalues[om]:.4f} n={int(r.nobs)}")
+    res = pd.DataFrame(rows)
+    res["p_holm"] = np.nan
+    for om in MEASURES:
+        fam = (res["measure"] == om) & res["in_family"]
+        res.loc[fam, "p_holm"] = holm(res.loc[fam, "p"]).values
+    return res
+
+
+def verdict(res: pd.DataFrame) -> dict:
+    ev = {}
+    for an in FE:
+        hl = res[(res.measure == "omission_1a") & (res.h == "30d") & (res.absorb == an)].iloc[0]
+        fl = res[(res.measure == "omission_fixedlen_1a") & (res.h == "30d")
+                 & (res.absorb == an)].iloc[0]
+        pos = hl.coef > 0 and hl.p_holm < ALPHA and fl.coef > 0 and fl.p < ALPHA
+        neg = hl.coef < 0 and hl.p_holm < ALPHA and fl.coef < 0 and fl.p < ALPHA
+        ev[an] = {"positive": bool(pos), "negative": bool(neg),
+                  "coef": float(hl.coef), "p": float(hl.p), "p_holm": float(hl.p_holm),
+                  "coef_fixedlen": float(fl.coef), "p_fixedlen": float(fl.p)}
+    npos = sum(e["positive"] for e in ev.values())
+    nneg = sum(e["negative"] for e in ev.values())
+    if npos == 2:
+        v = "supported"
+    elif npos == 1 and nneg == 0:
+        v = "partially supported"
+    elif nneg >= 1 and npos == 0:
+        v = "contradicted"
+    else:
+        v = "not supported"
+    return {"verdict": v, "rule": "docs/revision_log.md, H3 decision rule (#42)",
+            "evidence": ev}
 
 
 def main():
-    panel = pd.read_csv(DATA / "annual_panel_text.csv")
-    sil = pd.read_csv(DATA / "silence.csv")
-    df = panel.merge(sil, on=["ticker", "fiscal_year"], how="left")
-
-    rows = {"ind": {}, "firm": {}}
-    for h in HORIZONS:
-        rows["ind"][h] = fit(df, h, False)
-        rows["firm"][h] = fit(df, h, True)
-
-    def cell(r):
-        if r is None: return "--"
-        return f"{r['b']:+.3f}{stars(r['p'])}"
-    def cell_t(r):
-        if r is None: return ""
-        return f"({r['t']:+.2f})"
-
-    hh = " & ".join(f"$h={h}$" for h in HORIZONS)
-    ind_b = " & ".join(cell(rows["ind"][h]) for h in HORIZONS)
-    ind_t = " & ".join(cell_t(rows["ind"][h]) for h in HORIZONS)
-    fir_b = " & ".join(cell(rows["firm"][h]) for h in HORIZONS)
-    fir_t = " & ".join(cell_t(rows["firm"][h]) for h in HORIZONS)
-    ind_n = " & ".join(f"{rows['ind'][h]['n']:,}" for h in HORIZONS)
-    fir_n = " & ".join(f"{rows['firm'][h]['n']:,}" for h in HORIZONS)
-    ind_r = " & ".join(f"{rows['ind'][h]['r2']:.3f}" for h in HORIZONS)
-    fir_r = " & ".join(f"{rows['firm'][h]['r2']:.3f}" for h in HORIZONS)
-
-    tex = (
-        r"\begin{table}[htbp]" "\n"
-        r"\centering" "\n"
-        r"\caption{Silence Hypothesis: Item 1A omission relative to SIC2 peers and post-filing realised volatility.}" "\n"
-        r"\label{tab:silence_main}" "\n"
-        r"\footnotesize" "\n"
-        r"\begin{tabular}{lccccc}" "\n"
-        r"\toprule" "\n"
-        f"& {hh} \\\\\n"
-        r"\midrule" "\n"
-        r"\multicolumn{6}{l}{\textit{Panel A. Industry $\times$ year fixed effects}} \\" "\n"
-        f"$\\textsc{{Omission}}_{{1A}}$ & {ind_b} \\\\\n"
-        f"& {ind_t} \\\\\n"
-        f"$N$ & {ind_n} \\\\\n"
-        f"$R^2$ & {ind_r} \\\\\n"
-        r"\midrule" "\n"
-        r"\multicolumn{6}{l}{\textit{Panel B. Firm $\times$ year fixed effects}} \\" "\n"
-        f"$\\textsc{{Omission}}_{{1A}}$ & {fir_b} \\\\\n"
-        f"& {fir_t} \\\\\n"
-        f"$N$ & {fir_n} \\\\\n"
-        f"$R^2$ & {fir_r} \\\\\n"
-        r"\bottomrule" "\n"
-        r"\end{tabular}" "\n"
-        r"\par\smallskip" "\n"
-        r"\begin{flushleft}\footnotesize" "\n"
-        r"\textit{Notes.} Dependent variable is $\log(\textrm{RV}_{h\textrm{d}})$ over the $h$-day window beginning two trading days after the filing date. "
-        r"$\textsc{Omission}_{1A}$ is the share of TF-IDF mass on terms used by SIC2-year peers (leave-one-out, $\geq 5$ peers) that the focal firm does not mention. "
-        r"All regressions control for $\log(\textrm{RV}_{h\textrm{d}, t-1})$, the five financial controls (size, leverage, ROA, current ratio, OCF/assets), $\log(\textrm{words}_{1A})$, and $\textsc{RiskDensity}_{1A}$. "
-        r"$t$-statistics in parentheses use two-way clustered standard errors on (ticker, fiscal year). "
-        r"$^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$." "\n"
-        r"\end{flushleft}" "\n"
-        r"\end{table}" "\n"
-    )
-    out_path = ROOT / "tex" / "tables" / "silence_main.tex"
-    out_path.write_text(tex, encoding="utf-8")
-    print(f"Wrote {out_path}")
-    print()
-    print("Headline numbers:")
-    for h in HORIZONS:
-        r = rows["firm"][h]
-        print(f"  firm+year FE, h={h:3d}d  β={r['b']:+.3f}  "
-              f"t={r['t']:+5.2f}  p={r['p']:.3f}")
+    res = estimate()
+    save(res.to_dict("records"), "h3_main")
+    v = verdict(res)
+    (RESULTS_DIR / "h3_verdict.json").write_text(json.dumps(v, indent=2))
+    print(json.dumps(v, indent=2))
 
 
 if __name__ == "__main__":

@@ -14,7 +14,8 @@ https://sraf.nd.edu/loughranmcdonald-master-dictionary/
 (file name ``Loughran-McDonald_MasterDictionary_*.csv``).  A column
 named, e.g., ``Negative`` contains an integer that is non-zero when the
 word belongs to that category (the integer encodes the year in which
-the word was added; we treat any non-zero entry as membership).
+the word was added; a negative integer, e.g. -2020, marks a word REMOVED
+from the list in that year and is treated as non-membership).
 
 If ``data/lm_master.csv`` is missing, a clear instruction is printed
 explaining how to obtain the file.
@@ -65,7 +66,8 @@ def load_lm_dictionary(path: Path = LM_PATH) -> dict[str, set[str]]:
                 f"Column '{col}' not found in {path.name}; available: "
                 f"{list(df.columns)[:10]}…"
             )
-        mask = df[col].fillna(0).astype(int) != 0
+        # Positive = year added; negative = year the word was REMOVED (e.g. -2020).
+        mask = df[col].fillna(0).astype(int) > 0
         words = df.loc[mask, word_col].astype(str).str.lower().str.strip()
         out[key] = set(words[words.str.len() > 1])
     return out
