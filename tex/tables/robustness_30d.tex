@@ -4,6 +4,7 @@
 \label{tab:robust_30d}
 \footnotesize
 \setlength{\tabcolsep}{4pt}
+\resizebox{\textwidth}{!}{%
 \begin{tabular}{lcccr}
 \toprule
  & $\ln(\text{Words}^{1A})$ & UncDensity & LitDensity & $N$ \\
@@ -36,7 +37,9 @@ Level + change: Change $t-1\to t$ & $+0.080$ $(+1.47)$ & $-2.850$ $(-0.99)$ & $-
 Post-2019 interaction: FY $\leq$ 2019 (main effect) & $+0.046$*** $(+4.04)$ & $-1.756$ $(-0.72)$ & $-2.108$ $(-1.47)$ & 5,782 \\
 Post-2019 interaction: $\times$ FY $\geq$ 2020 & $+0.039$ $(+1.42)$ & $+3.705$ $(+1.02)$ & $-3.363$ $(-1.09)$ & 5,782 \\
 \bottomrule
-\end{tabular}
+\end{tabular}%
+}
+
 \par\smallskip
 \begin{minipage}{\linewidth}\footnotesize
 \emph{Notes.} Each row is a separate regression of the column-(5) specification with the change described; common controls, industry (historical SIC2) and year FE and two-way clustered standard errors unless stated. $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.

@@ -1,0 +1,15 @@
+% Annotated DOM tree for the section parser.
+% Authored in TikZ (figures/src_fig_dom_parser.tex) and compiled to a
+% standalone PDF, because inline TikZ conflicts with the PDF/A (pdfx) driver.
+% Regenerate after editing the source:
+%   cd tex/figures && pdflatex src_fig_dom_parser.tex \
+%     && mv -f src_fig_dom_parser.pdf ../img/fig_dom_parser.pdf
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{img/fig_dom_parser.pdf}
+\caption{How the parser reads a simplified 10-K DOM tree for Item~1A.
+Table-of-contents entries and cross-references are rejected, the real header
+is tagged in place and selected, and the next item header ends the section.
+Step numbers refer to the list above. Own processing.}
+\label{fig:dom_parser}
+\end{figure}

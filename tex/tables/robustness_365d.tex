@@ -4,6 +4,7 @@
 \label{tab:robust_365d}
 \footnotesize
 \setlength{\tabcolsep}{4pt}
+\resizebox{\textwidth}{!}{%
 \begin{tabular}{lcccr}
 \toprule
  & $\ln(\text{Words}^{1A})$ & UncDensity & LitDensity & $N$ \\
@@ -35,7 +36,9 @@ Level + change: Change $t-1\to t$ & $+0.067$*** $(+2.69)$ & $-0.949$ $(-0.46)$ &
 Post-2019 interaction: FY $\leq$ 2019 (main effect) & $+0.067$*** $(+5.19)$ & $-1.597$ $(-1.51)$ & $-4.886$*** $(-4.76)$ & 5,782 \\
 Post-2019 interaction: $\times$ FY $\geq$ 2020 & $+0.052$** $(+2.43)$ & $+4.418$** $(+2.40)$ & $-0.164$ $(-0.12)$ & 5,782 \\
 \bottomrule
-\end{tabular}
+\end{tabular}%
+}
+
 \par\smallskip
 \begin{minipage}{\linewidth}\footnotesize
 \emph{Notes.} Each row is a separate regression of the column-(5) specification with the change described; common controls, industry (historical SIC2) and year FE and two-way clustered standard errors unless stated. $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.

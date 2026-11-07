@@ -138,29 +138,33 @@ filing whose text is used. The fiscal year is the calendar year in which the
 period ends (periods ending on 1--7 January count to the previous year, for
 firms with 52/53-week years).
 
-\paragraph{Fiscal years and calendar time.} Firms do not share a fiscal
-calendar, so the 10-Ks of one fiscal year are filed at different calendar
-dates (Table~\ref{tab:timing} in Appendix~\ref{app:variables}). 72.6\% of the
-firm-years end in December, and 145 of the 512 firms in the estimation sample
-have a different fiscal-year end, from January to November. The median lag
-between period end and filing is 53 days (10th to 90th percentile: 38 to 59
-days), so most filings fall in February, but the filings of one fiscal year
-span a median of 390 calendar days and fall in 169 distinct calendar months.
-Four choices keep this heterogeneity from distorting the analysis. First, the
-fiscal year is assigned from the period end itself, not from the fiscal-year
-end month that the SEC reports today, which is unreliable for firms with
-52/53-week years and had shifted the labels of about 20 firms by one year in
-an earlier version of the panel. Second, every timing variable is anchored on
-the firm's own filing date, not on a common calendar date: the outcome
-window, the pre-filing windows and the lagged volatility of the previous
-filing all start at that firm's day~0 (Section~\ref{sec:outcome}), and the
-accounting variables and the text come from the filing that opens the window.
-Third, the previous fiscal year is matched only when it is exactly one year
-earlier, so that a change of the fiscal-year end never produces a lag of
-unequal length. Fourth, because a fiscal-year effect cannot remove
-calendar-time shocks when the filings of one fiscal year are spread over more
-than a year, the robustness checks replace it by the calendar month of the
-filing and restrict the sample to firms with a December year end
+\paragraph{Fiscal years and calendar time.} Firms do not share a common
+fiscal calendar, so 10-K filings from the same fiscal year are released at
+different points in calendar time (Table~\ref{tab:timing} in
+Appendix~\ref{app:variables}). In the estimation sample, 72.6\% of
+firm-years end in December, while 145 of the 512 firms have fiscal year-ends
+between January and November. The median lag between fiscal-period end and
+filing is 53 days (10th to 90th percentile: 38 to 59 days), which places most
+filings in February. This concentration reflects the sample's focus on large
+firms, which typically file annual reports relatively soon after fiscal
+year-end. Despite this clustering, filing dates for a given fiscal year are
+dispersed over more than a full calendar year. To ensure comparability across
+firms, all timing variables are anchored to each firm's own filing date.
+Post-filing volatility windows, pre-filing volatility windows, and the
+lagged-volatility control are all defined relative to the firm's filing day
+rather than a common calendar date (Section~\ref{sec:outcome}). Accounting
+variables and textual measures are likewise taken from the filing that opens
+the measurement window. Fiscal years are assigned using the actual
+reporting-period end rather than the fiscal-year-end month currently reported
+by the SEC, which proved unreliable for some 52/53-week fiscal-year firms and
+had shifted the fiscal-year labels of approximately 20 firms in an earlier
+version of the panel. In addition, lagged observations are matched only when
+the previous filing corresponds to the same fiscal year one year earlier,
+preventing changes in fiscal-year ends from creating lags of unequal length.
+Finally, because fiscal-year fixed effects cannot fully absorb calendar-time
+shocks when filings from the same fiscal year are spread across many months,
+the robustness checks replace fiscal-year fixed effects with filing-month fixed
+effects and restrict the sample to December year-end firms
 (Section~\ref{sec:robustness_h12}).
 
 \paragraph{Tag choices.} One accounting concept can be reported under several
@@ -271,18 +275,26 @@ works on the document structure before the text is flattened:
     ending on or after 15~December~2023). A section needs at least 200 words.
 \end{enumerate}
 
-\paragraph{Exhibit fallback.} Some filers, especially early in the sample,
-incorporate the MD\&A by reference to the annual report to shareholders,
-attached as an exhibit (usually Exhibit~13). If no section of at least 200
-words is found and the text under the header (fewer than 500 words) refers
-to an exhibit or the annual report, the parser applies the same procedure to
-the referenced exhibit, using title patterns (``Risk Factors'',
+Figure~\ref{fig:dom_parser} illustrates the four steps on a simplified DOM
+tree.
+
+\input{figures/fig_dom_parser}
+
+The parser is intentionally conservative: it does not operate on a flattened
+HTML string, but on the DOM tree, where heading structure and placement can be
+tracked before the text is reduced to plain running text. The same logic is
+also used for the exhibit fallback described below. The implementation
+details of the candidate-detection and fallback logic are reported in
+Appendix~\ref{sec:parser_impl}.
+
+\paragraph{Exhibit fallback.} If no section of at least 200 words is found
+and the text under the header (fewer than 500 words) refers to an exhibit or
+the annual report, the parser applies the same procedure to the referenced
+exhibit (usually Exhibit~13), using title patterns (``Risk Factors'',
 ``Management's Discussion and Analysis'') because exhibits have no item
-numbers. The extraction run did not record which sections came from an
-exhibit, and the share cannot be measured without downloading the filings
-again. We expect it to be small and concentrated in Item~7 of early years:
-Item~1A must appear in the body of the 10-K itself, and incorporation by
-reference to the annual report was mainly used for MD\&A.
+numbers. It does not read the page references given in the filing. The
+extraction run did not record which sections came from an exhibit, so the
+share cannot be measured without downloading the filings again.
 
 \subsection{Post-processing and tokenisation}
 \label{ssec:text_postprocessing}
@@ -330,10 +342,10 @@ excerpt and the word count, without the first audit's ratings. Neither saw
 the rest of the filing, so boundary judgements rest on the extracted text
 alone. LLMs perform well on text-classification tasks compared with crowd
 workers \parencite{gilardi2023}, but their judgements are not a substitute
-for an expert reading of the filings. The author therefore also checked 51
-of the sections by hand against the original filings on EDGAR, without
-seeing the LLM ratings: 50 drawn at random within the same strata and the
-one further section flagged by an LLM.
+for an human reading of the filings. I therefore also checked 51 of the
+sections by hand against the original filings on EDGAR, without seeing the
+LLM ratings: 50 drawn at random within the same strata and the one further
+section flagged by an LLM.
 
 Under the first audit, 187 of 200 sections (93.5\%, Wilson 95\% interval
 89.2--96.2\%) were acceptable on all five criteria (Pass or Minor) and 179
@@ -341,9 +353,9 @@ Under the first audit, 187 of 200 sections (93.5\%, Wilson 95\% interval
 with no extracted text; by stratum, five fall in 2010--2012, three in
 2013--2015, two each in 2016--2018 and 2019--2021, and one in 2022--2024.
 Under the second audit 190 sections (95.0\%, 91.0--97.3\%) were acceptable;
-the two audits agree on 96.5\% of sections ($\kappa = 0.68$) and both reject
-the same eight (Table~\ref{tab:ai_validation} in Appendix~\ref{app:ai-usage}).
-In the manual check every one of the 51 sections was the correct section;
+both audits reject the same eight sections (Table~\ref{tab:ai_validation} in
+Appendix~\ref{app:ai-usage}). In the manual check every one of the 51
+sections was the correct section;
 four had a boundary error (two started inside Item~1, one ran a few lines into the
 financial statements and one ran through Item~8), three of them among the
 50 random sections, an error rate of 6.0\% (Wilson 95\% interval
@@ -352,9 +364,53 @@ audit on all 51 sections and the second on 50.
 Errors are more frequent in early filings, whose structure is less
 standardised.
 
-\paragraph{Relation to other approaches.} Changes in the structure of 10-K
-filings over time make large-sample extraction difficult
-\parencite{dyer2017}. Sections tagged in XBRL (for example
-\texttt{us-gaap:RiskFactorsTextBlock}) are incomplete and inconsistent in
-early years, so a parser that works on the HTML lets the same method be
-applied to the whole 2010--2024 period.
+\paragraph{Relation to other approaches.} The content and volume of 10-K
+disclosures have changed over time \parencite{dyer2017}, while parsing
+procedures are not always documented in sufficient detail to facilitate
+replication \parencite{loughran2016}. Three design choices are therefore
+documented here.
+
+First, some studies analyse entire 10-K filings rather than individual
+disclosure sections \parencite{loughran2011}. Section-level extraction,
+however, requires identifying item boundaries. Pattern matching on flattened
+text can produce false matches because converting HTML to plain text discards
+structural information, making genuine headings difficult to distinguish from
+table-of-contents entries and cross-references
+\parencite{loughran2016}. The DOM-based parser used here retains document
+structure and filters candidate headings using formatting cues, hyperlinks,
+local context and keywords. Its limitation is that headings without the
+expected formatting characteristics may not be recognised.
+
+Second, mandatory XBRL reporting is not a complete substitute for extracting
+narrative disclosures. The SEC's 2009 XBRL amendments covered financial
+statements but did not require interactive data for MD\&A or other narrative
+disclosures \parencite[Release No.~33-9002]{sec_2009_xbrl}. Consequently,
+extracting text directly from original EDGAR filings provides a consistent
+approach to identifying MD\&A and Risk Factors throughout the 2010--2024
+sample period.
+
+Third, restricting extraction to the primary Form 10-K document would omit
+disclosures incorporated by reference from annual reports to security
+holders. General Instruction G(2) of Form 10-K permits information required by
+Parts~I and II (Items~1--9A) to be incorporated by reference, including Item~7
+(MD\&A). Note~2 requires the incorporated material to be filed electronically
+as an exhibit \parencite[General Instruction G(2), Note~2]{sec_form10k_2014};
+see also 17 C.F.R. \S~240.12b-23 and 17 C.F.R. \S~232.303(b)
+\parencite{exchange_act_rule_12b23,reg_s_t_rule_303}. This practice is
+documented in the filings of Sonesta International Hotels Corporation (2010),
+First Community Financial Corporation (2012) and Wal-Mart Stores, Inc.
+(2014), all of which incorporate MD\&A from Exhibit~13. The
+exhibit-fallback procedure therefore applies the same section-identification
+logic to referenced exhibits when the corresponding section is absent or
+insufficiently long in the primary filing.
+
+The practice was uncommon in the 2014 cross-section: the SEC reported that
+approximately 2\% of registrants incorporated some Part~I or Part~II
+information from their annual reports, with Part~II incorporation more common
+than Part~I. This figure does not measure MD\&A incorporation specifically or
+establish historical trends \parencite[p.~300, footnote 1007]{sec_regsk_concept_2016}. The fallback therefore
+addresses a documented but non-universal source of missing section text.
+
+Overall, the parser sacrifices some simplicity relative to flattened-text
+approaches in exchange for greater confidence that the extracted text
+corresponds to the intended disclosure section throughout the sample period.

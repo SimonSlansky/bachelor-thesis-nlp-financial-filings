@@ -34,6 +34,55 @@ and 15 firms (text) and are illustrations, not estimates for the panel.
 
 \input{tables/text_per_company}
 
+\section{Parser implementation notes}
+\label{sec:parser_impl}
+
+The parser operates on the HTML DOM before flattening the document into text,
+so that heading structure and placement survive the conversion. Candidate
+headers are detected only when they match an ``Item X'' pattern, are short,
+carry a heading cue, and are not hyperlinks. After filtering table-of-contents
+entries and reference phrases, the parser keeps the candidate followed by the
+longest section and then bounds the section by the next numbered item header.
+
+\begin{lstlisting}[language=Python, basicstyle=\ttfamily\footnotesize]
+def find_candidates(node):
+    for el in walk_dom(node):
+        text = clean_text(el)
+        if not re.search(r"\bItem\s+[1-9][A-C]?\b", text, re.I):
+            continue
+        if word_count(text) > 25:
+            continue
+        if not has_heading_cue(el):
+            continue
+        if has_hyperlink(el):
+            continue
+        yield el
+
+
+def select_item(doc, item):
+    candidates = []
+    for cand in find_candidates(doc):
+        nearby = nearby_text(cand, radius=300)
+        if item == "1A" and "risk" in nearby.lower():
+            candidates.append(cand)
+        elif item == "7" and any(k in nearby.lower() for k in [
+            "management", "discussion", "md&a"
+        ]):
+            candidates.append(cand)
+
+    candidates = [
+        c for c in candidates
+        if not is_table_of_contents(c)
+        and not is_reference_phrase_before(c)
+    ]
+    return choose_candidate_followed_by_longest_section(candidates)
+\end{lstlisting}
+
+When no candidate section of at least 200 words is found, the same logic is
+applied to the referenced exhibit. In that case, numbered item headers are
+replaced by title-based patterns such as ``Risk Factors'' or ``Management's
+Discussion and Analysis'', because exhibits do not contain item numbers.
+
 \section{Additional robustness tables}
 \label{sec:app_robust}
 
