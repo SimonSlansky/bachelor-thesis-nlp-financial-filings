@@ -370,47 +370,43 @@ procedures are not always documented in sufficient detail to facilitate
 replication \parencite{loughran2016}. Three design choices are therefore
 documented here.
 
-First, some studies analyse entire 10-K filings rather than individual
-disclosure sections \parencite{loughran2011}. Section-level extraction,
-however, requires identifying item boundaries. Pattern matching on flattened
-text can produce false matches because converting HTML to plain text discards
-structural information, making genuine headings difficult to distinguish from
-table-of-contents entries and cross-references
-\parencite{loughran2016}. The DOM-based parser used here retains document
-structure and filters candidate headings using formatting cues, hyperlinks,
-local context and keywords. Its limitation is that headings without the
-expected formatting characteristics may not be recognised.
+First, \textcite{loughran2011} analyse both filing-level text and the MD\&A
+subsection. Section-level extraction requires identifying item boundaries,
+which is complicated by table-of-contents entries, cross-references and
+inconsistent headings \parencite[Section 6.4]{loughran2016}. The DOM-based
+parser used here preserves HTML structure before text conversion and filters
+candidate headings using formatting cues, hyperlinks, local context and
+keywords. Its limitation is that headings without the expected formatting
+characteristics may not be recognised.
 
 Second, mandatory XBRL reporting is not a complete substitute for extracting
 narrative disclosures. The SEC's 2009 XBRL amendments covered financial
 statements but did not require interactive data for MD\&A or other narrative
-disclosures \parencite[Release No.~33-9002]{sec_2009_xbrl}. Consequently,
-extracting text directly from original EDGAR filings provides a consistent
-approach to identifying MD\&A and Risk Factors throughout the 2010--2024
-sample period.
+disclosures \parencite[Release No.~33-9002]{sec_2009_xbrl}. The present study
+therefore extracts MD\&A and Risk Factors directly from original EDGAR
+filings across the 2010--2024 sample period.
 
-Third, restricting extraction to the primary Form 10-K document would omit
+Third, restricting extraction to the primary Form 10-K document can omit
 disclosures incorporated by reference from annual reports to security
-holders. General Instruction G(2) of Form 10-K permits information required by
-Parts~I and II (Items~1--9A) to be incorporated by reference, including Item~7
-(MD\&A). Note~2 requires the incorporated material to be filed electronically
-as an exhibit \parencite[General Instruction G(2), Note~2]{sec_form10k_2014};
-see also 17 C.F.R. \S~240.12b-23 and 17 C.F.R. \S~232.303(b)
-\parencite{exchange_act_rule_12b23,reg_s_t_rule_303}. This practice is
-documented in the filings of Sonesta International Hotels Corporation (2010),
-First Community Financial Corporation (2012) and Wal-Mart Stores, Inc.
-(2014), all of which incorporate MD\&A from Exhibit~13. The
-exhibit-fallback procedure therefore applies the same section-identification
-logic to referenced exhibits when the corresponding section is absent or
-insufficiently long in the primary filing.
+holders. General Instruction G(2) permits information required by Parts~I and
+II, including Item~7 (MD\&A), to be incorporated by reference. Note~2
+requires the incorporated material to be filed electronically as an exhibit
+\parencite[General Instruction G(2), Note~2]{sec_form10k_2014}; see also 17
+C.F.R. \S~232.303(b) \parencite{reg_s_t_rule_303} and \S~240.12b-23
+\parencite{exchange_act_rule_12b23}. This practice is illustrated by the
+10-K filings of Sonesta International Hotels Corporation (2010), First
+Community Financial Corporation (2012) and Wal-Mart Stores, Inc. (2014), all
+of which incorporate MD\&A from Exhibit~13. \textcite{loughran2011} exclude
+incorporated MD\&A from their section-level analysis because exhibit
+boundaries are difficult to identify. The exhibit-fallback procedure used
+here instead attempts to recover referenced disclosures when the primary
+section is missing or too short.
 
-The practice was uncommon in the 2014 cross-section: the SEC reported that
-approximately 2\% of registrants incorporated some Part~I or Part~II
-information from their annual reports, with Part~II incorporation more common
-than Part~I. This figure does not measure MD\&A incorporation specifically or
-establish historical trends \parencite[p.~300, footnote 1007]{sec_regsk_concept_2016}. The fallback therefore
-addresses a documented but non-universal source of missing section text.
+The practice was uncommon in the 2014 cross-section: approximately 2\% of
+registrants incorporated some Part~I or Part~II information from their annual
+reports, with Part~II incorporation more common than Part~I
+\parencite[p.~300, footnote 1007]{sec_regsk_concept_2016}. This figure does
+not measure MD\&A incorporation specifically or establish historical trends.
 
-Overall, the parser sacrifices some simplicity relative to flattened-text
-approaches in exchange for greater confidence that the extracted text
-corresponds to the intended disclosure section throughout the sample period.
+Overall, the parser uses document structure to reduce section-identification
+errors while retaining the risk of missing headings with atypical formatting.

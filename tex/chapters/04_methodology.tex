@@ -67,14 +67,13 @@ last trading day before the filing date.}
 
 A coefficient $\beta$ on a regressor $x$ implies a change of
 $100(e^{\beta\Delta x}-1)\%$ in volatility for a change $\Delta x$. The
-headline horizon is $h = 30$~days. The short window keeps the outcome close
-to the information release whose content is measured, so that later
-information events weigh less; the 10-K literature that relates filing text
-to subsequent volatility uses post-filing windows measured in days to
-months as well as a full year \parencite{kogan2009, loughran2011,
-campbell2014}. The 365-day window is reported alongside the headline in
-every main table, and $h \in \{5, 10, 90, 180\}$ are reported in the
-robustness chapter. % TODO verify: window lengths used in the cited papers
+headline horizon is $h = 30$ calendar days, chosen to keep the outcome close
+to the filing and limit exposure to later information events. Prior studies
+linking 10-K text to subsequent stock-return volatility have used
+approximately one-year post-filing windows \parencite{campbell2014,
+kogan2009, loughran2011}. The 365-day window is reported alongside the
+headline result, while $h \in \{5, 10, 90, 180\}$ are examined as robustness
+checks.
 
 
 % ─────────────────────────────────────────────────────────────────────────────
@@ -98,14 +97,14 @@ $\mathbf{X}_{i,t}$ of nine controls, all known at day~0:
     (consolidated net income over total assets), asset growth, the current
     ratio, and operating cash flow over total assets.
 \end{itemize}
-Pre-filing volatility is the single most important control: volatility is
-persistent, and a disclosure written in a volatile period may simply reflect
-that period. Size, book-to-market and past returns are the standard
-cross-sectional determinants of return volatility, and the accounting ratios
-follow the risk-disclosure literature \parencite{kogan2009, campbell2014}.
-% TODO verify: control sets used in kogan2009 and campbell2014
-Operating cash flow over assets is a control like the others, not a
-robustness check.
+Pre-filing volatility is a key control because stock-return volatility is
+persistent \parencite{kogan2009}, and disclosure characteristics may reflect
+conditions already visible before filing. Firm size, book-to-market, past
+returns and leverage are also used in prior risk-disclosure regressions
+\parencite{campbell2014}, although the variable definitions differ. The
+remaining accounting ratios control for profitability, growth, liquidity and
+operating cash flow. Operating cash flow over assets enters the main
+specifications rather than serving as a robustness check.
 
 The earlier version of this model used the volatility of the same-length
 window after the previous year's 10-K as the dynamic control. Once
