@@ -34,7 +34,7 @@ branch and a textual branch that are merged into the firm-year panel.
 The starting universe is the first 1{,}000 entries in the SEC file
 \texttt{company\_tickers.json}, which maps stock tickers to Central Index Keys
 (CIKs). The version used in this study was archived in the project repository
-in October 2026. Three filters are then applied (Table~\ref{tab:attrition} in
+in October 2026. Four filters are then applied (Table~\ref{tab:attrition} in
 Appendix~\ref{app:variables}). First, only entities classified by the SEC as
 operating companies are retained, which excludes exchange-traded funds,
 closed-end funds, and shell companies (1{,}000 to 753). Second, firms with SIC
@@ -44,11 +44,16 @@ balance-sheet ratios have a different economic interpretation for such firms
 than for non-financial operating companies, as financial assets and
 liabilities constitute a core component of their business model rather than
 primarily a financing choice. This filter reduces the sample from 753 to 600
-firms. Third, firms must have at least five fiscal years of available 10-K
-XBRL data. This requirement ensures that lagged variables, such as asset
-growth, can be constructed while still leaving at least four years of usable
-panel observations. The filter reduces the sample to 550 firms using current
-metadata; the frozen sample used in the final analysis contains 548 firms.
+firms. Third, firms without a fiscal-year end date in the metadata are
+dropped (600 to 599). Fourth, firms must have at least five fiscal years of
+available 10-K XBRL data. This requirement ensures that lagged variables, such
+as asset growth, can be constructed while still leaving at least four years of
+usable panel observations. The filter reduces the sample to 550 firms using
+current metadata; the frozen universe used in the final analysis contains 548
+firms. These firms form the panel of 6{,}757 firm-years for fiscal years
+2010--2024, and the 30-day estimation sample is the 5{,}782 firm-years of 512
+firms that remain after the requirements below (Table~\ref{tab:attrition}).
+Figure~\ref{fig:data_pipeline} shows the same stages.
 
 To avoid conditioning sample inclusion on outcome-period information, filings 
 are not filtered on the basis of post-filing return availability. An earlier 
@@ -176,9 +181,14 @@ US-GAAP elements, so the elements must be mapped explicitly
     \texttt{ProfitLoss} (including non-controlling interests, NCI) where a
     firm reports it, and \texttt{NetIncomeLoss} otherwise, which under
     US GAAP is then the same consolidated figure. This makes ROA consistent
-    with total assets and total liabilities, which also include NCI. The two
-    operating-cash-flow tags (total and continuing operations) are also
-    treated as equivalent.
+    with total assets, which also include NCI.
+  \item \emph{Approximately equivalent tags.} The two operating-cash-flow
+    tags (total and continuing operations) differ when a firm has cash flows
+    from discontinued operations, so they are not strictly equivalent. The
+    panel uses the total-operations tag where it exists and the
+    continuing-operations tag otherwise, without locking, and accepts the
+    difference as measurement error in one control variable. The size of
+    this error is reported below.
   \item \emph{Non-equivalent tags}, such as stockholders' equity with or
     without NCI, or income from continuing operations versus net income, are
     \emph{locked} per firm: each firm keeps the tag it reports in most years,
@@ -197,15 +207,37 @@ firm-years (7.9\%) the difference exceeds 1\% of total assets, which we call
 material. These differences are the NCI share of income, which the
 consolidated definition now includes consistently. For the two
 operating-cash-flow tags (417 firm-years) the difference exceeds 1\% of
-assets in 50 firm-years (12.0\%), with a median of 0.035\%.
+assets in 50 firm-years (12.0\%), with a median of 0.035\%. The cash-flow
+differences are therefore material in a non-trivial share of the overlapping
+firm-years, which is why the two tags are not called equivalent above. Only
+18 firms lock on the continuing-operations tag, and operating cash flow over
+assets is one of nine controls.
 
 \paragraph{Missing balance-sheet values.} If total liabilities are missing,
 they are computed as total assets minus stockholders' equity (2{,}171
-firm-years). If total assets or liabilities are still missing, the value of
-the immediately preceding fiscal year is carried forward (1 and 32
+firm-years; 1{,}935 in the 30-day regression sample). Under ASC~810 (formerly
+SFAS~160) non-controlling interests are part of equity, so the identity
+holds only if the equity figure includes NCI. This is the case for the 315
+firms whose locked equity tag is
+\texttt{StockholdersEquityIncluding\allowbreak PortionAttributableTo\allowbreak NoncontrollingInterest}.
+For the 228 firms whose locked tag is the parent-only
+\texttt{StockholdersEquity}, the computed liabilities also contain any NCI.
+This affects 626 of the 1{,}935 imputed firm-years in the regression sample
+(60 firms). The data do not show how many of these firms have non-zero NCI.
+Where they do, leverage is overstated by the NCI share of total assets. The
+check without imputed values in Section~\ref{sec:robustness_h12} removes all
+of these firm-years. If total assets or liabilities are still missing, the
+value of the immediately preceding fiscal year is carried forward (1 and 32
 firm-years); values are never filled from later years. Each imputation is
 flagged, and Section~\ref{sec:robustness_h12} re-estimates the models without
 imputed values.
+
+\paragraph{Book equity.} Book-to-market uses book equity attributable to the
+parent (\texttt{StockholdersEquity}), which matches the market
+capitalisation of the parent's common shares. When this tag is missing, total
+equity including NCI is used (430 of 5{,}782 firm-years in the 30-day
+sample), and when that is missing too, total assets minus total liabilities
+(55 firm-years). The other 5{,}297 firm-years use parent equity.
 
 \paragraph{Market capitalisation.} Shares outstanding are taken from the same
 10-K as the other variables, matched by accession number: the cover-page
@@ -322,62 +354,63 @@ no word.
 \subsection{Coverage}
 \label{ssec:text_coverage}
 
-Of the 6{,}757 firm-years of the panel, 96.3\% have an Item~1A of at least
-100 tokens and 94.9\% an Item~7 (Table~\ref{tab:text_coverage} in
+Among the 6{,}757 firm-years in the panel, 96.3\% have an Item~1A section
+with at least 100 tokens, and 94.9\% have an Item~7 section of the same
+minimum length (Table~\ref{tab:text_coverage} in
 Appendix~\ref{app:variables}). Coverage is lowest in fiscal year 2010
-(92.8\%) and is 94.7\% in 2024; the lower 2024 figure comes from a correction
-of the fiscal-year labels of about 15 firms with 52/53-week years, whose
-fiscal-year-2024 filing had not been extracted.
+(92.8\%), and it rises to 94.7\% in 2024. The lower 2024 figure reflects a
+correction to the fiscal-year labels of about 15 firms with 52/53-week
+calendars; their fiscal-year-2024 filings had not yet been extracted.
 
-\paragraph{Extraction audits.} Two large language models (LLMs) audited a
-stratified random sample of stored sections. The sample has five three-year
-strata (2010--2012 to 2022--2024) with 20 sections of each type per stratum,
-200 sections in total; Item~1A and Item~7 were drawn independently, so the
-200 sections come from 197 filings. Each section was rated on five criteria
-(correct section, start boundary, end boundary, content quality,
-completeness) as Pass, Minor issue or Fail. The first audit, by Google
-Gemini~2.5~Flash, saw the full extracted section; a second, independent
-audit by Claude Opus~5.5 saw the first and last 1{,}200 characters, a middle
-excerpt and the word count, without the first audit's ratings. Neither saw
-the rest of the filing, so boundary judgements rest on the extracted text
-alone. LLMs perform well on text-classification tasks compared with crowd
-workers \parencite{gilardi2023}, but their judgements are not a substitute
-for an human reading of the filings. I therefore also checked 51 of the
-sections by hand against the original filings on EDGAR, without seeing the
-LLM ratings: 50 drawn at random within the same strata and the one further
-section flagged by an LLM.
+\paragraph{Extraction audits.} Two large language models (LLMs) independently
+audited a stratified random sample of stored sections. The sample contains
+five three-year strata (2010--2012 to 2022--2024), with 20 sections of each
+type per stratum, for 200 sections in total. Item~1A and Item~7 were drawn
+independently, so the 200 sections come from 197 filings. Each section was
+rated on five criteria: correct section, start boundary, end boundary,
+content quality and completeness. Ratings were recorded as Pass, Minor issue
+or Fail. The first audit, by Google Gemini~2.5~Flash, saw the full
+extracted section; the second, by Claude Opus~5.5, saw the first and last
+1{,}200 characters, a middle excerpt and the word count, without the first
+audit's ratings. Neither model saw the rest of the filing, so the boundary
+judgments were based only on the extracted text. LLMs perform well on
+text-classification tasks compared with crowd workers
+\parencite{gilardi2023}, but their judgments are not a substitute for a
+human reading of the filings. I therefore also checked 51 sections by hand
+against the original EDGAR filings, without seeing the LLM ratings: 50 were
+drawn at random within the same strata, and one additional section was
+flagged by an LLM.
 
 Under the first audit, 187 of 200 sections (93.5\%, Wilson 95\% interval
-89.2--96.2\%) were acceptable on all five criteria (Pass or Minor) and 179
-(89.5\%) were rated Pass on all five. The 13 sections with a Fail include five
-with no extracted text; by stratum, five fall in 2010--2012, three in
+89.2--96.2\%) were acceptable on all five criteria (Pass or Minor), and 179
+(89.5\%) were rated Pass on all five. The 13 sections with a Fail include
+five with no extracted text. By stratum, five fall in 2010--2012, three in
 2013--2015, two each in 2016--2018 and 2019--2021, and one in 2022--2024.
-Under the second audit 190 sections (95.0\%, 91.0--97.3\%) were acceptable;
-both audits reject the same eight sections (Table~\ref{tab:ai_validation} in
-Appendix~\ref{app:ai-usage}). In the manual check every one of the 51
-sections was the correct section;
-four had a boundary error (two started inside Item~1, one ran a few lines into the
-financial statements and one ran through Item~8), three of them among the
-50 random sections, an error rate of 6.0\% (Wilson 95\% interval
-2.1--16.2\%). The manual verdict on the three criteria matches the first
-audit on all 51 sections and the second on 50.
-Errors are more frequent in early filings, whose structure is less
+Under the second audit, 190 sections (95.0\%, 91.0--97.3\%) were acceptable.
+Both audits reject the same eight sections (Table~\ref{tab:ai_validation} in
+Appendix~\ref{app:ai-usage}). In the manual check, all 51 sections were the
+correct section. Four had a boundary error: two started inside Item~1, one
+ran a few lines into the financial statements, and one ran through Item~8.
+Three of those errors were among the 50 random sections, implying an error
+rate of 6.0\% (Wilson 95\% interval 2.1--16.2\%). The manual verdict on the
+three criteria matches the first audit on all 51 sections and the second on
+50. Errors are more common in early filings, whose structure is less
 standardised.
 
 \paragraph{Relation to other approaches.} The content and volume of 10-K
 disclosures have changed over time \parencite{dyer2017}, while parsing
 procedures are not always documented in sufficient detail to facilitate
-replication \parencite{loughran2016}. Three design choices are therefore
-documented here.
+replication \parencite{loughran2016}. Three design choices are therefore set
+out clearly here.
 
 First, \textcite{loughran2011} analyse both filing-level text and the MD\&A
 subsection. Section-level extraction requires identifying item boundaries,
-which is complicated by table-of-contents entries, cross-references and
-inconsistent headings \parencite[Section 6.4]{loughran2016}. The DOM-based
-parser used here preserves HTML structure before text conversion and filters
-candidate headings using formatting cues, hyperlinks, local context and
-keywords. Its limitation is that headings without the expected formatting
-characteristics may not be recognised.
+which is difficult because of table-of-contents entries, cross-references
+and inconsistent headings \parencite[Section 6.4]{loughran2016}. The
+DOM-based parser used here keeps the HTML structure intact before converting
+the document to text and filters candidate headings using formatting cues,
+hyperlinks, local context and keywords. Its limitation is that headings
+without the expected formatting characteristics may not be identified.
 
 Second, mandatory XBRL reporting is not a complete substitute for extracting
 narrative disclosures. The SEC's 2009 XBRL amendments covered financial
@@ -402,11 +435,12 @@ boundaries are difficult to identify. The exhibit-fallback procedure used
 here instead attempts to recover referenced disclosures when the primary
 section is missing or too short.
 
-The practice was uncommon in the 2014 cross-section: approximately 2\% of
+The practice was uncommon in the 2014 cross-section: roughly 2\% of
 registrants incorporated some Part~I or Part~II information from their annual
 reports, with Part~II incorporation more common than Part~I
 \parencite[p.~300, footnote 1007]{sec_regsk_concept_2016}. This figure does
 not measure MD\&A incorporation specifically or establish historical trends.
 
 Overall, the parser uses document structure to reduce section-identification
-errors while retaining the risk of missing headings with atypical formatting.
+errors while retaining the risk that headings with atypical formatting may be
+missed.

@@ -20,7 +20,7 @@
     feat/.style={box, fill=yellow!35},
     dec/.style={diamond, aspect=2, draw=black!55, line width=0.4pt,
                 fill=cyan!18, align=center, inner sep=1pt, text width=22mm},
-    outbox/.style={box, fill=red!22, text width=40mm},
+    outbox/.style={box, fill=red!22, text width=86mm},
     merge/.style={box, fill=green!22, text width=86mm},
     arr/.style={->, draw=black!65, line width=0.5pt},
     stage/.style={rotate=90, anchor=center, font=\sffamily\bfseries\footnotesize,
@@ -34,10 +34,11 @@
 
 % ---- Sample selection (spans width) ----
 \node[samp, below=9mm of s2] (sel)
-  {\textbf{Sample selection.} 1{,}000 largest U.S.\ firms
-   $\rightarrow$ operating entities only $\rightarrow$ exclude SIC 6000--6999
-   $\rightarrow$ require $\geq 5$y XBRL \& $\geq 90\%$ return coverage
-   \;$\Rightarrow$\; \textbf{about 540 firms, 2010--2024}};
+  {\textbf{Sample selection.} First 1{,}000 firms of the SEC ticker list
+   $\rightarrow$ operating companies (753) $\rightarrow$ exclude SIC 6000--6999 (600)
+   $\rightarrow$ fiscal-year end available (599)
+   $\rightarrow$ $\geq 5$ years of 10-K XBRL data
+   \;$\Rightarrow$\; \textbf{frozen universe: 548 firms}};
 
 % ---- Financial branch (left) ----
 \node[fin, below=14mm of sel.south, xshift=-30mm] (f1)
@@ -72,7 +73,9 @@
   {\textbf{Merge financial + textual features} $\rightarrow$
    \texttt{annual\_panel\_text.csv}};
 \node[outbox, below=9mm of mg] (out)
-  {\textbf{Regression-ready firm-year panel}\\ 526 firms $\times$ 2010--2024};
+  {\textbf{Firm-year panel:} 548 firms, 6{,}757 firm-years, FY 2010--2024\\
+   \textbf{30-day estimation sample:} 512 firms, 5{,}782 firm-years\\
+   \footnotesize (after the pre-filing liquidity rule and complete controls)};
 
 % ---- Arrows: sources -> selection ----
 \draw[arr] (s1.south) -- ($(s1.south)+(0,-4mm)$) -| (sel.north);

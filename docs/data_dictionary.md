@@ -53,12 +53,12 @@ from forms 10-K / 10-K/A; flows need a 350–380-day duration.
 | Variable | Tags (priority order) | Notes |
 |---|---|---|
 | `total_assets` | `Assets` | forward-filled from FY t−1 only if t−1 is the immediately preceding year (flag `imputed_ffill_total_assets`) |
-| `total_liabilities` | `Liabilities`; else `total_assets − stockholders_equity` (flag `imputed_liab_identity`); else forward fill from t−1 (flag `imputed_ffill_total_liabilities`) | never back-filled from later years |
+| `total_liabilities` | `Liabilities`; else `total_assets − stockholders_equity` (flag `imputed_liab_identity`; contains NCI when the firm's locked equity tag is parent-only); else forward fill from t−1 (flag `imputed_ffill_total_liabilities`) | never back-filled from later years |
 | `stockholders_equity` | `StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest`, `StockholdersEquity` | per-firm tag locking |
 | `equity_parent` | `StockholdersEquity` | used for book-to-market |
 | `net_income` | `ProfitLoss` (consolidated, incl. NCI), `NetIncomeLoss`, `IncomeLossFromContinuingOperations` | consolidated basis (#13); `ProfitLoss`/`NetIncomeLoss` are an equivalence group (no locking between them); `IncomeLossFromContinuingOperations` is locked per firm |
 | `ni_consol`, `ni_parent`, `ni_nci` | `ProfitLoss`, `NetIncomeLoss`, `NetIncomeLossAttributableToNoncontrollingInterest` | diagnostics only (`data/annual_financials.csv`) |
-| `operating_cash_flow` | `NetCashProvidedByUsedInOperatingActivities`, `…ContinuingOperations` | equivalence group |
+| `operating_cash_flow` | `NetCashProvidedByUsedInOperatingActivities`, `…ContinuingOperations` | only approximately equivalent (gap >1% of assets in ~12% of overlapping firm-years); mixed without locking |
 | `assets_current`, `liabilities_current` | `AssetsCurrent`, `LiabilitiesCurrent` | |
 | `shares_out` | `dei:EntityCommonStockSharesOutstanding` (cover page; classes summed), else `us-gaap:CommonStockSharesOutstanding`; matched to the 10-K **by accession number** | source tag in `_tag_shares_out` |
 

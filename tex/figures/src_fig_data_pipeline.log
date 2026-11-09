@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2025) (preloaded format=pdflatex 2025.12.20)  31 OCT 2026 23:24
+This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2025) (preloaded format=pdflatex 2025.12.20)  9 NOV 2026 16:24
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -622,7 +622,7 @@ LaTeX Font Info:    Trying to load font information for U+msb on input line 38.
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 )
 LaTeX Font Info:    Trying to load font information for T1+lmtt on input line 7
-3.
+4.
 
 (/usr/local/texlive/2025/texmf-dist/tex/latex/lm/t1lmtt.fd
 File: t1lmtt.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
@@ -632,7 +632,7 @@ File: t1lmtt.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 
 
 Non-PDF special ignored!
-<special> papersize=460.677pt,631.91154pt
+<special> papersize=460.677pt,644.07823pt
 {/usr/local/texlive/2025/texmf-var/fonts/map/pdftex/updmap/pdftex.map}{/usr/loc
 al/texlive/2025/texmf-dist/fonts/enc/dvips/lm/lm-ec.enc}{/usr/local/texlive/202
 5/texmf-dist/fonts/enc/dvips/lm/lm-mathsy.enc}{/usr/local/texlive/2025/texmf-di
@@ -645,7 +645,7 @@ L3 programming layer <2025-01-18>
 Here is how much of TeX's memory you used:
  15274 strings out of 473190
  311115 string characters out of 5715799
- 703723 words of memory out of 5000000
+ 704883 words of memory out of 5000000
  38231 multiletter control sequences out of 15000+600000
  594007 words of font info for 61 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
@@ -657,7 +657,7 @@ st/fonts/type1/public/lm/lmss9.pfb></usr/local/texlive/2025/texmf-dist/fonts/ty
 pe1/public/lm/lmssbx10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/publ
 ic/lm/lmsy9.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/lm/lmtt9
 .pfb>
-Output written on src_fig_data_pipeline.pdf (1 page, 145929 bytes).
+Output written on src_fig_data_pipeline.pdf (1 page, 146210 bytes).
 PDF statistics:
  49 PDF objects out of 1000 (max. 8388607)
  31 compressed objects within 1 object stream

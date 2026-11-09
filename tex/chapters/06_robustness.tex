@@ -83,15 +83,26 @@ imputed balance-sheet value reduces the sample to 3{,}820 firm-years, mostly
 because total liabilities are often computed from assets and equity; length
 stays significant ($+0.078$, $t = +4.87$), but LitDensity is no longer
 ($-1.761$, $t = -1.05$). The LitDensity result therefore depends partly on
-firm-years whose leverage is constructed rather than reported.
+firm-years whose leverage is constructed rather than reported. For 626 of
+the dropped firm-years the constructed liabilities also contain
+non-controlling interests, because those firms report parent-only equity
+(Section~\ref{sec:xbrl_tags}), so this check also removes that measurement
+error.
 
 \paragraph{Counts instead of ratios.} With $\ln(1+n^{\text{unc}})$ and
 $\ln(1+n^{\text{lit}})$ next to $\ln(\text{Words}^{1A})$, no ratio enters
-the model. The litigious count is negative but significant only at the 10\%
-level ($t = -1.76$), and the uncertainty count is positive ($t = +2.47$).
-Holding length fixed, a higher count is a higher density, so this
-specification restates H2 without the ratio; that the litigious coefficient
-weakens shows that the ratio form matters for its significance.
+the model. The count-based specification uses 5,855 observations rather than
+5,782 because the raw counts remain defined for firm-years with very short or
+poorly parsed Item~1A sections, while the density ratios are set to missing
+when the section is too short or the parsing fails. In this specification,
+the length coefficient is $-0.050$ ($t = -1.76$), the uncertainty count is
+$+0.098$ ($t = +2.47$), and the litigious count is essentially zero
+($-0.001$, $t = -0.09$). The row therefore does not show evidence that the
+litigious count is associated with volatility; it shows that the ratio form
+matters for the significance of the text variable. To compare the
+specifications on identical observations, the density-based and count-based
+models need to be re-estimated on the same sample rather than read as direct
+replications of one another.
 
 \paragraph{Timing.} Using the text of the previous year's 10-K instead of
 the current one leaves the length coefficient unchanged ($+0.057$) and

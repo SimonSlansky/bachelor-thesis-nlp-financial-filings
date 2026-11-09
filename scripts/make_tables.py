@@ -496,7 +496,11 @@ def tag_tables():
     L += [r"\bottomrule", r"\end{tabular}"]
     L += note(r"Net-income pair: \texttt{ProfitLoss} (consolidated) vs \texttt{NetIncomeLoss} (parent); "
               r"their difference is the non-controlling interest, and the panel uses the consolidated "
-              r"figure. Operating-cash-flow pair: total vs continuing operations. ``$>$1\%'': differences "
+              r"figure. Operating-cash-flow pair: total vs continuing operations; the tags are not "
+              r"strictly equivalent, because they differ when discontinued operations have cash flows. "
+              r"Equity: 315 firms are locked on the tag including NCI and 228 on the parent-only tag; "
+              r"computed liabilities (total assets minus equity) contain NCI for the latter, while "
+              r"book-to-market uses parent equity first. ``$>$1\%'': differences "
               r"above 1\% of total assets. Locking: for metrics with non-equivalent tags, each firm keeps "
               r"its most frequent tag.")
     L += [r"\end{table}"]

@@ -63,8 +63,8 @@ in a form that can be reproduced. Read it completely before touching anything.
 
 ### 1.1 Research design (current)
 
-- **Sample:** about 526 large non-financial US firms, fiscal years 2010–2024, about 6,000
-  firm-years.
+- **Sample:** frozen universe of 548 large non-financial US firms (6,757 firm-years, fiscal
+  years 2010–2024); 30-day estimation sample 512 firms, 5,782 firm-years.
 - **Outcome:** `ln σ_{i,t+1}^{[h]}`, the annualised SD of daily log returns over `h`
   calendar days. The window starts 2 trading days after day 0, the first trading day on or
   after the 10-K filing date. Headline `h = 30`; robustness `h ∈ {5, 10, 90, 180, 365}`.

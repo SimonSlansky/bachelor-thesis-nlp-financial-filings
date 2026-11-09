@@ -180,7 +180,11 @@ def tag_overlap_diagnostics(df: pd.DataFrame, path) -> pd.DataFrame:
 # ── missing-metric imputation ─────────────────────────────────────────────
 
 def compute_missing_components(df: pd.DataFrame) -> pd.DataFrame:
-    """Fill missing total_liabilities from total_assets − stockholders_equity."""
+    """Fill missing total_liabilities from total_assets − stockholders_equity.
+
+    Exact only if equity includes NCI; for firms locked on the parent-only
+    tag the result also contains NCI.
+    """
     df = df.copy()
     df["imputed_liab_identity"] = False
 

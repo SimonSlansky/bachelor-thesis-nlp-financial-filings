@@ -188,9 +188,11 @@ TAG_DIFF_MATERIAL = 0.01
 
 # ---------------------------------------------------------------------------
 # Tags that are economically equivalent and safe to mix within a firm.
-# Operating cash flow: the "ContinuingOperations" variant was introduced in
-#   later XBRL taxonomies; for firms without material discontinued operations
-#   (the vast majority) both tags report the identical figure.
+# Operating cash flow: the "ContinuingOperations" variant excludes cash flows
+#   of discontinued operations, so it is only approximately equivalent: in
+#   firm-years reporting both, the gap exceeds 1% of assets in ~12%
+#   (data/tag_overlap.csv).  The tags are mixed without locking and the
+#   error is accepted for this one control.
 # Net income: ProfitLoss (consolidated, incl. NCI) is preferred; NetIncomeLoss
 #   is used only when ProfitLoss is absent, which under US GAAP (ASC 810)
 #   means there is no NCI, so the two are the same consolidated quantity.
