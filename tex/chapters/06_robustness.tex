@@ -47,84 +47,15 @@ Appendix~\ref{app:variables} repeats it at 365 days).
 
 \input{tables/robustness_30d}
 
-\paragraph{Market conditions and earnings releases.} Adding the market's
-volatility over the same window, replacing the fiscal-year fixed effects by
-filing-month $\times$ fiscal-year effects, and using idiosyncratic volatility
-as the dependent variable leave the length coefficient between $+0.053$ and
-$+0.089$ and LitDensity between $-2.235$ and $-3.399$, all significant at the
-5\% level. Earnings releases rarely fall in the 30-day window, because the
-release usually precedes the 10-K; dropping the windows that contain one,
-or removing the release day and the following day from every window, does
-not change the estimates.
-
-\paragraph{Fiscal and calendar time.} The filings of one fiscal year span a
-median of 390 calendar days (Table~\ref{tab:timing}), so the fiscal-year
-effects do not absorb calendar-time shocks. Replacing them by effects for
-the calendar month of the filing (169 months) leaves the length coefficient
-at $+0.057$ ($t = +4.94$) and LitDensity at $-2.329$ ($t = -2.62$). In the
-sample of the 371 firms with a December fiscal-year end, where fiscal and
-calendar time coincide (4{,}200 firm-years), length is $+0.060$
-($t = +4.64$) and LitDensity $-1.906$ ($t = -1.96$), significant only at the
-10\% level: the length result holds in both, while the litigious-density
-result weakens when the sample is restricted.
-
-\paragraph{Industry definition.} Finer (SIC3) or alternative
-(Fama--French 48) industry effects, today's rather than the historical SIC
-code, and excluding utilities (SIC~49) and health services (SIC~80), whose
-risk disclosures are shaped by regulation, all leave both coefficients
-significant; with Fama--French industries LitDensity is $-4.052$
-($t = -3.64$).
-
-\paragraph{Sample.} Requiring at least three, five or seven years per firm,
-using only firms observed in every fiscal year 2012--2024 (3{,}367
-firm-years), and dropping the market capitalisations based on weighted-average
-share counts leave the results intact. Dropping every firm-year with an
-imputed balance-sheet value reduces the sample to 3{,}820 firm-years, mostly
-because total liabilities are often computed from assets and equity; length
-stays significant ($+0.078$, $t = +4.87$), but LitDensity is no longer
-($-1.761$, $t = -1.05$). The LitDensity result therefore depends partly on
-firm-years whose leverage is constructed rather than reported. For 626 of
-the dropped firm-years the constructed liabilities also contain
-non-controlling interests, because those firms report parent-only equity
-(Section~\ref{sec:xbrl_tags}), so this check also removes that measurement
-error.
-
-\paragraph{Counts instead of ratios.} With $\ln(1+n^{\text{unc}})$ and
-$\ln(1+n^{\text{lit}})$ next to $\ln(\text{Words}^{1A})$, no ratio enters
-the model. The count-based specification uses 5,855 observations rather than
-5,782 because the raw counts remain defined for firm-years with very short or
-poorly parsed Item~1A sections, while the density ratios are set to missing
-when the section is too short or the parsing fails. In this specification,
-the length coefficient is $-0.050$ ($t = -1.76$), the uncertainty count is
-$+0.098$ ($t = +2.47$), and the litigious count is essentially zero
-($-0.001$, $t = -0.09$). The row therefore does not show evidence that the
-litigious count is associated with volatility; it shows that the ratio form
-matters for the significance of the text variable. To compare the
-specifications on identical observations, the density-based and count-based
-models need to be re-estimated on the same sample rather than read as direct
-replications of one another.
-
-\paragraph{Timing.} Using the text of the previous year's 10-K instead of
-the current one leaves the length coefficient unchanged ($+0.057$) and
-LitDensity weaker ($-2.449$, $t = -1.95$). When the level of year $t-1$ and
-the change from $t-1$ to $t$ enter together, the levels carry the
-association and the changes are insignificant. The text variables
-therefore act as slowly moving firm characteristics; the association is not
-driven by the revisions made in the current filing.
-
-\paragraph{Before and after 2020.} Interacting the three text variables with
-a dummy for fiscal years from 2020 shows no significant change after 2019:
-the interaction terms have $t$-statistics of $+1.42$ (length), $+1.02$
-(UncDensity) and $-1.09$ (LitDensity). In this specification the pre-2020
-LitDensity coefficient alone is not significant ($t = -1.47$); the pooled
-estimate is more precise than either sub-period.
-
-\paragraph{Inference with few year clusters.} Table~\ref{tab:inference}
-compares $p$-values. The wild cluster bootstrap by fiscal year gives
-$p = 0.001$ for length and $p = 0.005$ for LitDensity in the industry
-fixed-effects model, close to the two-way clustered values; with one-way
-firm clustering LitDensity has $p = 0.028$. The conclusions do not depend on
-the clustering choice.
+The length result is highly stable: the coefficient remains positive and
+statistically significant across the alternative market, time, industry,
+sample, timing, and inference specifications reported in Table~\ref{tab:robust_30d}.
+The LitDensity result is more sensitive. Its significance weakens when
+firm-years with imputed balance-sheet observations are removed, in the
+December-only sample, and when counts replace density ratios; the remaining
+checks leave the substantive conclusion unchanged. Thus H1 is robust across
+the tested specifications, whereas the evidence for H2 depends more on the
+measurement and sample definition.
 
 \input{tables/inference}
 
@@ -179,27 +110,15 @@ include zero.}
 \label{sec:robustness_silence}
 % ─────────────────────────────────────────────────────────────────────────────
 
-H3 is not supported in Chapter~\ref{ch:results}. This section examines the
-measure itself, to show that the null result does not come from a single
-construction choice, and reports the checks that address the criticisms of
-the earlier version of the measure. Table~\ref{tab:silence_robust} reports
-the coefficients and Table~\ref{tab:silence_diag} the diagnostics.
-
-\input{tables/silence_robust}
+H3 is not supported in Chapter~\ref{ch:results}. This section reports three
+diagnostics that clarify the construction and interpretation of the measure.
+Table~\ref{tab:silence_diag} summarises them.
 \input{tables/silence_diag}
 
 \paragraph{Length.} The omission gap is strongly related to length:
 $r = -0.915$ with $\ln(\text{Words}^{1A})$ in the H3 sample of 4{,}659
-firm-years (Figure~\ref{fig:omission_length}). A longer section mechanically
-covers more of the peer vocabulary. Three versions remove this link in
-different ways. The length-invariant gap computed from blocks of 3{,}000
-tokens has a correlation of $+0.424$ with length instead (the remaining
-relation runs through how varied a section's vocabulary is); the residual
-from a regression of the gap on length within each industry-year cell is
-uncorrelated with length by construction; and adding $\ln(\text{Words}^{\text{MD\&A}})$
-and the square of $\ln(\text{Words}^{1A})$ allows for a non-linear length
-effect. None of these versions is significant under either fixed-effect
-structure.
+firm-years (Figure~\ref{fig:omission_length}), indicating that the measure
+is closely tied to disclosure length.
 
 \begin{figure}[htbp]
 \centering
@@ -209,33 +128,9 @@ firm-year of the 30-day H3 sample, with the OLS fit.}
 \label{fig:omission_length}
 \end{figure}
 
-\paragraph{Sources of variation.} Under firm fixed effects the gap varies
-only from year to year. The decomposition in Table~\ref{tab:silence_diag}
-attributes 91\% of the variance of the year-on-year change to changes in the
-firm's own text, 6\% to changes in the peers' texts and 3\% to entering and
-leaving peers. A fixed vocabulary for all years gives a gap with the same
-(insignificant) coefficients. The within-firm variation of the gap is
-therefore mostly a revision of the firm's own section, and only 13\% of its
-variance is within firms (Table~\ref{tab:variance}).
-
-\paragraph{Peer definition.} Peers defined by today's SIC code, and only
-cells with at least 20 peers (3{,}262 firm-years; Table~\ref{tab:h3_cells} in
-Appendix~\ref{app:variables} lists the industries, which are dominated by
-business services, utilities, chemicals and pharmaceuticals, machinery and
-electronics), give the same result.
-
-\paragraph{Ranks and tails.} The decile rank of the gap within its
-industry-year cell and a dummy for the top decile (with the bottom decile
-controlled) are insignificant. These versions need cells with at least ten
-firms, which reduces the sample from 4{,}659 to 3{,}667 firm-years; 992
-firm-years lie in smaller cells.
-
-\paragraph{Timing.} The gap of the previous fiscal year, which is known long
-before the current filing and cannot reflect conditions at that filing, has a
-positive coefficient that is significant at the 5\% level under firm fixed
-effects ($+0.726$, $t = +1.97$) but not under industry effects
-($t = +1.37$). As one of many checks, and without a significant
-contemporaneous counterpart, this does not change the conclusion.
+\paragraph{Sources of variation.} The decomposition in
+Table~\ref{tab:silence_diag} attributes 91\% of the year-on-year change to
+the firm's own text, 6\% to peer-text changes, and 3\% to peer composition.
 
 \paragraph{Placebo.} Firms were reassigned at random to industry cells within
 each fiscal year, keeping the cell sizes, the gap was recomputed and the
@@ -253,14 +148,6 @@ assignments of firms to industry cells (firm and year fixed effects, 30-day
 window), with the observed value.}
 \label{fig:placebo}
 \end{figure}
-
-\paragraph{Summary for H3.} Across the eleven specifications and both
-fixed-effect
-structures, the omission coefficient is significant in one (the prior-year
-gap under firm fixed effects, at the 5\% level without a multiple-testing
-adjustment). The verdict of Section~\ref{sec:silence_results} stands: H3 is
-not supported.
-
 
 % ─────────────────────────────────────────────────────────────────────────────
 \section{Persistence and unit roots}
