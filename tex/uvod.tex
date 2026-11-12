@@ -2,4 +2,68 @@
 \addcontentsline{toc}{chapter}{Introduction}
 \label{ch:introduction}
 
-% NOTE: Introduction text intentionally omitted from this build.
+\section*{Motivation and context}
+
+Annual 10-K reports help investors understand a company's financial position
+and the risks it faces. Their risk-factor section, Item~1A, provides
+management's account of potential threats to future performance. These
+explanations add context that financial figures alone cannot provide. However,
+more disclosure does not necessarily mean more useful information. A lengthy
+risk section may describe a complex business, but it may also contain repeated
+warnings and standard legal language.
+
+Stock-return volatility after a filing provides a way to examine whether these
+disclosures contain information about subsequent market risk. The question is
+whether features of the text help explain later volatility beyond what is
+already observable from a firm's financial characteristics and past volatility.
+
+\section*{Research problem and objective}
+
+Previous research shows that risk disclosures can contain information about
+firms' underlying exposures. \textcite{campbell2014} find that firms facing
+greater risk disclose more risk factors, while \textcite{kravet2013} associate
+increases in risk disclosure with higher subsequent volatility. At the same
+time, \textcite{dyer2017} document increasing length and repetition in annual
+reports. Together, these findings motivate separating the amount of disclosure
+from the language it contains.
+
+This thesis examines whether risk-related wording and differences from industry
+peers provide additional information beyond disclosure length. Risk-word
+density captures the proportion of uncertainty and litigious words in Item~1A.
+The peer-relative omission measure captures vocabulary used by industry peers
+but absent from the firm's own disclosure. This is an indirect measure of
+disclosure differences: missing words do not necessarily mean that a company
+has left relevant risks undisclosed.
+
+The analysis covers large U.S. non-financial firms over fiscal years
+2010--2024. It combines text and accounting data from SEC filings with
+stock-return data and uses panel regressions controlling for pre-filing
+volatility and other firm characteristics. Comparisons across firms and within
+firms over time help distinguish persistent differences from changes in
+disclosure. The analysis identifies associations rather than causal effects.
+
+The main results show that disclosure length has the clearest association with
+subsequent volatility across firms, while risk-word density and peer-relative
+omissions provide limited additional evidence. The length association does not
+hold robustly within firms.
+
+\section*{Contributions}
+
+The thesis makes a practical and an empirical contribution. First, it develops
+a reproducible process for extracting risk disclosures and combining them with
+accounting and market data. Documenting this process makes the dataset
+construction open to inspection and allows the analysis to be repeated or
+extended.
+
+Second, the common empirical framework helps assess whether more complex
+textual measures add information beyond a simple word count. Distinguishing
+between-firm and within-firm evidence also helps clarify what conclusions can
+reasonably be drawn from the observed relationships.
+
+\section*{Thesis structure}
+
+Chapter~1 reviews the relevant literature. Chapter~2 describes the data and
+their preparation, while Chapter~3 presents the hypotheses and empirical
+methods. Chapter~4 reports the results, and Chapter~5 examines their
+robustness. The conclusion discusses the findings, limitations, and directions
+for further research.
