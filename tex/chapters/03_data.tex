@@ -345,11 +345,13 @@ spaces. Footnote markers and text of layout tables are not removed.
 
 For the dictionary measures the text is lowercased and split into tokens of
 at least two letters (digits, hyphens and apostrophes split tokens); a
-section with fewer than 100 tokens is treated as missing. The dictionary is
-the Loughran--McDonald Master Dictionary, 1993--2025 version
-\parencite{loughran2011}, with 297 uncertainty and 903 litigious words; words
-that the dictionary marks as removed are not counted. The two lists share
-no word.
+section with fewer than 100 tokens is treated as missing. The category
+definitions and financial-text motivation follow \textcite{loughran2011}; the
+word-level input is the Loughran--McDonald Master Dictionary, 1993--2025
+release \parencite{loughran_mcdonald_2025}. I count words with a positive
+year-added category code and exclude words marked with a negative removal
+code. The resulting lists contain 297 uncertainty and 903 litigious words;
+the two lists share no word.
 
 \subsection{Coverage}
 \label{ssec:text_coverage}
@@ -373,10 +375,12 @@ or Fail. The first audit, by Google Gemini~2.5~Flash, saw the full
 extracted section; the second, by Claude Opus~5.5, saw the first and last
 1{,}200 characters, a middle excerpt and the word count, without the first
 audit's ratings. Neither model saw the rest of the filing, so the boundary
-judgments were based only on the extracted text. LLMs perform well on
-text-classification tasks compared with crowd workers
-\parencite{gilardi2023}, but their judgments are not a substitute for a
-human reading of the filings. I therefore also checked 51 sections by hand
+judgments were based only on the extracted text. Gilardi
+et al.~\parencite{gilardi2023} find that ChatGPT can outperform crowd
+workers on several tweet-annotation tasks. This motivates exploring LLM
+assistance, but does not validate extraction boundaries or completeness in
+10-Ks. Their judgments are therefore not a substitute for a human reading of
+the filings. I also checked 51 sections by hand
 against the original EDGAR filings, without seeing the LLM ratings: 50 were
 drawn at random within the same strata, and one additional section was
 flagged by an LLM.
@@ -429,7 +433,9 @@ C.F.R. \S~232.303(b) \parencite{reg_s_t_rule_303} and \S~240.12b-23
 \parencite{exchange_act_rule_12b23}. This practice is illustrated by the
 10-K filings of Sonesta International Hotels Corporation (2010), First
 Community Financial Corporation (2012) and Wal-Mart Stores, Inc. (2014), all
-of which incorporate MD\&A from Exhibit~13. \textcite{loughran2011} exclude
+of which incorporate MD\&A from Exhibit~13
+\parencites{sonesta_2010_10k, firstcommunity_2012_10k, walmart_2014_10k}.
+\textcite{loughran2011} exclude
 incorporated MD\&A from their section-level analysis because exhibit
 boundaries are difficult to identify. The exhibit-fallback procedure used
 here instead attempts to recover referenced disclosures when the primary

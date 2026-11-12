@@ -88,8 +88,11 @@ First, most of the variation in the text variables is between firms: only
 LitDensity is within firms (Table~\ref{tab:variance}), so the within
 estimates are imprecise; the confidence interval of the within-firm
 LitDensity coefficient contains the between-firm estimate. Second, Item~1A
-changes slowly from year to year \parencite{brown2011, cazier2021}, which is
-consistent with this variance split.
+changes slowly from year to year in this sample: only 18\% of the variance
+of log Item~1A length and 19\% of LitDensity is within firms (Table~5.5).
+This is a finding from the panel, not a direct implication of the MD\&A study
+of \textcite{brown2011} or the legal and borrowing evidence in
+\textcite{cazier2021}.
 
 \input{tables/variance_decomposition}
 
@@ -154,18 +157,24 @@ window), with the observed value.}
 \label{sec:robustness_stationarity}
 % ─────────────────────────────────────────────────────────────────────────────
 
-With at most 15 annual observations per firm, the main risk of a dynamic
-panel is the Nickell bias discussed in Section~\ref{sec:estimation}, not a
-spurious regression. For completeness, Table~\ref{tab:stationarity} reports
-two panel unit-root tests designed for short panels. Every variable is first
-demeaned by fiscal year. The Harris--Tzavalis test \parencite{harris1999}
-uses the balanced panel of firms observed in all years 2012--2024 and tests
-the null that every firm's series has a unit root against a common
-autoregressive coefficient below one; its $p$-values are simulated for the
-actual number of firms and years. The Im--Pesaran--Shin test \parencite{ips2003}
-averages firm-level augmented Dickey--Fuller statistics on the unbalanced
-panel; its null is that all firms have a unit root, and a rejection means
-that at least some firms' series are stationary, not that all are.
+With at most 15 annual observations per firm, the dynamic panel raises two
+separate concerns: finite-$T$ bias in specifications with a lagged dependent
+variable, and possible non-stationarity. The Nickell bias discussed in
+Section~\ref{sec:estimation} does not establish that the second concern is
+negligible. Table~\ref{tab:stationarity} therefore reports two panel unit-root
+tests designed for short panels. Every variable is first demeaned by fiscal
+year; this removes a common additive year component but is not a general cure
+for cross-sectional dependence. The Harris--Tzavalis test
+\parencite{harris1999} uses the balanced panel of firms observed in all years
+2012--2024 and tests the null that every firm's series has a unit root against
+a common autoregressive coefficient below one. The Im--Pesaran--Shin test
+\parencite{ips2003} averages firm-level augmented Dickey--Fuller statistics
+on the unbalanced panel; its null is that all firms have a unit root, and a
+rejection means that at least some firms' series are stationary, not that all
+are. Both procedures rely on their panel-specific innovation, dependence and
+ADF-specification assumptions. The simulated $p$-values reported here are
+adaptations calibrated to the observed sample dimensions, rather than values
+supplied by the cited papers.
 
 \input{tables/stationarity}
 

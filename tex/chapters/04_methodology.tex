@@ -375,12 +375,14 @@ label to be correlated. It does not fully capture calendar-time dependence
 that crosses fiscal-year labels.
 
 With only 15 fiscal-year clusters, conventional cluster-robust tests may
-reject true null hypotheses too often \parencite{cameron2008,
-cameron2015}. For the text coefficients, I therefore also report wild
-cluster bootstrap $p$-values. They use weights drawn at the fiscal-year level,
-Webb's \parencite{webb2023} six-point weight distribution, and 9{,}999
-replications. As a sensitivity check, I also report $p$-values based on
-one-way firm clustering.
+reject true null hypotheses too often \parencite{cameron2008}. For the text
+coefficients, I therefore also report wild cluster-bootstrap $p$-values.
+The bootstrap uses a studentized statistic, imposes the null, partials out
+the relevant fixed effects, draws weights at the fiscal-year level from
+Webb's \parencite{webb2023} six-point distribution, and uses 9{,}999
+replications. This is a one-way fiscal-year bootstrap: it does not by itself
+reproduce the full firm-and-year dependence structure. As a sensitivity
+check, I therefore also report $p$-values based on one-way firm clustering.
 
 \paragraph{Dynamics and Nickell bias.} Adding a lagged dependent variable to a
 firm fixed-effects model makes the transformed lag correlated with the
