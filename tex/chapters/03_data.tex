@@ -18,7 +18,7 @@ those choices and their consequences. Yahoo Finance prices are not raw: the
 adjusted close used for returns is adjusted for splits and dividends by the
 provider, and the price series were downloaded once and kept fixed for all
 computations. The definition, source and timing of every variable are
-listed in Appendix~\ref{app:variables}.
+listed in the accompanying data dictionary (Appendix~\ref{app:variables}).
 
 Figure~\ref{fig:data_pipeline} gives an overview. The pipeline starts from
 the SEC sources, applies the sample filters, and runs a financial (XBRL)
@@ -32,7 +32,7 @@ branch and a textual branch that are merged into the firm-year panel.
 % ─────────────────────────────────────────────────────────────────────────────
 
 The starting universe is the first 1{,}000 entries in the SEC file
-\texttt{company\_tickers.json}, which maps stock tickers to Central Index Keys
+\path{company_tickers.json}, which maps stock tickers to Central Index Keys
 (CIKs). The version used in this study was archived in the project repository
 in October 2026. Four filters are then applied (Table~\ref{tab:attrition} in
 Appendix~\ref{app:variables}). First, only entities classified by the SEC as
@@ -55,76 +55,16 @@ firms. These firms form the panel of 6{,}757 firm-years for fiscal years
 firms that remain after the requirements below (Table~\ref{tab:attrition}).
 Figure~\ref{fig:data_pipeline} shows the same stages.
 
-To avoid conditioning sample inclusion on outcome-period information, filings 
-are not filtered on the basis of post-filing return availability. An earlier 
-version of the data pipeline excluded firms with valid post-filing volatility 
-for fewer than 90\% of their filings. Because this criterion relied on price 
-data from the outcome period, it could induce selection bias and was therefore 
-removed. Instead, a filing enters the regression sample only if at least 200 
-daily closing prices are available during the 252 trading days preceding the 
-filing date. This requirement excludes thinly traded and recently listed firms 
-using only information available at the time of filing and affects 1.3\% of filings.
+For the pre-filing liquidity screen, a filing requires at least 200 daily closing prices in the 252 trading days before filing. Separately, its outcome window must contain enough returns to calculate volatility. The first rule can be applied on the filing date. The second determines whether the outcome can be measured.
 
-\paragraph{Sample size and look-ahead.} Large firms have complete
-machine-readable filing histories, are liquid, and their filings are
-consistently formatted, which keeps measurement error in both branches low.
-The cost is that the list is drawn from today's large firms: firms that
-failed, were acquired or shrank during 2010--2024 are missing, and the panel
-grows from 152 firm-years in fiscal year 2010 to over 500 from 2020. The
-results therefore describe large surviving U.S.\ firms
-(Section~\ref{sec:estimation}). The 30-day estimation sample has 5{,}782
-firm-years of 512 firms. By comparison, \textcite{campbell2014} study
-risk-factor disclosures of a broad cross-section of U.S.\ firms and
-\textcite{loughran2011} use about 50{,}000 10-K filings; their aims require
-broad coverage, whereas the within-industry-year comparisons here rely on a
-balanced set of large issuers. % TODO verify: Campbell et al. (2014) sample size (#9)
-
+\paragraph{Scope of the sample.} The October 2026 list favours firms still listed and large at that date. Companies acquired or delisted earlier may be absent, and the number of observations varies by year. The results describe this unbalanced sample of large surviving firms.
 
 % ─────────────────────────────────────────────────────────────────────────────
 \section{Annual filings as the unit of observation}
 \label{sec:annual_vs_quarterly}
 % ─────────────────────────────────────────────────────────────────────────────
 
-We use annual 10-K filings rather than quarterly 10-Q reports. A quarterly
-panel would have roughly four times as many observations, but two problems
-appeared in small pilot tests (Tables~\ref{tab:q4_reliability}
-and~\ref{tab:text_availability}); the pilots are illustrations on a handful
-of firms, not representative estimates.
-
-\paragraph{Financial data in the fourth quarter.} 10-Q filings cover only the
-first three quarters, so a quarterly panel must reconstruct the fourth
-quarter as the annual figure minus the three quarters. In a pilot of 30
-non-financial firms (Table~\ref{tab:q4_reliability}), all three quarterly
-operating-cash-flow facts were available in only 7\% of firm-years, because
-most firms report cumulative year-to-date cash flows. Operating cash flow
-enters the control vector, so a quarterly panel would lose it at the source.
-For net income and operating income the implied and the explicitly reported
-fourth quarter differ by more than 1\% of the annual figure in about 10 to
-14\% of comparable firm-years. The residual absorbs year-end audit
-adjustments that are booked in the fourth quarter, whereas a later filing may
-report a recast figure, so the two represent different versions of the same
-accounting history.
-
-\input{tables/q4_reliability}
-
-\paragraph{Risk factors in quarterly reports.} Form 10-Q (Part~II, Item~1A)
-requires only \emph{material changes} to the risk factors disclosed in the
-latest 10-K, whose content is governed by Item~105 of Regulation S-K
-(17~CFR~229.105). In a pilot of the six most recent 10-Q filings of 15 large
-firms, 52\% contained a substantive risk-factor section and the rest referred
-back to the annual report (Table~\ref{tab:text_availability};
-Table~\ref{tab:text_per_company} lists the firms). Text variables measured
-on the full risk-factor section therefore cannot be built quarterly.
-
-\input{tables/text_availability}
-
-Annual filings contain audited full-year accounting data and complete
-risk-factor and MD\&A sections, and they are the unit of analysis in the
-10-K textual-analysis literature \parencite{li2008, loughran2011}. Matching
-the observation interval to the reporting frequency of the documents also
-means that changes in the text variables correspond to actual revisions of
-the annual disclosure.
-
+The unit of observation is one annual filing by one firm. An annual 10-K provides the full risk-factor discussion. A quarterly 10-Q can refer readers back to the annual discussion when risks have not materially changed. In the 15-firm pilot, only 52\% of quarterly filings contained a substantive risk-factor section (Appendix~\ref{sec:freq_diagnostics}). Treating the remaining filings as short disclosures would confuse the quarterly reporting format with a firm's choice about how much risk to disclose. Annual reports also provide full-year accounting figures alongside the text.
 
 % ─────────────────────────────────────────────────────────────────────────────
 \section{Financial data from XBRL}
@@ -179,8 +119,7 @@ US-GAAP elements, so the elements must be mapped explicitly
   \item \emph{Equivalent tags} measure the same quantity and are used
     interchangeably. Net income is measured on a consolidated basis:
     \texttt{ProfitLoss} (including non-controlling interests, NCI) where a
-    firm reports it, and \texttt{NetIncomeLoss} otherwise, which under
-    US GAAP is then the same consolidated figure. This makes ROA consistent
+    firm reports it, and \texttt{NetIncomeLoss} otherwise, as a proxy where the consolidated tag is unavailable. This makes ROA consistent
     with total assets, which also include NCI.
   \item \emph{Approximately equivalent tags.} The two operating-cash-flow
     tags (total and continuing operations) differ when a firm has cash flows
@@ -204,26 +143,15 @@ tags in firm-years that report both. Where both net-income tags are present
 (3{,}838 firm-years), the median absolute difference is 0.043\% of total
 assets, but the 99th percentile is 3.56\% and the maximum 37.4\%; in 303
 firm-years (7.9\%) the difference exceeds 1\% of total assets, which we call
-material. These differences are the NCI share of income, which the
-consolidated definition now includes consistently. For the two
+material. These discrepancies show why the fallback can introduce measurement error in ROA. For the two
 operating-cash-flow tags (417 firm-years) the difference exceeds 1\% of
 assets in 50 firm-years (12.0\%), with a median of 0.035\%. The cash-flow
 differences are therefore material in a non-trivial share of the overlapping
-firm-years, which is why the two tags are not called equivalent above. Only
-18 firms lock on the continuing-operations tag, and operating cash flow over
-assets is one of nine controls.
+firm-years, which is why the two tags are not called equivalent above. Operating cash flow over assets is one of nine controls.
 
 \paragraph{Missing balance-sheet values.} If total liabilities are missing,
 they are computed as total assets minus stockholders' equity (2{,}171
-firm-years; 1{,}935 in the 30-day regression sample). Under ASC~810 (formerly
-SFAS~160) non-controlling interests are part of equity, so the identity
-holds only if the equity figure includes NCI. This is the case for the 315
-firms whose locked equity tag is
-\texttt{StockholdersEquityIncluding\allowbreak PortionAttributableTo\allowbreak NoncontrollingInterest}.
-For the 228 firms whose locked tag is the parent-only
-\texttt{StockholdersEquity}, the computed liabilities also contain any NCI.
-This affects 626 of the 1{,}935 imputed firm-years in the regression sample
-(60 firms). The data do not show how many of these firms have non-zero NCI.
+firm-years; 1{,}935 in the 30-day regression sample). The accounting identity requires equity including non-controlling interests (NCI). If only parent equity is available, assets minus equity includes any NCI as well as liabilities. In the regression sample, the parent-only calculation is used for 60 firms. The data do not show how many of these firms have non-zero NCI.
 Where they do, leverage is overstated by the NCI share of total assets. The
 check without imputed values in Section~\ref{sec:robustness_h12} removes all
 of these firm-years. If total assets or liabilities are still missing, the
@@ -233,16 +161,15 @@ flagged, and Section~\ref{sec:robustness_h12} re-estimates the models without
 imputed values.
 
 \paragraph{Book equity.} Book-to-market uses book equity attributable to the
-parent (\texttt{StockholdersEquity}), which matches the market
+parent, which matches the market
 capitalisation of the parent's common shares. When this tag is missing, total
 equity including NCI is used (430 of 5{,}782 firm-years in the 30-day
 sample), and when that is missing too, total assets minus total liabilities
-(55 firm-years). The other 5{,}297 firm-years use parent equity.
+(55 firm-years). The remaining firm-years use parent equity.
 
 \paragraph{Market capitalisation.} Shares outstanding are taken from the same
 10-K as the other variables, matched by accession number: the cover-page
-count (\texttt{dei:EntityCommonStockSharesOutstanding}, summed over share
-classes), else the balance-sheet count, else the fiscal-year weighted-average
+count (summed over share classes), else the balance-sheet count, else the fiscal-year weighted-average
 basic count. The last source is needed for multi-class firms whose
 cover-page counts are reported per class and are not available in the
 Company Facts API (445 firm-years); a robustness check drops these
@@ -256,8 +183,7 @@ price and the split history.
 \label{sec:text_extraction}
 % ─────────────────────────────────────────────────────────────────────────────
 
-The study uses Item~1A (Risk Factors) and Item~7 (Management's Discussion
-and Analysis, MD\&A) of the 10-K.
+The pipeline extracts Item~1A (Risk Factors) and Item~7 (Management's Discussion and Analysis, MD\&A). The three main hypotheses concern Item~1A. Item~7 is included in the extraction audit and in a supplementary length control.
 
 \subsection{Source of the text}
 \label{ssec:text_source}
@@ -373,14 +299,8 @@ rated on five criteria: correct section, start boundary, end boundary,
 content quality and completeness. Ratings were recorded as Pass, Minor issue
 or Fail. The first audit, by Google Gemini~2.5~Flash, saw the full
 extracted section; the second, by Claude Opus~5.5, saw the first and last
-1{,}200 characters, a middle excerpt and the word count, without the first
-audit's ratings. Neither model saw the rest of the filing, so the boundary
-judgments were based only on the extracted text. Gilardi
-et al.~\parencite{gilardi2023} find that ChatGPT can outperform crowd
-workers on several tweet-annotation tasks. This motivates exploring LLM
-assistance, but does not validate extraction boundaries or completeness in
-10-Ks. Their judgments are therefore not a substitute for a human reading of
-the filings. I also checked 51 sections by hand
+1{,}200 characters, a middle excerpt and the word count, without the first audit's ratings. Neither model saw the rest of the filing, so the boundary
+judgments were based only on the extracted text. I also checked 51 sections by hand
 against the original EDGAR filings, without seeing the LLM ratings: 50 were
 drawn at random within the same strata, and one additional section was
 flagged by an LLM.
@@ -401,52 +321,6 @@ three criteria matches the first audit on all 51 sections and the second on
 50. Errors are more common in early filings, whose structure is less
 standardised.
 
-\paragraph{Relation to other approaches.} The content and volume of 10-K
-disclosures have changed over time \parencite{dyer2017}, while parsing
-procedures are not always documented in sufficient detail to facilitate
-replication \parencite{loughran2016}. Three design choices are therefore set
-out clearly here.
-
-First, \textcite{loughran2011} analyse both filing-level text and the MD\&A
-subsection. Section-level extraction requires identifying item boundaries,
-which is difficult because of table-of-contents entries, cross-references
-and inconsistent headings \parencite[Section 6.4]{loughran2016}. The
-DOM-based parser used here keeps the HTML structure intact before converting
-the document to text and filters candidate headings using formatting cues,
-hyperlinks, local context and keywords. Its limitation is that headings
-without the expected formatting characteristics may not be identified.
-
-Second, mandatory XBRL reporting is not a complete substitute for extracting
-narrative disclosures. The SEC's 2009 XBRL amendments covered financial
-statements but did not require interactive data for MD\&A or other narrative
-disclosures \parencite[Release No.~33-9002]{sec_2009_xbrl}. The present study
-therefore extracts MD\&A and Risk Factors directly from original EDGAR
-filings across the 2010--2024 sample period.
-
-Third, restricting extraction to the primary Form 10-K document can omit
-disclosures incorporated by reference from annual reports to security
-holders. General Instruction G(2) permits information required by Parts~I and
-II, including Item~7 (MD\&A), to be incorporated by reference. Note~2
-requires the incorporated material to be filed electronically as an exhibit
-\parencite[General Instruction G(2), Note~2]{sec_form10k_2014}; see also 17
-C.F.R. \S~232.303(b) \parencite{reg_s_t_rule_303} and \S~240.12b-23
-\parencite{exchange_act_rule_12b23}. This practice is illustrated by the
-10-K filings of Sonesta International Hotels Corporation (2010), First
-Community Financial Corporation (2012) and Wal-Mart Stores, Inc. (2014), all
-of which incorporate MD\&A from Exhibit~13
-\parencites{sonesta_2010_10k, firstcommunity_2012_10k, walmart_2014_10k}.
-\textcite{loughran2011} exclude
-incorporated MD\&A from their section-level analysis because exhibit
-boundaries are difficult to identify. The exhibit-fallback procedure used
-here instead attempts to recover referenced disclosures when the primary
-section is missing or too short.
-
-The practice was uncommon in the 2014 cross-section: roughly 2\% of
-registrants incorporated some Part~I or Part~II information from their annual
-reports, with Part~II incorporation more common than Part~I
-\parencite[p.~300, footnote 1007]{sec_regsk_concept_2016}. This figure does
-not measure MD\&A incorporation specifically or establish historical trends.
-
-Overall, the parser uses document structure to reduce section-identification
+The exhibit fallback addresses filings that incorporate part of the annual report by reference \parencite[General Instruction G(2)]{sec_form10k_2014}. Its contribution to overall coverage was not recorded. Overall, the parser uses document structure to reduce section-identification
 errors while retaining the risk that headings with atypical formatting may be
 missed.

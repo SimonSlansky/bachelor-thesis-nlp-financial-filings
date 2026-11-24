@@ -47,15 +47,16 @@ Appendix~\ref{app:variables} repeats it at 365 days).
 
 \input{tables/robustness_30d}
 
-The length result is highly stable: the coefficient remains positive and
-statistically significant across the alternative market, time, industry,
-sample, timing, and inference specifications reported in Table~\ref{tab:robust_30d}.
-The LitDensity result is more sensitive. Its significance weakens when
-firm-years with imputed balance-sheet observations are removed, in the
-December-only sample, and when counts replace density ratios; the remaining
-checks leave the substantive conclusion unchanged. Thus H1 is robust across
-the tested specifications, whereas the evidence for H2 depends more on the
-measurement and sample definition.
+Length remains positive in the alternative samples, timing rules and industry 
+definitions. The count-based model is an important exception. In the main model 
+a longer section at fixed density contains proportionally more dictionary words. 
+In the count model a longer section at fixed dictionary counts contains more other 
+words. Its length coefficient is $-0.050$ ($t=-1.76$), and the sample rises from 
+5{,}782 to 5{,}855. Re-estimating the count model on the original 5{,}782 observations 
+gives a positive length coefficient ($+0.115$, $t=2.00$). The sign reversal in the larger 
+sample therefore cannot be attributed to the choice of counts alone. Litigious density 
+is sensitive to sample selection: excluding imputed balance-sheet observations reduces 
+its coefficient from $-3.018$ to $-1.761$ ($t=-1.05$).
 
 \input{tables/inference}
 
@@ -65,7 +66,7 @@ measurement and sample definition.
 \label{sec:robustness_firmfe}
 % ─────────────────────────────────────────────────────────────────────────────
 
-The headline models compare firms within an industry and year. Replacing the
+The headline models adjust for industry and fiscal year. Replacing the
 industry effects by firm effects asks a different question: whether a firm
 whose Item~1A becomes longer or denser than usual has higher volatility
 than usual. Table~\ref{tab:firm_fe} reports the answer, and
@@ -75,25 +76,15 @@ Figure~\ref{fig:coef_fe} compares the coefficients.
 
 Under firm fixed effects the length coefficient falls from $+0.058$ to
 $+0.009$ ($t = +0.45$), and no density coefficient is significant
-(LitDensity $-3.132$, $t = -1.02$). Adding the lagged dependent variable,
-whose coefficient is biased under firm fixed effects \parencite{nickell1981},
-changes nothing (column 3). The associations in Chapter~\ref{ch:results} are
-therefore between-firm patterns: firms with longer and more litigious
-risk-factor sections differ systematically in subsequent volatility from
-otherwise similar firms in the same industry and year, but year-to-year
-changes in a firm's own section do not track changes in its volatility. Two
-features of the data limit what the firm fixed-effects models can show.
-First, most of the variation in the text variables is between firms: only
-18\% of the variance of $\ln(\text{Words}^{1A})$ and 19\% of that of
-LitDensity is within firms (Table~\ref{tab:variance}), so the within
-estimates are imprecise; the confidence interval of the within-firm
-LitDensity coefficient contains the between-firm estimate. Second, Item~1A
-changes slowly from year to year in this sample: only 18\% of the variance
-of log Item~1A length and 19\% of LitDensity is within firms
-(Table~\ref{tab:variance}).
-This is a finding from the panel, not a direct implication of the MD\&A study
-of \textcite{brown2011} or the legal and borrowing evidence in
-\textcite{cazier2021}.
+(LitDensity $-3.132$, $t = -1.02$). The litigious-density estimate is similar 
+in magnitude under the two designs, but much less precise with firm effects. 
+Only 18\% of the variation in log length and 19\% of the variation in litigious 
+density occurs within firms (Table~\ref{tab:variance}). The data therefore give 
+clearer evidence for differences across firms than for a relationship within the 
+same firm. Column 3 adds last year's post-filing outcome. With short firm histories, 
+subtracting each firm's average makes this lag partly correlated with the remaining error, 
+which can bias its coefficient \parencite{nickell1981}. The main comparison uses 
+columns 1 and 2, which control for volatility measured before the current filing.
 
 \input{tables/variance_decomposition}
 
@@ -114,10 +105,8 @@ include zero.}
 \label{sec:robustness_silence}
 % ─────────────────────────────────────────────────────────────────────────────
 
-H3 is not supported in Chapter~\ref{ch:results}. This section reports three
-diagnostics that clarify the construction and interpretation of the measure.
-Table~\ref{tab:silence_diag} summarises them.
-\input{tables/silence_diag}
+H3 is not supported in Chapter~\ref{ch:results}. The main measurement limitation 
+is the relationship with section length. Additional checks appear in Appendix~\ref{sec:app_robust}.
 
 \paragraph{Length.} The omission gap is strongly related to length:
 $r = -0.915$ with $\ln(\text{Words}^{1A})$ in the H3 sample of 4{,}659
@@ -132,60 +121,7 @@ firm-year of the 30-day H3 sample, with the OLS fit.}
 \label{fig:omission_length}
 \end{figure}
 
-\paragraph{Sources of variation.} The decomposition in
-Table~\ref{tab:silence_diag} attributes 91\% of the year-on-year change to
-the firm's own text, 6\% to peer-text changes, and 3\% to peer composition.
-
-\paragraph{Placebo.} Firms were reassigned at random to industry cells within
-each fiscal year, keeping the cell sizes, the gap was recomputed and the
-firm fixed-effects model re-estimated, 1{,}000 times. The observed
-$t$-statistic of $+0.70$ lies in the middle of the placebo distribution: the
-empirical two-sided $p$-value is 0.466, and 2.4\% of the
-placebo $t$-statistics exceed 1.96 (Figure~\ref{fig:placebo}). The real peer
-groups carry no more information about volatility than random ones.
-
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=0.8\textwidth]{img/fig_placebo.pdf}
-\caption{Distribution of the omission-gap $t$-statistic in 1{,}000 placebo
-assignments of firms to industry cells (firm and year fixed effects, 30-day
-window), with the observed value.}
-\label{fig:placebo}
-\end{figure}
-
-% ─────────────────────────────────────────────────────────────────────────────
-\section{Persistence and unit roots}
-\label{sec:robustness_stationarity}
-% ─────────────────────────────────────────────────────────────────────────────
-
-With at most 15 annual observations per firm, the dynamic panel raises two
-separate concerns: finite-$T$ bias in specifications with a lagged dependent
-variable, and possible non-stationarity. The Nickell bias discussed in
-Section~\ref{sec:estimation} does not establish that the second concern is
-negligible. Table~\ref{tab:stationarity} therefore reports two panel unit-root
-tests designed for short panels. Every variable is first demeaned by fiscal
-year; this removes a common additive year component but is not a general cure
-for cross-sectional dependence. The Harris--Tzavalis test
-\parencite{harris1999} uses the balanced panel of firms observed in all years
-2012--2024 and tests the null that every firm's series has a unit root against
-a common autoregressive coefficient below one. The Im--Pesaran--Shin test
-\parencite{ips2003} averages firm-level augmented Dickey--Fuller statistics
-on the unbalanced panel; its null is that all firms have a unit root, and a
-rejection means that at least some firms' series are stationary, not that all
-are. Both procedures rely on their panel-specific innovation, dependence and
-ADF-specification assumptions. The simulated $p$-values reported here are
-adaptations calibrated to the observed sample dimensions, rather than values
-supplied by the cited papers.
-
-\input{tables/stationarity}
-
-Both tests reject the unit-root null for volatility, the text variables and
-most controls. Two variables are exceptions. For leverage the
-Harris--Tzavalis test does not reject ($\hat\rho = 0.772$, $p = 0.592$),
-while the Im--Pesaran--Shin test does; for the omission gap neither test
-rejects at the 5\% level ($\hat\rho = 0.758$, $p = 0.257$; IPS $p = 0.099$). Leverage is
-a control, and the omission gap enters only the H3 models, whose coefficient
-is insignificant. A ratio bounded between zero and one cannot follow a random
-walk forever, but over 13 years it can be persistent enough that these tests
-lack power; the results are therefore read as showing high persistence for
-these two variables rather than as proof of stationarity.
+The 3{,}000-token block check weakens this relationship and yields no 
+significant coefficient at the primary 30-day horizon under either fixed-effect 
+structure. Because the two measures still depend on vocabulary and available peers, 
+the results leave open whether firms omit economically important risks.

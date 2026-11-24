@@ -51,7 +51,7 @@ faktory (Item~1A) slovní popis rizik, kterým firma čelí. Práce zkoumá, zda
 tři vlastnosti této sekce souvisejí s~volatilitou akciových výnosů
 v~týdnech po zveřejnění zprávy: její délka (H1), podíl slov ze slovníků
 nejistoty a~soudní agendy podle Loughrana a~McDonalda (H2) a~to, jakou
-část slovníku oborových konkurentů firma ve~své sekci nepoužije (H3).
+část váženého slovníku oborových konkurentů firma ve~své sekci nepoužije (H3).
 %
 Panel 5\,782 pozorování 512 velkých amerických nefinančních firem za
 fiskální roky 2010--2024 je sestaven přímo z~podání SEC. Regrese
@@ -61,9 +61,8 @@ odvětvové a~roční fixní efekty.
 %
 Delší sekce Item~1A je spojena s~vyšší následnou volatilitou (koeficient
 $+0{,}053$, $t=+4{,}51$); souvislost platí na všech horizontech od 5 do 365
-dní, ale nikoli v~rámci firmy v~čase. Hustota rizikových slov při dané
-délce není na 30denním horizontu významná; záporně a~významně působí jen
-slova soudní agendy, a~to citlivě na volbu vzorku. Mezera oproti
+dní, ale odhad v~rámci firmy je statisticky neprůkazný. Hustota rizikových slov při dané
+délce není na 30denním horizontu významná; zápornou a~statisticky významnou souvislost vykazuje podíl slov soudní agendy, a~to citlivě na volbu vzorku. Mezera oproti
 konkurentům s~volatilitou nesouvisí. H1 je tedy podpořena mezi firmami,
 H2 a~H3 podpořeny nejsou.
 }
@@ -74,7 +73,7 @@ The risk-factor section (Item~1A) of the 10-K describes the risks a firm
 faces. This thesis asks whether three properties of the section are
 associated with stock-return volatility in the weeks after the filing: its
 length (H1), its share of words from the Loughran--McDonald uncertainty and
-litigious lists (H2), and the share of its industry peers' vocabulary that
+litigious lists (H2), and the weighted share of its industry peers' vocabulary that
 the firm does not use (H3).
 %
 The panel of 5{,}782 firm-years of 512 large U.S.\ non-financial firms for
@@ -83,14 +82,13 @@ log 30-day post-filing volatility control for pre-filing volatility, size,
 valuation, past returns and accounting fundamentals, with industry and
 fiscal-year fixed effects and standard errors clustered by firm and year.
 %
-Longer Item~1A sections are associated with higher post-filing volatility
-($\hat\beta = +0.053$, $t = +4.51$) at every horizon from 5 to 365 days, but
-the firm fixed-effects coefficient is not statistically significant. Holding
-length fixed,
-the density of risk words is not significant at 30 days; only the litigious
-words have a negative association, which is sensitive to the sample. The
-peer-relative omission gap is not associated with volatility. H1 is
-supported between firms; H2 and H3 are not supported.
+At 30 days, longer sections are associated with higher volatility in the 
+industry and year model ($\hat\beta=0.053$, $t=4.51$). The length coefficient 
+is positive at all six tested horizons. With firm fixed effects the 30-day 
+estimate is small and imprecise. The composite dictionary share and the peer 
+vocabulary gap provide insufficient evidence for H2 and H3 at 30 days. In a 
+supplementary split, litigious density has a negative coefficient sensitive to 
+sample selection. Adding the text measures raises within-$R^2$ from 0.363 to 0.368.
 }
 
 %%% Keywords in Czech

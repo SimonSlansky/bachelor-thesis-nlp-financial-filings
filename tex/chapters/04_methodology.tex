@@ -8,9 +8,8 @@ In every test, I regress post-filing realised volatility on features of the
 Item~1A risk-factor section, a common set of controls that are known when the
 10-K is filed, and fixed effects.
 Section~\ref{sec:outcome} defines the dependent variable and explains when
-each variable is measured. Section~\ref{sec:controls} lists the controls. They
-are the same in every specification, so the text coefficients can be compared
-across hypotheses. Sections~\ref{sec:h1} and~\ref{sec:h2} cover the joint
+each variable is measured. Section~\ref{sec:controls} lists the controls. The baseline controls
+are the same across the three hypotheses, so the text coefficients can be compared across hypotheses, allowing for the smaller H3 sample. Sections~\ref{sec:h1} and~\ref{sec:h2} cover the joint
 test of the volume channel (H1) and the composition channel (H2). I estimate
 them together because the density measure for H2 has section length in its
 denominator. Section~\ref{sec:h3} introduces the peer-relative omission gap
@@ -32,24 +31,16 @@ stock-return volatility measured over a window of $h$~calendar days:
 \right),
 \label{eq:vol}
 \end{equation}
-where $r_{i,d} = \ln(P_{i,d}/P_{i,d-1})$ is the daily log return of firm~$i$
-computed from dividend- and split-adjusted closing prices, and
-$W_{i,t}^{[h]}$ is the post-filing window that belongs to the 10-K for fiscal
-year~$t$. The subscript $t+1$ only means that the window comes after the
-filing; it does not refer to the next fiscal year. Day~0 is the first trading
-day on or after the filing date. The window starts two trading days after
-day~0, so the market reaction on the filing day and the day after is left
-out, and it then runs for $h$~calendar days. Only returns between two prices
-inside the window are used. A window needs a minimum number of daily returns
+Here $i$ identifies the firm, $t$ the fiscal year of its filing and $h$ the horizon in calendar days. The outcome label $t+1$ denotes the period after this filing. Day~0 is the first market trading day on or after the filing date. The first price is taken two market trading days later. The last eligible price is dated at most $h$ calendar days after that start, including the endpoint. $W_{i,t}^{[h]}$ contains the return dates for which both prices lie inside these bounds. For each such date $d$, $r_{i,d}=\ln(P_{i,d}/P_{i,d-1})$, where $P$ is the split- and dividend-adjusted close and $d-1$ denotes the previous available close. The sample standard deviation across these returns measures their daily variability. Multiplication by $\sqrt{252}$ expresses volatility on an annual scale. The 30-day outcome still uses prices from that window alone.
+
+A window needs a minimum number of daily returns
 (3 for $h = 5$, 5 for $h = 10$, 14 for $h = 30$, and 44, 89 and 199 for the
 longer windows). If there are fewer, or if the standard deviation is zero,
 the volatility is treated as missing. A window that would end after the last
 trading day in the price data (30~October 2026) is also treated as missing
-instead of being cut short. With this cut-off, every fiscal-year~2024 filing
-has a complete 365-day window (Section~\ref{sec:sample_selection}).
+instead of being cut short. This cut-off applies to the window dates. Missing prices can still make an individual firm's outcome unavailable.
 
-Figure~\ref{fig:timeline} shows the timing. Every control and every text
-variable uses only information that is public at day~0. The accounting
+Figure~\ref{fig:timeline} shows the timing. The underlying firm text, accounting figures and price controls in the main models come from the filing or earlier dates. The sample and measurement rules were constructed retrospectively, including the 2025 dictionary and the firm-level tag choices in Chapter~2. The accounting
 variables and the text come from the same 10-K, and the price-based controls
 use windows that end on the last trading day before the filing date.
 
@@ -64,9 +55,11 @@ last trading day before the filing date.}
 \label{fig:timeline}
 \end{figure}
 
-A coefficient $\beta$ on a regressor $x$ means that volatility changes by
-$100(e^{\beta\Delta x}-1)\%$ when $x$ changes by $\Delta x$. The main horizon
-is $h = 30$ calendar days. I chose it to keep the outcome close to the filing,
+There are two logarithms in this construction. The first converts a price ratio into a daily return. The second applies to the positive volatility estimate used in the regression. I use this second log because the question concerns proportional differences. A move from 20\% to 30\% annualised volatility and a move from 40\% to 60\% both represent a 50\% increase and have the same log difference. The transformation also compresses unusually large values. A volatility below one in decimal units has a negative logarithm even though volatility itself is positive.
+
+At fixed controls, a change $\Delta x$ in a regressor with coefficient $\beta$ corresponds to a relative difference of $100[\exp(\beta\Delta x)-1]\%$ on the back-transformed fitted scale. Doubling the word count gives $\Delta x=\ln 2$. With the joint-model coefficient of 0.053, the implied difference is $100(2^{0.053}-1)\approx3.7\%$. For a density entered as a fraction, a rise of one percentage point gives $\Delta x=0.01$.
+
+The main horizon is $h = 30$ calendar days. I chose it to keep the outcome close to the filing,
 so that later news has less time to affect it. Earlier studies that link 10-K
 text to later stock-return volatility have used windows of about one year
 \parencite{campbell2014, kogan2009, loughran2011}. I report the 365-day window
@@ -79,36 +72,30 @@ checks.
 \label{sec:controls}
 % ─────────────────────────────────────────────────────────────────────────────
 
-Every regression for H1, H2 and H3 includes the same vector
+Every regression for H1, H2 and H3 includes the same baseline vector
 $\mathbf{X}_{i,t}$ of nine controls. All of them are known at day~0:
 \begin{itemize}
   \item pre-filing volatility $\ln\sigma^{\mathrm{pre}}_{i,t}$: the log of the
-    annualised standard deviation of the 60 daily returns ending on the last
+    annualised standard deviation over a window targeting 60 daily returns (at least 40 returns required), ending on the last
     trading day before the filing date;
-  \item firm size $\ln(\text{Market cap})$: the as-traded closing price on the
-    last trading day before filing times the shares outstanding reported in
+  \item firm size $\ln(\text{Market cap})$: the natural log of the product of the as-traded closing price on the
+    last trading day before filing and the shares outstanding reported in
     the same 10-K;
   \item book-to-market: book equity attributable to the parent over market
     capitalisation (total equity including NCI where parent equity is not
     reported; Section~\ref{sec:xbrl_tags});
-  \item the past 12-month log return, over the 252 trading days before filing;
+  \item the past 12-month log return, from adjusted prices over the lookback targeting 252 trading-day returns;
   \item leverage (total liabilities over total assets), return on assets
-    (consolidated net income over total assets), asset growth, the current
-    ratio, and operating cash flow over total assets.
+    (consolidated net income over total assets), asset growth (change in assets divided by previous assets), the current
+    ratio (current assets divided by current liabilities), and operating cash flow over total assets.
 \end{itemize}
-Pre-filing volatility is the most important control. Stock-return volatility
-is persistent \parencite{kogan2009}, and the way a firm writes its disclosure
-may reflect conditions that were already visible before the filing. Firm size,
-book-to-market, past returns and leverage also appear in earlier
-risk-disclosure regressions \parencite{campbell2014}, although the variables
-are defined differently. The remaining accounting ratios control for
-profitability, growth, liquidity and operating cash flow. Operating cash flow
-over assets is part of the main specifications and not only a robustness
-check.
+Several controls address specific alternative explanations. A firm whose shares were already volatile may describe unsettled conditions at length, and volatility may persist after filing \parencite{kogan2009}. A large, diversified firm may need more words to describe its operations while diversification may dampen fluctuations in its returns. A heavily indebted firm may discuss refinancing at length, while fixed debt obligations make the value of its equity more sensitive to business conditions. Weak operating cash flow can prompt a firm to discuss funding pressures and leave it more exposed to unexpected expenses. Comparing firms at similar prior volatility, size, leverage and operating cash flow helps account for these possibilities. Size, valuation, past returns and leverage also feature in earlier risk-disclosure work \parencite{campbell2014}.
+
+Accounting and valuation ratios enter in levels. This preserves losses, negative book equity and declines in assets where they occur. The trailing return already equals the logarithm of the ratio of the last to the first available adjusted price in the pre-filing window. The model uses that signed return directly. Dictionary shares and the omission gap also enter in levels, so their changes can be expressed in percentage points.
 
 An earlier version of this model used a different dynamic control: the
 volatility of a window of the same length after the previous year's 10-K.
-Once pre-filing volatility is included, this lag adds nothing. Its
+Conditional on pre-filing volatility, the estimated lag coefficient is small and imprecise. Its
 coefficient is $+0.031$ with $t=+0.69$ in the industry fixed-effects model
 (Table~\ref{tab:firm_fe} reports the firm fixed-effects version), so I report
 it only as a robustness check. Each firm's first fiscal year is not in the
@@ -151,9 +138,11 @@ $\beta^{\text{len}} > 0$ in
 \;+\; \varepsilon_{i,t},
 \label{eq:joint_model}
 \end{multline}
-where $\mu_j$ is a fixed effect for the two-digit SIC industry of the firm at
-the filing date, $\tau_t$ is a fiscal-year fixed effect, and RiskDensity is
-defined in Section~\ref{sec:h2}. Length and density enter together because
+Here $\alpha$ is the intercept. The vector $\mathbf{X}_{i,t}$ contains the nine controls, and $\boldsymbol{\gamma}'\mathbf{X}_{i,t}$ is the sum of each control times its coefficient. The two $\beta$ coefficients are the slopes on log length and risk-word density. The fiscal-year effect $\tau_t$ is shared by all filings for year $t$. The disturbance $\varepsilon_{i,t}$ represents the unexplained component of this filing's log volatility. Each model and horizon has its own coefficients and disturbances.
+
+The index $j(i,t)$ selects the two-digit industry code recorded for firm $i$ at its fiscal-year-$t$ filing. Every filing with that code receives the same industry adjustment $\mu_{j(i,t)}$. The 5{,}782 main-sample observations span 49 industries, equivalent to 48 industry indicators and a reference category when an intercept is included. Nine firms change two-digit industry code during their observed histories, which explains the $t$ in the lookup. The industry and fiscal-year effects enter separately.
+
+Length and density enter together because
 length is in the denominator of the density.
 
 
@@ -196,26 +185,25 @@ This could weaken the link between risk-word density and volatility, but it
 does not by itself predict lower volatility.
 
 \paragraph{H2.} If Item 1A length and the other controls are held fixed,
-RiskDensity is associated with post-filing volatility: $(\beta_{\mathrm{dens}}\neq 0)$ in equation~(3.3). The sign shows the direction of the association, but it does not tell us which channel is behind it. Density measures the share of selected words, not how specific the disclosure is, which is what \textcite{hope2016} study. Words such as ``litigation'' or ``investigation'' can also appear in descriptions of very specific events.
+RiskDensity is associated with post-filing volatility: $(\beta^{\text{dens}}\neq 0)$ in equation~\eqref{eq:joint_model}. The sign shows the direction of the association, but it does not tell us which channel is behind it. Density measures the share of selected words, not how specific the disclosure is, which is what \textcite{hope2016} study. Words such as ``litigation'' or ``investigation'' can also appear in descriptions of very specific events.
 
 \paragraph{Sub-list decomposition.} A second specification replaces
 RiskDensity with its two components:
 \[
-\mathrm{UncDensity}_{i,t} = \frac{n^{\mathrm{unc}}_{i,t}}{\mathrm{Words1A}_{i,t}},
+\mathrm{UncDensity}_{i,t} = \frac{n^{\mathrm{unc}}_{i,t}}{\text{Words}^{1A}_{i,t}},
 \qquad
-\mathrm{LitDensity}_{i,t} = \frac{n^{\mathrm{lit}}_{i,t}}{\mathrm{Words1A}_{i,t}}.
+\mathrm{LitDensity}_{i,t} = \frac{n^{\mathrm{lit}}_{i,t}}{\text{Words}^{1A}_{i,t}}.
 \]
 \begin{align}
 \ln \sigma_{i,t+1}^{[h]}
-&= \alpha + \gamma' X_{i,t}
-+ \beta_{\mathrm{len}} \ln(\mathrm{Words1A}_{i,t})
-+ \beta_{\mathrm{unc}} \mathrm{UncDensity}_{i,t}
-+ \beta_{\mathrm{lit}} \mathrm{LitDensity}_{i,t}
+&= \alpha + \boldsymbol{\gamma}'\mathbf{X}_{i,t}
++ \beta^{\text{len}} \ln(\text{Words}^{1A}_{i,t})
+\notag \\ &\quad + \beta^{\text{unc}} \mathrm{UncDensity}_{i,t}
++ \beta^{\text{lit}} \mathrm{LitDensity}_{i,t}
 + \mu_{j(i,t)} + \tau_t + \varepsilon_{i,t}.
 \label{eq:decomposition_model}
-\tag{3.5}
 \end{align}
-The uncertainty list captures uncertain and imprecise wording. The litigious list captures legal and regulatory language, which does not always point to an actual legal dispute or exposure \parencite{loughran2011}. A Wald test of $(\beta_{\mathrm{unc}} = \beta_{\mathrm{lit}})$ checks whether the two densities are associated differently with volatility.
+The uncertainty list captures uncertain and imprecise wording. The litigious list captures legal and regulatory language, which does not always point to an actual legal dispute or exposure \parencite{loughran2011}. A Wald test of $(\beta^{\text{unc}} = \beta^{\text{lit}})$ checks whether the two densities are associated differently with volatility.
 
 \paragraph{Ratio regressors.} Both densities divide word counts by Item 1A
 length. Ratios can give misleading results if the role of the denominator is
@@ -223,7 +211,7 @@ not handled carefully \parencite{kronmal1993}. The model includes log length to
 account for differences in section length, but this does not guarantee that
 the problem goes away. As a robustness check, I replace the densities with
 $(\ln(1+n^{\mathrm{unc}}))$ and $(\ln(1+n^{\mathrm{lit}}))$ and keep
-$\ln(\mathrm{Words1A})$ (Section~\ref{sec:robustness_h12}). This model uses
+$\ln(\text{Words}^{1A})$ (Section~\ref{sec:robustness_h12}). Adding one keeps a zero dictionary count defined on the log scale. This model uses
 counts that are not divided by length. Comparing the two sets of results shows
 whether the findings depend on how risk language is measured.
 
@@ -233,58 +221,38 @@ whether the findings depend on how risk language is measured.
 \label{sec:h3}
 % ─────────────────────────────────────────────────────────────────────────────
 
-H3 asks whether the topics a firm \emph{leaves out} of Item~1A, compared with
-its industry peers, help predict later volatility once length and density are
-accounted for. I call this measure the \emph{omission gap}. One way to read it
-is as \emph{strategic silence}: the firm says little about risks that its
-peers discuss. But other explanations would produce the same pattern. The
+H3 asks whether peer vocabulary absent from a firm's Item~1A is associated with later volatility once length and density are
+accounted for. I call this measure the \emph{omission gap}. The measure records differences in words. Their economic meaning is ambiguous. The
 firm may simply not face that risk, may use different words for it, or may
 write a shorter section for reasons unrelated to risk.
 
-\paragraph{Construction.} For each fiscal year $t$, I fit a TF--IDF model on
+\paragraph{Construction.} For each fiscal year $t$, I fit a term frequency--inverse document frequency (TF--IDF) model on
 the Item~1A texts filed before the first fiscal-year-$t$ filing in the panel.
 This way, the vocabulary and weights are already known on the date of every
 filing I analyse (fiscal year 2010 has no earlier texts, so it has no omission
-gap). I use the standard \texttt{scikit-learn} Python library for the text
-vectorisation, with these settings: the text is lowercased; tokens must have
-at least two letters or digits; the library's English stop-word list is
+gap). A word receives more weight if it occurs frequently in a document and is uncommon across the training documents. I use the standard \texttt{scikit-learn} Python library for the text
+vectorisation, with at least 50 earlier documents required for fitting. The text is lowercased; tokens must have at least two word characters (letters, digits or underscores); the library's English stop-word list is
 removed; only single words are used; a term must appear in at least five
 documents and in at most 95\% of the training documents; raw term counts are
 used; inverse document frequency is smoothed; and each row is scaled to
 unit length. Let $\mathbf{x}_{i,t}$ be the TF--IDF row of firm $i$'s
-fiscal-year-$t$ Item~1A. The peers of a filing are the other panel firms in the
-same two-digit SIC industry (at the filing date). For each peer, I use the
+fiscal-year-$t$ Item~1A. Peer groups use the fiscal-year-$t$ two-digit SIC code when available and the previous year's code otherwise. For each peer, I use the
 most recent Item~1A from fiscal year $t$ or $t-1$ that was filed strictly
-before the focal filing, so no later information is used. With $P_{i,t}$ as
+before the focal filing. Peer texts are historical, although a peer's year-$t$ industry classification can come from a later filing. With $P_{i,t}$ as
 this peer set,
 \begin{equation}
-\mathbf{p}_{i,t} = \sum_{k \in P_{i,t}} \mathbf{x}_{k},
+\mathbf{p}_{i,t} = \sum_{k \in P_{i,t}} \mathbf{x}^{(t)}_{k},
 \qquad
 \textsc{Omission}^{1A}_{i,t} \;=\; 1 \;-\;
   \frac{\sum_{w : x_{i,t,w} > 0}\, p_{i,t,w}}{\sum_{w}\, p_{i,t,w}},
 \label{eq:omission}
 \end{equation}
-the share of peer TF--IDF weight that falls on terms the focal firm does not
-use. It lies between 0 and 1. Filings with fewer than five peers get no value.
+where $\mathbf{x}^{(t)}_k$ represents peer $k$'s selected filing in the focal year's vocabulary. The index $w$ runs over terms in that vocabulary. The component $p_{i,t,w}$ is the pooled peer weight of term $w$, and $x_{i,t,w}$ is its weight in the focal text. The fraction gives the share of peer weight on words present in the focal filing. Subtraction from one gives the missing share. For example, if peer terms carry 100 units of weight in total and terms absent from the filing carry 20, its omission gap is 0.20. It lies between 0 and 1. The gap is missing for fewer than five eligible peers or zero total peer weight.
 
 \paragraph{Length and the sources of variation.} The omission gap is closely
 tied to length, because a longer section naturally covers more of the peer
 vocabulary. In the H3 sample, its correlation with $\ln(\text{Words}^{1A})$ is
-$-0.915$ (Table~\ref{tab:silence_diag}). To deal with this, and to see where
-the variation in the gap comes from, I use three variants:
-\begin{itemize}
-  \item a \emph{length-invariant} omission gap. For each filing, I draw 20
-    random blocks of 3{,}000 consecutive tokens from its Item~1A (with a fixed
-    seed), compute the gap on each block instead of the full text, and
-    average the 20 values. Sections shorter than 3{,}000 tokens use the whole
-    text;
-  \item a \emph{pooled-vocabulary} gap, using one TF--IDF model fitted on all
-    years. This removes changes in vocabulary over time. Because it uses
-    later documents, I use it only as a diagnostic;
-  \item a breakdown of the year-on-year change in the gap into three
-    parts: the change in the firm's own text (with peers held at $t-1$), the
-    change in the peers' texts, and the change in who the peers are.
-\end{itemize}
+$-0.915$ (Figure~\ref{fig:omission_length}). As a check on this length effect, I draw 20 random blocks of 3{,}000 consecutive tokens from each filing and average their gaps. Shorter sections contribute their full text. This reduces the mechanical advantage of long filings, although the block-based gap still correlates with full section length ($r=+0.424$).
 
 \paragraph{Specification.} The H3 regression adds the omission gap to
 equation~\eqref{eq:joint_model}:
@@ -294,40 +262,20 @@ equation~\eqref{eq:joint_model}:
 \;+\; \beta^{\text{len}} \ln(\text{Words}^{1A}_{i,t})
 \;+\; \beta^{\text{dens}} \,\text{RiskDensity}_{i,t} \\
 \;+\; \beta^{\text{om}} \,\textsc{Omission}^{1A}_{i,t}
-\;+\; \mu \;+\; \tau_t
+\;+\; a_{i,t} \;+\; \tau_t
 \;+\; \varepsilon_{i,t},
 \label{eq:silence_model}
 \end{multline}
-I estimate it with industry fixed effects ($\mu = \mu_j$) and with firm fixed
-effects ($\mu = \mu_i$). The controls are the same as in
+I estimate it with industry fixed effects ($a_{i,t}=\mu_{j(i,t)}$) and with firm fixed
+effects ($a_{i,t}=\mu_i$, one baseline per firm). The controls are the same as in
 Section~\ref{sec:controls}, so the H3 model differs from the H1/H2 model
-only by the omission gap.
+by the omission gap and by the availability of eligible peers. At 30 days, 4{,}659 observations qualify for H3.
 
 \paragraph{H3 and the decision rule.} \emph{If length, density and the
 controls are held fixed, a larger omission gap is associated with higher
-post-filing volatility}, that is, $\beta^{\text{om}} > 0$. I judge the
-evidence with a fixed rule, which I wrote down in the project log before
-re-estimating the models:
-\begin{enumerate}
-  \item The family of tests covers $h \in \{5, 10, 30, 90, 180\}$ days under
-    both fixed-effect structures, which gives ten two-sided tests. I adjust
-    the $p$-values with the Holm step-down procedure \parencite{holm1979} at
-    $\alpha = 0.05$.
-  \item The primary design is $h = 30$ days. Under a given fixed-effect
-    structure, there is \emph{positive evidence} if $\beta^{\text{om}} > 0$
-    with Holm-adjusted $p < 0.05$ \emph{and} the length-invariant gap also has
-    a positive coefficient with $p < 0.05$ in the same specification.
-    \emph{Negative evidence} is the mirror image.
-  \item H3 is \emph{supported} if there is positive evidence under both
-    structures. It is \emph{partially supported} if there is positive evidence
-    under one and no negative evidence under the other. It is
-    \emph{contradicted} if there is only negative evidence, and
-    \emph{not supported} in all other cases. Both fixed-effect structures
-    are treated the same way.
-\end{enumerate}
-I report the placebo test, the decomposition and the other robustness checks,
-but they do not change the verdict.
+post-filing volatility}, that is, $\beta^{\text{om}} > 0$. I recorded the decision rule before re-estimating the models. Testing five horizons (5, 10, 30, 90 and 180 days) with two fixed-effect structures gives ten chances to find a significant result. Holm's procedure orders their two-sided $p$-values and tests the smallest against $0.05/10$, then the next against $0.05/9$ if the first passes, and so on until a test fails. This controls the chance of one or more false rejections across the family \parencite{holm1979}. The 365-day estimate is supplementary.
 
+At the primary 30-day horizon, positive evidence under one fixed-effect structure requires a positive full-text coefficient with adjusted $p<0.05$ and a positive block-based coefficient with unadjusted $p<0.05$. Negative evidence uses the same thresholds and opposite signs. Positive evidence under both structures supports H3. Positive evidence under one with no negative evidence under the other gives partial support. Negative evidence alone contradicts H3. All other outcomes leave H3 unsupported.
 
 % ─────────────────────────────────────────────────────────────────────────────
 \section{Estimation and inference}
@@ -335,15 +283,7 @@ but they do not change the verdict.
 % ─────────────────────────────────────────────────────────────────────────────
 
 All regressions are estimated by ordinary least squares after absorbing the
-fixed effects (\texttt{linearmodels}). With industry and year fixed effects,
-the coefficients come from variation \emph{between} firms in the same
-industry-year cell. I use firm fixed effects as a robustness check
-(Section~\ref{sec:robustness_firmfe}); they rely only on year-to-year
-variation \emph{within} a firm. The two designs answer different questions,
-and a coefficient from the industry fixed-effects model is not, on its own,
-evidence of a within-firm relationship. The analysis is predictive, not
-causal: the coefficients describe conditional associations between the
-disclosure and later volatility, in the spirit of \textcite{campbell2014}.
+fixed effects (\texttt{linearmodels}). The main model allows each industry to have its own average volatility level and each fiscal year to have a common shift. Both persistent differences across firms and changes within firms can contribute to its estimates. The second model gives each firm its own baseline. Its text coefficient asks whether a firm has higher subsequent volatility in years when its disclosure is longer than usual, after adjustment for the controls and year effects. Both models estimate in-sample associations. An out-of-sample forecast would require a separate evaluation.
 
 \paragraph{Fiscal-year effects.} Year fixed effects absorb shocks that hit all
 firms in a fiscal year. But fiscal years end in different months, so the
@@ -353,13 +293,11 @@ remove market shocks tied to calendar time. The volatility spike of spring
 2020, for example, falls in the post-filing windows of firms with different
 fiscal-year labels, and in only part of the windows within a given label.
 
-I run four robustness checks for this: the market (SPY) volatility over the
+I run four robustness checks for this: the log of market (SPY) volatility over the
 same window as a control, filing-month $\times$ fiscal-year fixed effects,
 fixed effects for the calendar month of the filing in place of the fiscal-year
 effects, and a sample of firms with a December fiscal-year end, where fiscal
-and calendar time coincide. I also use idiosyncratic volatility as an extra
-dependent variable. It is the residual standard deviation from a market-model
-regression inside the window.
+and calendar time coincide. A further check uses the log of annualised idiosyncratic volatility as the outcome. I regress daily firm returns on an intercept and daily market returns within the window, then annualise the residual standard error.
 
 \paragraph{Anticipated volatility.} Item~1A is written when management already
 knows current conditions, so expected volatility could shape the wording.
@@ -367,39 +305,16 @@ Pre-filing volatility, which is public at filing, captures the part of this
 that is visible in prices. It does not rule out that management expects
 future volatility beyond that, so I read all results as associations.
 
-\paragraph{Standard errors.} Standard errors are clustered two-way by firm and
+\paragraph{Standard errors.} A standard error measures the uncertainty of an estimated coefficient. The test statistic for a zero slope divides that estimate by its standard error. Repeated filings from one firm and firms exposed to the same broad shock can share unexplained movements. Treating their filings as independent could give misleading precision. Standard errors are clustered two-way by firm and
 fiscal year \parencite{cameron2011robust, petersen2009}. Firm clustering allows
 residuals of the same firm to be correlated across years. Fiscal-year
 clustering allows residuals of different firms with the same fiscal-year
 label to be correlated. It does not fully capture calendar-time dependence
-that crosses fiscal-year labels.
+that crosses fiscal-year labels. The main tables use large-sample normal-reference $p$-values. The coefficient plots show the estimate plus or minus 1.96 standard errors. For example, the 30-day joint-model length coefficient is 0.05331 with a two-way standard error of 0.01181, giving a test statistic of 4.51.
 
 With only 15 fiscal-year clusters, conventional cluster-robust tests may
-reject true null hypotheses too often \parencite{cameron2008}. For the text
-coefficients, I therefore also report wild cluster-bootstrap $p$-values.
-The bootstrap uses a studentized statistic, imposes the null, partials out
-the relevant fixed effects, draws weights at the fiscal-year level from
-Webb's \parencite{webb2023} six-point distribution, and uses 9{,}999
-replications. This is a one-way fiscal-year bootstrap: it does not by itself
-reproduce the full firm-and-year dependence structure. As a sensitivity
-check, I therefore also report $p$-values based on one-way firm clustering.
-
-\paragraph{Dynamics and Nickell bias.} Adding a lagged dependent variable to a
-firm fixed-effects model makes the transformed lag correlated with the
-transformed error. In the standard stationary autoregressive model, this
-biases the lag coefficient downward by an amount of order $(1/T)$, and it can
-also affect the other coefficients \parencite{nickell1981}. With at most
-15 annual observations per firm, this is a concern. The main firm
-fixed-effects specifications use pre-filing volatility to control for earlier
-risk, and I report specifications with the lagged dependent variable for
-comparison. Pre-filing volatility is measured before the outcome window and
-differs from the lagged dependent variable. However, its timing alone does
-not guarantee exogeneity or remove every source of fixed-effects bias. A
-separate concern is non-stationarity, which a short time dimension and a large
-number of firms do not rule out by themselves. Section~
-\ref{sec:robustness_stationarity} therefore reports panel unit-root tests,
-with their results interpreted in light of the short time dimension and the
-tests' assumptions.
+reject true null hypotheses too often \parencite{cameron2008}. For the main 30-day H1 and H2 text coefficients, I therefore also report wild cluster-bootstrap $p$-values.
+For each coefficient the check starts from the model in which its true value is zero. It repeatedly gives all observations from the same fiscal year a common random weight on their residuals and recalculates the test statistic. The $p$-value measures how often this produces a statistic at least as extreme as the observed one. This check preserves clustering within fiscal years. The main standard errors also allow for correlation within firms across years. The year-level weights follow \textcite{webb2023}. Table~\ref{tab:inference} gives the implementation details and the results.
 
 \paragraph{Outliers.} Accounting ratios, book-to-market and the past return
 are winsorised as described in Section~\ref{sec:controls}. The text variables
@@ -413,8 +328,7 @@ Table~\ref{tab:attrition} in Appendix~\ref{app:variables} shows how the sample
 is built, from the SEC ticker list down to this sample.
 
 \paragraph{Limitation: survivorship and look-ahead.} The universe is the
-first 1{,}000 rows of the SEC ticker list as stored in October 2026, which is
-ordered roughly by current size. Firms that were delisted, acquired or
+first 1{,}000 rows of the SEC ticker list as stored in October 2026, used to select the firms. Firms that were delisted, acquired or
 failed during 2010--2024 are missing, and firms that are large today are
 over-represented in the early years: the panel grows from 152 firm-years in
 fiscal year 2010 to over 500 from 2020 (Table~\ref{tab:text_coverage}).

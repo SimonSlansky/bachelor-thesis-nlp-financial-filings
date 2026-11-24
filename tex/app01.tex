@@ -28,6 +28,8 @@ The following tables come from the pilot tests described in
 Section~\ref{sec:annual_vs_quarterly}. They cover 30 firms (financial data)
 and 15 firms (text) and are illustrations, not estimates for the panel.
 
+\input{tables/q4_reliability}
+\input{tables/text_availability}
 \input{tables/xbrl_coverage}
 
 \input{tables/annual_vs_quarterly}
@@ -89,3 +91,11 @@ Discussion and Analysis'', because exhibits do not contain item numbers.
 \input{tables/robustness_365d}
 
 \input{tables/h3_cells}
+
+\input{tables/silence_robust}
+
+\paragraph{Peer comparisons.} When firms are reassigned to industry groups at random within each year, the observed 30-day statistic ($t=0.70$) is unexceptional among 1{,}000 reassignments (two-sided $p=0.466$). One exploratory check using last year's gap gives $t=1.97$ with firm effects. It addresses an earlier disclosure and falls outside the decision rule for H3.
+
+\paragraph{Persistence.} A unit root describes a process in which shocks persist indefinitely. Table~\ref{tab:stationarity} checks whether the short firm histories are consistent with that possibility. The Harris--Tzavalis check uses firms observed every year from 2012 to 2024 and assumes a common persistence coefficient. The Im--Pesaran--Shin check allows firms to differ. Both start from the hypothesis that all firms have a unit root. For the second test, rejection means that at least some firms depart from that hypothesis. The table documents the sample-specific simulations. Neither test rejects for the omission gap at 5\%, and the tests disagree for leverage. With so few years, persistence remains a limitation when interpreting the regressions.
+
+\input{tables/stationarity}

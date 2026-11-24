@@ -23,7 +23,7 @@ LAB = {
     "log_vol": r"$\ln\sigma^{[30]}_{i,t+1}$", "vol": r"$\sigma^{[30]}_{i,t+1}$",
     "pre_log_vol": r"$\ln\sigma^{\mathrm{pre}}_{i,t}$", "log_mcap": r"$\ln(\text{Market cap})$",
     "leverage": "Leverage", "roa": "ROA", "asset_growth": "Asset growth",
-    "bm": "Book-to-market", "ret_pre_12m": "Past 12-month return",
+    "bm": "Book-to-market", "ret_pre_12m": "Past 12-month log return",
     "current_ratio": "Current ratio", "ocf_to_assets": "OCF/assets",
     "words_1a": r"Words$^{1A}$", "log_words_1a": r"$\ln(\text{Words}^{1A})$",
     "risk_1a": "RiskDensity", "unc_1a": "UncDensity", "lit_1a": "LitDensity",
@@ -178,7 +178,7 @@ def firm_fe():
     spec = [("(5)_no_ldv_ind+year", "Industry + year"), ("(5)_no_ldv_firm+year", "Firm + year"),
             ("(5)_with_ldv_firm+year", "Firm + year, lagged DV")]
     L = [r"\begin{table}[htbp]", r"\centering", r"\caption{Industry versus firm fixed effects (30-day window)}",
-         r"\label{tab:firm_fe}", r"\small", r"\begin{tabular}{lccc}", r"\toprule",
+         r"\label{tab:firm_fe}", r"\small", r"\resizebox{\linewidth}{!}{\begin{tabular}{lccc}", r"\toprule",
          " & " + " & ".join(f"({i + 1}) {s}" for i, (_, s) in enumerate(spec)) + r" \\", r"\midrule"]
     for v in ["log_words_1a", "unc_1a", "lit_1a", "pre_log_vol", "lagged_log_vol"]:
         rr = [m[(m.column == c) & (m["var"] == v)] for c, _ in spec]
@@ -191,7 +191,7 @@ def firm_fe():
     L += [r"\midrule", "Observations & " + " & ".join(n_(r.n) for r in rr) + r" \\",
           "Firms & " + " & ".join(str(int(r.firms)) for r in rr) + r" \\",
           r"Within $R^2$ & " + " & ".join(f"{r.r2_within:.3f}" for r in rr) + r" \\",
-          r"\bottomrule", r"\end{tabular}"]
+          r"\bottomrule", r"\end{tabular}}"]
     L += note(r"All columns include the common control vector and use the same sample. Column (3) adds "
               r"the lagged dependent variable, which is subject to Nickell bias under firm fixed effects. "
               r"Standard errors clustered two-way by firm and fiscal year. " + SIG)
@@ -293,7 +293,7 @@ def inference():
 def effect_sizes():
     e = pd.read_csv(RES / "effect_sizes_30d.csv")
     L = [r"\begin{table}[htbp]", r"\centering", r"\caption{Economic magnitude of the text coefficients (30-day window)}",
-         r"\label{tab:effects}", r"\small", r"\begin{tabular}{llrrrr}", r"\toprule",
+         r"\label{tab:effects}", r"\small", r"\resizebox{\linewidth}{!}{\begin{tabular}{llrrrr}", r"\toprule",
          r"FE & Variable & SD pooled & SD within firm & \% per pooled SD & \% per within SD \\", r"\midrule"]
     for _, x in e[e.column == "(5)"].iterrows():
         L.append(f"{'Industry' if x.absorb.startswith('ind') else 'Firm'} + year & {LAB[x['var']]} & "
@@ -302,7 +302,7 @@ def effect_sizes():
     for _, y in x.iterrows():
         L.append(f"{'Industry' if y.absorb.startswith('ind') else 'Firm'} + year & RiskDensity (col.\\ 4) & "
                  f"{y.sd_pooled:.4f} & {y.sd_within:.4f} & {y.pct_per_sd_pooled:+.2f} & {y.pct_per_sd_within:+.2f}" + r" \\")
-    L += [r"\bottomrule", r"\end{tabular}"]
+    L += [r"\bottomrule", r"\end{tabular}}"]
     L += note(r"Change in annualised 30-day volatility, $100\,(e^{\hat\beta\,\Delta x}-1)$, for an "
               r"increase of one pooled standard deviation or one within-firm standard deviation "
               r"(deviation from the firm mean) of the variable, using the coefficients of "
@@ -337,7 +337,7 @@ def silence_main():
          r"\begin{tabular}{l" + "c" * len(hs) + "}", r"\toprule",
          " & " + " & ".join(f"{h[:-1]} days" for h in hs) + r" \\", r"\midrule"]
     for meas, title in (("omission_1a", "Omission$^{1A}$"),
-                        ("omission_fixedlen_1a", "Length-invariant omission (3{,}000-token blocks)")):
+                        ("omission_fixedlen_1a", "Block-based omission (3{,}000-token blocks)")):
         for an, ft in (("ind+year", "Industry + year FE"), ("firm+year", "Firm + year FE")):
             rr = [m[(m.measure == meas) & (m.h == h) & (m.absorb == an)].iloc[0] for h in hs]
             L += [rf"\multicolumn{{7}}{{l}}{{\emph{{{title}, {ft}}}}} \\",
@@ -356,7 +356,7 @@ def silence_main():
     write("silence_main", L)
 
 
-H3ROB = [("baseline", "Baseline"), ("fixed_length", "Length-invariant omission"),
+H3ROB = [("baseline", "Baseline"), ("fixed_length", "Block-based omission"),
          ("length_resid", "Residual on $\\ln(\\text{Words}^{1A})$ within cell"),
          ("decile_rank", "Decile rank within cell (cells $\\geq 10$)"),
          ("tail_deciles", "Top-decile dummy (bottom-decile dummy included)"),
@@ -371,7 +371,7 @@ H3ROB = [("baseline", "Baseline"), ("fixed_length", "Length-invariant omission")
 def silence_robust():
     m = pd.read_csv(RES / "h3_robust.csv")
     L = [r"\begin{table}[htbp]", r"\centering", r"\caption{H3 robustness (30-day window)}",
-         r"\label{tab:silence_robust}", r"\small", r"\begin{tabular}{lcrcr}", r"\toprule",
+         r"\label{tab:silence_robust}", r"\small", r"\resizebox{\linewidth}{!}{\begin{tabular}{lcrcr}", r"\toprule",
          r" & \multicolumn{2}{c}{Firm + year FE} & \multicolumn{2}{c}{Industry + year FE} \\",
          r"\cmidrule(lr){2-3}\cmidrule(lr){4-5}", r" & $\hat\beta$ ($t$) & $N$ & $\hat\beta$ ($t$) & $N$ \\",
          r"\midrule"]
@@ -381,8 +381,8 @@ def silence_robust():
             r = m[(m.column == k) & (m.absorb == an)].iloc[0]
             cells += [f"{cell(r.coef, r.p)} {tcell(r.t)}", n_(r.n)]
         L.append(f"{lab} & " + " & ".join(cells) + r" \\")
-    L += [r"\bottomrule", r"\end{tabular}"]
-    L += note(r"H3 specification with one change per row; coefficient on the (modified) omission "
+    L += [r"\bottomrule", r"\end{tabular}}"]
+    L += note(r"The pooled-vocabulary variant uses texts from all years and is retrospective. H3 specification with one change per row; coefficient on the (modified) omission "
               r"measure. Two-way clustered $t$-statistics. " + SIG)
     L += [r"\end{table}"]
     write("silence_robust", L)
@@ -407,7 +407,7 @@ def silence_diag():
         L.append(f"{lab}: share of variance & {d.loc[k, 'var_share']:.3f}" + r" \\")
     L += [r"\midrule", r"\multicolumn{2}{l}{\emph{Correlation with $\ln(\text{Words}^{1A})$, H3 sample}} \\",
           f"Omission$^{{1A}}$ & {g.loc['corr_omission_1a_log_words_1a','value']:.3f}" + r" \\",
-          f"Length-invariant omission & {g.loc['corr_omission_fixedlen_1a_log_words_1a','value']:.3f}" + r" \\",
+          f"Block-based omission & {g.loc['corr_omission_fixedlen_1a_log_words_1a','value']:.3f}" + r" \\",
           f"Pooled-vocabulary omission & {g.loc['corr_omission_pooled_1a_log_words_1a','value']:.3f}" + r" \\",
           f"$N$ & {n_(g.loc['corr_omission_1a_log_words_1a','n'])}" + r" \\",
           r"\bottomrule", r"\end{tabular}"]
@@ -430,7 +430,7 @@ def stationarity():
         L.append(f"{lab[x['var']]} & {int(x.ht_N)} & {x.ht_rho:.3f} & {x.ht_p_sim:.3f} & "
                  f"{int(x.ips1_N)} & {x.ips1_W:.2f} & {x.ips1_p:.3f}" + r" \\")
     L += [r"\bottomrule", r"\end{tabular}"]
-    L += note(r"Variables cross-sectionally demeaned by fiscal year. Harris--Tzavalis: within estimate "
+    L += note(r"$N$ counts firms and $T$ years. $\hat\rho$ estimates persistence; $W_{\bar t}$ is the standardised mean of firm test statistics. Variables cross-sectionally demeaned by fiscal year. Harris--Tzavalis: within estimate "
               r"of $\rho$ on firms observed in every year 2012--2024 ($T=13$); $H_0$: $\rho=1$ for all "
               r"firms; $p$ from 2{,}000 simulated random-walk panels of the same $N$ and $T$. IPS: mean of "
               r"firm ADF $t$-statistics (intercept, one lag; firms with $\geq 8$ consecutive years), "

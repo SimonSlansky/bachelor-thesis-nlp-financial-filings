@@ -337,6 +337,7 @@ def run_robustness(h: str = HEADLINE) -> pd.DataFrame:
     # #33 count specification
     d = load_text_panel(h, xvars=CONTROLS + COUNT_VARS)
     add("counts", fit(d, CONTROLS + COUNT_VARS), absorb="ind+year", cluster="firm+year")
+    add("counts_common_sample", fit(base, CONTROLS + COUNT_VARS), absorb="ind+year", cluster="firm+year")
     # #52 finer industry; regulated industries out
     d = load_text_panel(h, ind="sic3")
     add("sic3_fe", fit(d, X5), absorb="sic3+year", cluster="firm+year")

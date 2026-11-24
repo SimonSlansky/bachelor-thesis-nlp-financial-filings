@@ -46,7 +46,6 @@ pre-filing volatility is the most important control.
 
 \input{tables/correlation_matrix}
 
-
 % ─────────────────────────────────────────────────────────────────────────────
 \section{Length and risk-word density (H1 and H2)}
 \label{sec:joint_results}
@@ -71,7 +70,7 @@ significant.
 negative coefficient ($\hat\beta^{\text{dens}} = -1.845$, $t = -1.70$,
 $p = 0.090$; wild bootstrap $p = 0.092$). Without the length control
 (column 3) it is $-3.408$ ($t = -3.33$). Length and density are negatively
-correlated, so part of the effect in column 3 is really a length effect.
+correlated, so the density-only coefficient also reflects differences in disclosure length.
 H2 is a two-sided test, and the composite coefficient is not significantly
 different from zero at the 5\% level. So \textbf{H2 is not supported at the
 30-day horizon}. At longer horizons the picture changes: from 90 days on, the
@@ -83,19 +82,18 @@ volatility ($\hat\beta^{\text{unc}} = -0.545$, $t = -0.31$), while litigious
 density has a negative coefficient ($\hat\beta^{\text{lit}} = -3.018$,
 $t = -2.90$; wild bootstrap $p = 0.005$). The Wald test cannot reject that
 the two coefficients are equal ($p = 0.179$), so we cannot say that the two
-sub-lists really behave differently. Still, the negative sign of the
-composite comes mainly from the litigious words. This fits the boilerplate
-channel of Section~\ref{sec:h2} better than the risk-content channel, but
-the design cannot show which feature of litigious language is responsible.
+sub-lists really behave differently. A negative litigious coefficient alone 
+cannot establish that legal vocabulary measures boilerplate. The dictionary 
+counts the same word in a routine warning and in a description of a specific lawsuit.
 
 \paragraph{Magnitudes.} Table~\ref{tab:effects} puts the coefficients on a
 common scale. A one pooled standard deviation increase in
 $\ln(\text{Words}^{1A})$ (0.65 log points) goes together with 3.8\% higher
 30-day volatility. A one pooled standard deviation increase in LitDensity
 goes together with 1.4\% lower volatility, and for the composite RiskDensity
-the figure is $-1.2\%$. Changes within a single firm are much smaller (one
-within-firm standard deviation of length is 0.27 log points), so the same
-coefficients imply 1.6\% and $-0.6\%$ for within-firm changes. At the median
+the figure is $-1.2\%$. These magnitudes use the split-list specification 
+for length and litigious density and the composite specification for RiskDensity. 
+They describe differences in fitted volatility. At the median
 volatility of 0.243, a 3.8\% change is about 0.9 percentage points of
 annualised volatility. The text variables explain very little additional
 variance: the within-$R^2$ only rises from 0.363 with controls alone to 0.368
@@ -119,18 +117,14 @@ the Wald test does reject that the two sub-list coefficients are equal
 % ────────────────────────────────────────────────────────────────────────────
 
 Table~\ref{tab:silence_main} shows the H3 specification at six horizons and
-with both fixed-effect structures, for the omission gap and for its
-length-invariant version.
+with both fixed-effect structures, for the full-text and block-based measures.
 
 \input{tables/silence_main}
 
 At the 30-day horizon the omission coefficient is $+0.081$ ($t = +0.37$)
 with industry fixed effects and $+0.475$ ($t = +0.70$) with firm fixed
-effects. None of the ten coefficients in the family of tests is significant,
-even before the Holm adjustment, and all Holm-adjusted $p$-values equal one.
-The length-invariant gap tells the same story ($+0.487$, $t = +1.60$, and
-$+0.351$, $t = +0.58$). Following the decision rule of Section~\ref{sec:h3},
-\textbf{H3 is not supported}: once length, density and the controls are held
-fixed, the omission gap is not related to post-filing volatility.
-Chapter~\ref{ch:robustness} shows that no variant of the measure changes this
-conclusion.
+effects. All ten full-text tests fall short of the 5\% threshold even 
+before adjustment, and all ten adjusted $p$-values equal one. For the block-based gap, 
+the 30-day statistics are $+1.60$ and $+0.58$. The 10-day industry estimate reaches the 
+unadjusted threshold ($t=1.97$), but its adjusted $p$-value is 0.491. Under the stated 
+decision rule, \textbf{H3 is not supported}.
