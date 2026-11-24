@@ -93,12 +93,9 @@ Several controls address specific alternative explanations. A firm whose shares 
 
 Accounting and valuation ratios enter in levels. This preserves losses, negative book equity and declines in assets where they occur. The trailing return already equals the logarithm of the ratio of the last to the first available adjusted price in the pre-filing window. The model uses that signed return directly. Dictionary shares and the omission gap also enter in levels, so their changes can be expressed in percentage points.
 
-An earlier version of this model used a different dynamic control: the
-volatility of a window of the same length after the previous year's 10-K.
-Conditional on pre-filing volatility, the estimated lag coefficient is small and imprecise. Its
-coefficient is $+0.031$ with $t=+0.69$ in the industry fixed-effects model
-(Table~\ref{tab:firm_fe} reports the firm fixed-effects version), so I report
-it only as a robustness check. Each firm's first fiscal year is not in the
+Table~\ref{tab:firm_fe} also reports a supplementary specification with the 
+previous filing's post-filing volatility as an additional control. 
+Each firm's first fiscal year is not in the
 sample, because asset growth needs the previous year's total assets.
 Financial ratios, book-to-market and the past return are winsorised at the
 1st and 99th percentiles of each regression sample. Market capitalisation and
@@ -271,19 +268,15 @@ effects ($a_{i,t}=\mu_i$, one baseline per firm). The controls are the same as i
 Section~\ref{sec:controls}, so the H3 model differs from the H1/H2 model
 by the omission gap and by the availability of eligible peers. At 30 days, 4{,}659 observations qualify for H3.
 
-\paragraph{H3 and the decision rule.} \emph{If length, density and the
-controls are held fixed, a larger omission gap is associated with higher
-post-filing volatility}, that is, $\beta^{\text{om}} > 0$. I recorded the decision rule before re-estimating the models. Testing five horizons (5, 10, 30, 90 and 180 days) with two fixed-effect structures gives ten chances to find a significant result. Holm's procedure orders their two-sided $p$-values and tests the smallest against $0.05/10$, then the next against $0.05/9$ if the first passes, and so on until a test fails. This controls the chance of one or more false rejections across the family \parencite{holm1979}. The 365-day estimate is supplementary.
-
-At the primary 30-day horizon, positive evidence under one fixed-effect structure requires a positive full-text coefficient with adjusted $p<0.05$ and a positive block-based coefficient with unadjusted $p<0.05$. Negative evidence uses the same thresholds and opposite signs. Positive evidence under both structures supports H3. Positive evidence under one with no negative evidence under the other gives partial support. Negative evidence alone contradicts H3. All other outcomes leave H3 unsupported.
-
-% ─────────────────────────────────────────────────────────────────────────────
-\section{Estimation and inference}
-\label{sec:estimation}
-% ─────────────────────────────────────────────────────────────────────────────
-
-All regressions are estimated by ordinary least squares after absorbing the
-fixed effects (\texttt{linearmodels}). The main model allows each industry to have its own average volatility level and each fiscal year to have a common shift. Both persistent differences across firms and changes within firms can contribute to its estimates. The second model gives each firm its own baseline. Its text coefficient asks whether a firm has higher subsequent volatility in years when its disclosure is longer than usual, after adjustment for the controls and year effects. Both models estimate in-sample associations. An out-of-sample forecast would require a separate evaluation.
+I estimate the model with fixed effects (\texttt{linearmodels}). 
+The main model allows each industry to have its own average volatility 
+level and each fiscal year to have a common shift. Both persistent differences 
+across firms and changes within firms can contribute to its estimates. 
+The second model gives each firm its own baseline. Its text coefficient asks 
+whether a firm has higher subsequent volatility in years when its disclosure 
+is longer than usual, after adjustment for the controls and year effects. 
+Both models estimate in-sample associations. An out-of-sample forecast would 
+require a separate evaluation.
 
 \paragraph{Fiscal-year effects.} Year fixed effects absorb shocks that hit all
 firms in a fiscal year. But fiscal years end in different months, so the
@@ -316,23 +309,14 @@ With only 15 fiscal-year clusters, conventional cluster-robust tests may
 reject true null hypotheses too often \parencite{cameron2008}. For the main 30-day H1 and H2 text coefficients, I therefore also report wild cluster-bootstrap $p$-values.
 For each coefficient the check starts from the model in which its true value is zero. It repeatedly gives all observations from the same fiscal year a common random weight on their residuals and recalculates the test statistic. The $p$-value measures how often this produces a statistic at least as extreme as the observed one. This check preserves clustering within fiscal years. The main standard errors also allow for correlation within firms across years. The year-level weights follow \textcite{webb2023}. Table~\ref{tab:inference} gives the implementation details and the results.
 
-\paragraph{Outliers.} Accounting ratios, book-to-market and the past return
-are winsorised as described in Section~\ref{sec:controls}. The text variables
-are not winsorised: $\ln(\text{Words}^{1A})$ ranges from 7.41 to 10.48
-between the 1st and 99th percentiles, and RiskDensity has a maximum of
-0.0772 (Table~\ref{tab:summary}).
+The text variables enter without winsorisation. Table~\ref{tab:summary} 
+reports their distributions.
 
 \paragraph{Sample.} The 30-day estimation sample has 5{,}782 firm-years from
 512 firms; the same firm-years enter the 365-day models.
 Table~\ref{tab:attrition} in Appendix~\ref{app:variables} shows how the sample
 is built, from the SEC ticker list down to this sample.
 
-\paragraph{Limitation: survivorship and look-ahead.} The universe is the
-first 1{,}000 rows of the SEC ticker list as stored in October 2026, used to select the firms. Firms that were delisted, acquired or
-failed during 2010--2024 are missing, and firms that are large today are
-over-represented in the early years: the panel grows from 152 firm-years in
-fiscal year 2010 to over 500 from 2020 (Table~\ref{tab:text_coverage}).
-Firms in distress are likely to be riskier, so the results describe large
-firms that survived. The sample rules themselves only look backwards: the
-liquidity requirement (Section~\ref{sec:sample_selection}) uses prices
-before the filing.
+The sample was selected using the October 2026 SEC list. 
+This limits inference about firms that left the market during the study period 
+(Section~\ref{sec:sample_selection}).
