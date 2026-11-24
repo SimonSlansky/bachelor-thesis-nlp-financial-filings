@@ -268,7 +268,12 @@ effects ($a_{i,t}=\mu_i$, one baseline per firm). The controls are the same as i
 Section~\ref{sec:controls}, so the H3 model differs from the H1/H2 model
 by the omission gap and by the availability of eligible peers. At 30 days, 4{,}659 observations qualify for H3.
 
-I estimate the model with fixed effects (\texttt{linearmodels}). 
+\paragraph{H3 decision rule.} H3 predicts a positive omission coefficient. At the primary 30-day horizon, positive evidence requires a positive full-text estimate with Holm-adjusted $p<0.05$ and a positive block-based estimate with unadjusted $p<0.05$. The adjustment covers five horizons (5, 10, 30, 90 and 180 days) under two fixed-effect structures \parencite{holm1979}. Negative evidence uses the same thresholds with opposite signs. Positive evidence under both structures supports H3, and positive evidence under one with no negative evidence under the other gives partial support. Negative evidence alone contradicts H3. All other outcomes leave H3 unsupported.
+
+\section{Estimation and inference}
+\label{sec:estimation}
+
+I estimate the regressions by ordinary least squares with fixed effects (\texttt{linearmodels}). 
 The main model allows each industry to have its own average volatility 
 level and each fiscal year to have a common shift. Both persistent differences 
 across firms and changes within firms can contribute to its estimates. 
