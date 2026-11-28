@@ -1,7 +1,7 @@
-"""Verify bibliography entries against the Crossref REST API (Phase 6).
+"""Verify bibliography entries against the Crossref REST API.
 
-For every entry in tex/bibliography.bib plus the CANDIDATES below (references
-the revision plans to add), query Crossref (by DOI if known, else by
+For the bibliography entries and the additional titles in CANDIDATES,
+query Crossref (by DOI if known, else by
 bibliographic query) and record the best match: DOI, title, authors, journal,
 year, volume, issue, pages, and a similarity score against the stored title.
 Nothing is written to the .bib automatically.

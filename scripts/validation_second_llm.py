@@ -1,12 +1,12 @@
 """Second, independent LLM audit of the stored extraction sample (#22).
 
-Reviewer: Claude Opus 5.5 (Anthropic), run on 1 Nov 2026 inside the coding
-agent, blind to the Gemini verdicts.  Input per section: claimed section, word
+Claude Opus 5.5 (Anthropic) rated the excerpts on 1 Nov 2026 without access
+to the Gemini ratings.  Input per section: claimed section, word
 count, the first and last 1,200 characters and a 600-character middle excerpt
 of the stored text (whitespace collapsed); no surrounding filing.  Same
 five-criterion Pass/Minor/Fail rubric as validate_extraction.py.
 
---collect  merges the reviewer's batch files (local scratch) into
+--collect  merges the saved audit batches into
            data/extraction_validation_claude.csv
 default    compares the two audits -> data/results/validation_llm_agreement.csv
 """

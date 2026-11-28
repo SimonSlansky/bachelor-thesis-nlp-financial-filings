@@ -1,8 +1,6 @@
-"""Generate polished bachelor thesis presentation in FIS VŠE template.
+"""Generate the thesis presentation using the FIS VŠE template.
 
-v3 — expanded to 15 slides with proper explanation of key constructs.
-Each slide uses a different layout (cards, flowchart, native charts, concept
-diagrams). All charts are native PowerPoint charts so they stay editable.
+Charts are stored as editable PowerPoint objects.
 """
 from __future__ import annotations
 from pathlib import Path
@@ -352,7 +350,7 @@ add_callout(s, Cm(1.2), Cm(13.0), Cm(22.5), Cm(2.0),
 
 
 # ======================================================================
-# 3 \u2014 NEW: What is Item 1A + why it matters
+# 3 \u2014 What is Item 1A + why it matters
 # ======================================================================
 s = new_slide("Co je Item 1A a pro\u010d na n\u011bm z\u00e1le\u017e\u00ed", 3)
 
@@ -481,7 +479,7 @@ add_arrow(s, SW // 2, flow_top + flow_h, SW // 2, out_y,
 
 
 # ======================================================================
-# 6 \u2014 NEW: Data quality \u2014 tag locking + LLM audit
+# 6 \u2014 Data quality \u2014 tag locking + LLM audit
 # ======================================================================
 s = new_slide("Kvalita dat \u2014 XBRL tag locking a LLM audit", 6)
 
@@ -531,7 +529,7 @@ add_callout(s, Cm(1.2), Cm(15.2), Cm(22.5), Cm(1.3),
 
 
 # ======================================================================
-# 7 \u2014 NEW: LM dictionary explanation
+# 7 \u2014 LM dictionary explanation
 # ======================================================================
 s = new_slide("LM slovn\u00edk \u2014 co m\u011b\u0159\u00ed Litigious a Uncertainty", 7)
 
@@ -750,7 +748,7 @@ add_callout(s, Cm(1.2), Cm(13.7), Cm(22.5), Cm(1.7),
 
 
 # ======================================================================
-# 11 \u2014 NEW: Construction of Omission\u2081\u2090
+# 11 \u2014 Construction of Omission\u2081\u2090
 # ======================================================================
 s = new_slide("Konstrukce Omission\u2081\u2090 \u2014 peer-relativn\u00ed opomenut\u00ed", 11)
 

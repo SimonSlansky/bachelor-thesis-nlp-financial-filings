@@ -4,8 +4,8 @@ Draws a seeded stratified random sample of stored sections from the LLM-audited
 sample (data/validation_sample.csv, whose texts are identical to
 data/text_sections.csv) plus every non-empty section the LLM failed on
 identity or boundaries, so that human-LLM agreement can be computed.
-Writes admin/human_labels_template.csv. LLM verdicts are NOT included (blind).
-The owner fills correct_section / start_ok / end_ok (1 = yes, 0 = no).
+Writes admin/human_labels_template.csv. The template hides the model ratings from the reviewer.
+The human reviewer records correct_section / start_ok / end_ok (1 = yes, 0 = no).
 Refuses to overwrite a template that already contains labels.
 """
 import sys

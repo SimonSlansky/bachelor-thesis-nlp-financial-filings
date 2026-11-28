@@ -40,7 +40,7 @@ LEN_VAR, DENS_VAR, UNC_VAR, LIT_VAR = "log_words_1a", "risk_1a", "unc_1a", "lit_
 TEXT_VARS = [LEN_VAR, DENS_VAR, UNC_VAR, LIT_VAR]
 COUNT_VARS = [LEN_VAR, "log_n_unc_1a", "log_n_lit_1a"]
 
-# Pre-revision specification, kept only for old-vs-new comparisons.
+# Previous control set for comparing model specifications.
 ORIG_CONTROLS = ["lagged_log_vol", "log_total_assets", "leverage", "roa",
                  "asset_growth"]
 
@@ -264,8 +264,8 @@ def run_horizons() -> pd.DataFrame:
 
 
 def run_firm_fe(h: str = HEADLINE) -> pd.DataFrame:
-    """Firm+year FE without the lagged DV (pre_log_vol is the dynamic
-    control); the LDV version is reported for the Nickell comparison (#44)."""
+    """Compare industry and firm fixed effects with pre-filing volatility as a control.
+    Also store the supplementary estimates with a lagged outcome."""
     rows = []
     df = load_text_panel(h, extra=("lagged_log_vol",))
     for col in ("(4)", "(5)"):
@@ -308,17 +308,17 @@ def run_robustness(h: str = HEADLINE) -> pd.DataFrame:
     base = load_text_panel(h)
     add("baseline", fit(base, X5), absorb="ind+year", cluster="firm+year")
 
-    # #30 market volatility over the outcome window
+    # market volatility over the outcome window
     d = load_text_panel(h, extra=("log_mkt_vol",))
     add("mktvol", fit(d, X5 + ["log_mkt_vol"]), absorb="ind+year", cluster="firm+year")
-    # #32 earnings releases: the EA dummy is ~0 at h <= 30d and ~1 at h >= 90d,
+    # earnings releases: the EA dummy is ~0 at h <= 30d and ~1 at h >= 90d,
     # so (i) drop windows that contain a release and (ii) drop release days
     d = base[pd.to_numeric(base["ea"], errors="coerce") != 1]
     add("excl_ea_windows", fit(d, X5), absorb="ind+year", cluster="firm+year",
         n_ea_windows_dropped=int(len(base) - len(d)))
     d = load_text_panel(h, dv="exea")
     add("vol_excl_ea_days", fit(d, X5), absorb="ind+year", cluster="firm+year", dv="exea")
-    # #30 filing-month x year FE
+    # filing-month x year FE
     d = load_text_panel(h, extra=("fm_year",))
     add("fm_year_fe", fit(d, X5, absorb=("ind", "fm_year")), absorb="ind+filing_month_x_year",
         cluster="firm+year")
@@ -331,14 +331,14 @@ def run_robustness(h: str = HEADLINE) -> pd.DataFrame:
     dec = base[base["fye_month"] == 12]
     add("dec_fye_only", fit(dec, X5), absorb="ind+year", cluster="firm+year",
         n_nondec_dropped=int(len(base) - len(dec)))
-    # #30 idiosyncratic volatility as DV
+    # idiosyncratic volatility as DV
     d = load_text_panel(h, dv="idio")
     add("idio_vol", fit(d, X5), absorb="ind+year", cluster="firm+year", dv="idio")
-    # #33 count specification
+    # count specification
     d = load_text_panel(h, xvars=CONTROLS + COUNT_VARS)
     add("counts", fit(d, CONTROLS + COUNT_VARS), absorb="ind+year", cluster="firm+year")
     add("counts_common_sample", fit(base, CONTROLS + COUNT_VARS), absorb="ind+year", cluster="firm+year")
-    # #52 finer industry; regulated industries out
+    # finer industry; regulated industries out
     d = load_text_panel(h, ind="sic3")
     add("sic3_fe", fit(d, X5), absorb="sic3+year", cluster="firm+year")
     d = load_text_panel(h, ind="sic2")
@@ -352,13 +352,13 @@ def run_robustness(h: str = HEADLINE) -> pd.DataFrame:
     hist = base["sic_hist"] if "sic_hist" in base else base["sic"]
     d = base[~(hist.between(4900, 4999) | hist.between(8000, 8099))]
     add("excl_sic49_80", fit(d, X5), absorb="ind+year", cluster="firm+year")
-    # #60 post-2019 interaction (main effect absorbed by year FE)
+    # post-2019 interaction (main effect absorbed by year FE)
     d = base.copy()
     for v in DECOMP:
         d[f"{v}_x_post"] = d[v] * d["post2019"]
     add("post2019_interaction", fit(d, X5 + [f"{v}_x_post" for v in DECOMP]),
         absorb="ind+year", cluster="firm+year")
-    # #47 timing: lagged text; level(t-1) + change
+    # timing: lagged text; level(t-1) + change
     d = _timing_panel(h)
     lag = [f"{v}_lag1" for v in DECOMP]
     dd = d.dropna(subset=lag)
@@ -367,17 +367,17 @@ def run_robustness(h: str = HEADLINE) -> pd.DataFrame:
     dd = d.dropna(subset=lag + dch)
     add("text_lag1_plus_change", fit(dd, CONTROLS + lag + dch), absorb="ind+year",
         cluster="firm+year")
-    # #48 balanced sub-panel: firms present in every FY 2012-2024
+    # balanced sub-panel: firms present in every FY 2012-2024
     d = base[base["fiscal_year"].between(2012, 2024)]
     full = d.groupby("ticker")["fiscal_year"].nunique() == 13
     d = d[d["ticker"].isin(full[full].index)]
     add("balanced_2012_2024", fit(d, X5), absorb="ind+year", cluster="firm+year")
-    # #6 minimum years per firm in the estimation sample
+    # minimum years per firm in the estimation sample
     ny = base.groupby("ticker")["fiscal_year"].transform("nunique")
     for k in (3, 5, 7):
         add(f"min_years_{k}", fit(base[ny >= k], X5), absorb="ind+year",
             cluster="firm+year")
-    # #17 drop imputed rows
+    # drop imputed rows
     flags = [c for c in base.columns if c.startswith("imputed_")]
     imp = base[flags].apply(_bool).any(axis=1) if flags else pd.Series(False, index=base.index)
     add("drop_imputed", fit(base[~imp], X5), absorb="ind+year", cluster="firm+year",
@@ -386,7 +386,7 @@ def run_robustness(h: str = HEADLINE) -> pd.DataFrame:
     d = load_text_panel(h, extra=("lagged_log_vol",))
     add("plus_lagged_dv", fit(d, X5 + ["lagged_log_vol"]), absorb="ind+year",
         cluster="firm+year")
-    # #8 one-way clustering alternatives
+    # one-way clustering alternatives
     add("cluster_firm", fit(base, X5, cluster=("ticker",)), absorb="ind+year", cluster="firm")
     add("cluster_year", fit(base, X5, cluster=("fiscal_year",)), absorb="ind+year",
         cluster="year")

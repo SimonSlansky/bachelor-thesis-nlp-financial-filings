@@ -1,6 +1,6 @@
 """Human vs LLM agreement for the extraction audit (#22).
 
-Reads the owner-filled admin/human_labels_template.csv (columns correct_section,
+Reads the manually labelled admin/human_labels_template.csv (columns correct_section,
 start_ok, end_ok coded 1/0) and data/extraction_validation.csv.  LLM ratings
 Pass/Minor = 1, Fail = 0.  Reports per criterion and for "all three OK":
 raw agreement and Cohen's kappa on all labelled rows, and the human error rate

@@ -2,12 +2,10 @@
 
 For every (ticker, fiscal_year, accession) in data/annual_panel.csv:
 
-* ``sic_at_filing``  — SIC code in the EDGAR header of THAT filing
-                        (historical, not today's SIC; #72).
-* ``src_1a`` / ``src_7`` — DISABLED by owner decision (no 10-K re-download).
-                        Columns stay empty; #26 is handled as a documented
-                        limitation.  ``--with-section-source`` re-enables it
-                        (downloads every 10-K again — do not use).
+* ``sic_at_filing``  — historical SIC code from the filing header.
+* ``src_1a`` / ``src_7`` — section source for Items 1A and 7. Empty by default.
+                        Use ``--with-section-source`` to download each 10-K
+                        and identify where the sections came from.
 
 Writes data/filing_metadata.csv.  Resumable; 1 small header request per filing.
 Usage:  python scripts/backfill_filing_metadata.py
