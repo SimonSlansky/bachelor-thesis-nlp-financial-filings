@@ -3,31 +3,29 @@
 \caption{Industry versus firm fixed effects (30-day window)}
 \label{tab:firm_fe}
 \small
-\resizebox{\linewidth}{!}{\begin{tabular}{lccc}
+\begin{tabular}{lcc}
 \toprule
- & (1) Industry + year & (2) Firm + year & (3) Firm + year, lagged DV \\
+ & (1) Industry + year & (2) Firm + year \\
 \midrule
-$\ln(\text{Words}^{1A})$ & $+0.058$*** & $+0.009$ & $+0.015$ \\
- & $(+4.54)$ & $(+0.45)$ & $(+0.65)$ \\[2pt]
-UncDensity & $-0.545$ & $-2.372$ & $-2.492$ \\
- & $(-0.31)$ & $(-1.25)$ & $(-1.19)$ \\[2pt]
-LitDensity & $-3.018$*** & $-3.132$ & $-3.327$ \\
- & $(-2.90)$ & $(-1.02)$ & $(-1.05)$ \\[2pt]
-$\ln\sigma^{\mathrm{pre}}_{i,t}$ & $+0.584$*** & $+0.436$*** & $+0.451$*** \\
- & $(+9.85)$ & $(+6.53)$ & $(+8.05)$ \\[2pt]
-$\ln\sigma^{[30]}_{i,t}$ (lagged) &  &  & $-0.099$ \\
- &  &  & $(-1.46)$ \\[2pt]
+$\ln(\text{Words}^{1A})$ & $+0.058$*** & $+0.009$ \\
+ & $(+4.54)$ & $(+0.45)$ \\[2pt]
+UncDensity & $-0.545$ & $-2.372$ \\
+ & $(-0.31)$ & $(-1.25)$ \\[2pt]
+LitDensity & $-3.018$*** & $-3.132$ \\
+ & $(-2.90)$ & $(-1.02)$ \\[2pt]
+$\ln\sigma^{\mathrm{pre}}_{i,t}$ & $+0.584$*** & $+0.436$*** \\
+ & $(+9.85)$ & $(+6.53)$ \\[2pt]
 \midrule
-RiskDensity in column-(4) specification & $-1.845$* & $-2.727$ & $-2.883$ \\
- & $(-1.70)$ & $(-1.31)$ & $(-1.31)$ \\
+RiskDensity (combined dictionary model) & $-1.845$* & $-2.727$ \\
+ & $(-1.70)$ & $(-1.31)$ \\
 \midrule
-Observations & 5,782 & 5,782 & 5,782 \\
-Firms & 512 & 512 & 512 \\
-Within $R^2$ & 0.368 & 0.115 & 0.125 \\
+Observations & 5,782 & 5,782 \\
+Firms & 512 & 512 \\
+Within $R^2$ & 0.368 & 0.115 \\
 \bottomrule
-\end{tabular}}
+\end{tabular}
 \par\smallskip
 \begin{minipage}{\linewidth}\footnotesize
-\emph{Notes.} All columns include the common control vector and use the same sample. Column (3) adds the lagged dependent variable, which is subject to Nickell bias under firm fixed effects. Standard errors clustered two-way by firm and fiscal year. $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.
+\emph{Notes.} Both columns use the same filings and controls. Standard errors clustered two-way by firm and fiscal year. $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.
 \end{minipage}
 \end{table}

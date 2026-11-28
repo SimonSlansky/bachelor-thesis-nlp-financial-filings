@@ -49,7 +49,7 @@ def fig_volatility_time() -> None:
     ax.plot(s["fiscal_year"], s["median"], color="black", linewidth=1.6, marker="o",
             markersize=3.5, label="Median")
     ax.set_xlabel("Fiscal year")
-    ax.set_ylabel(r"Annualised 30-day volatility $\sigma^{[30]}_{i,t+1}$")
+    ax.set_ylabel(r"Annualised 30-day volatility $\sigma^{[30]}_{i,t,\mathrm{post}}$")
     ax.set_xticks(s["fiscal_year"][::2])
     ax.legend(loc="upper left", frameon=True, facecolor="white", edgecolor="0.85", fontsize=9)
     _save(fig, "fig_volatility_time.pdf")
@@ -151,7 +151,7 @@ def fig_timeline() -> None:
     ax.annotate("", xy=(6.6, 0.4), xytext=(1.9, 0.4),
                 arrowprops=dict(arrowstyle="<->", color="black", linewidth=1.2))
     ax.text(4.25, 0.5, "outcome window: $h$ calendar days\n"
-            r"$\ln\sigma^{[h]}_{i,t+1}$, market and idiosyncratic volatility",
+            r"$\ln\sigma^{[h]}_{i,t,\mathrm{post}}$ (firm volatility)",
             ha="center", va="bottom", fontsize=8)
     ax.annotate("", xy=(-0.05, 1.05), xytext=(-1.4, 1.05),
                 arrowprops=dict(arrowstyle="<->", color="0.4", linewidth=1.0))

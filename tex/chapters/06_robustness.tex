@@ -47,16 +47,9 @@ Appendix~\ref{app:variables} repeats it at 365 days).
 
 \input{tables/robustness_30d}
 
-Length remains positive in the alternative samples, timing rules and industry 
-definitions. The count-based model is an important exception. In the main model 
-a longer section at fixed density contains proportionally more dictionary words. 
-In the count model a longer section at fixed dictionary counts contains more other 
-words. Its length coefficient is $-0.050$ ($t=-1.76$), and the sample rises from 
-5{,}782 to 5{,}855. Re-estimating the count model on the original 5{,}782 observations 
-gives a positive length coefficient ($+0.115$, $t=2.00$). The sign reversal in the larger 
-sample therefore cannot be attributed to the choice of counts alone. Litigious density 
-is sensitive to sample selection: excluding imputed balance-sheet observations reduces 
-its coefficient from $-3.018$ to $-1.761$ ($t=-1.05$).
+The length coefficient stays positive when I compare firms that filed in the same calendar month and when I exclude imputed balance-sheet values. Excluding those values weakens the legal-word coefficient from $-3.018$ to $-1.761$ ($t=-1.05$).
+
+Using word counts changes the comparison. At a fixed dictionary share, a longer section contains more dictionary words. At a fixed dictionary count, the extra words come from outside the dictionaries. The count model also admits 73 additional filings because counts are available for some short or poorly extracted sections that have no measured density. Its length coefficient is $-0.050$ ($t=-1.76$) across all 5{,}855 observations and $+0.115$ ($t=2.00$) on the original 5{,}782. The change in sign therefore depends on which filings enter the comparison.
 
 \input{tables/inference}
 
@@ -81,10 +74,7 @@ in magnitude under the two designs, but much less precise with firm effects.
 Only 18\% of the variation in log length and 19\% of the variation in litigious 
 density occurs within firms (Table~\ref{tab:variance}). The data therefore give 
 clearer evidence for differences across firms than for a relationship within the 
-same firm. Column 3 adds last year's post-filing outcome. With short firm histories, 
-subtracting each firm's average makes this lag partly correlated with the remaining error, 
-which can bias its coefficient \parencite{nickell1981}. The main comparison uses 
-columns 1 and 2, which control for volatility measured before the current filing.
+same firm. Disclosure practices can change slowly, and the short firm histories make long-run patterns difficult to assess.
 
 \input{tables/variance_decomposition}
 
@@ -105,13 +95,7 @@ include zero.}
 \label{sec:robustness_silence}
 % ─────────────────────────────────────────────────────────────────────────────
 
-H3 is not supported in Chapter~\ref{ch:results}. The main measurement limitation 
-is the relationship with section length. Additional checks appear in Appendix~\ref{sec:app_robust}.
-
-\paragraph{Length.} The omission gap is strongly related to length:
-$r = -0.915$ with $\ln(\text{Words}^{1A})$ in the H3 sample of 4{,}659
-firm-years (Figure~\ref{fig:omission_length}), indicating that the measure
-is closely tied to disclosure length.
+Figure~\ref{fig:omission_length} shows why section length matters for H3. Longer sections cover more of their peers' vocabulary. Across the 4{,}659 firm-years in the H3 sample, the full-text gap has a correlation of $-0.915$ with log section length.
 
 \begin{figure}[htbp]
 \centering
@@ -121,7 +105,4 @@ firm-year of the 30-day H3 sample, with the OLS fit.}
 \label{fig:omission_length}
 \end{figure}
 
-The 3{,}000-token block check weakens this relationship and yields no 
-significant coefficient at the primary 30-day horizon under either fixed-effect 
-structure. Because the two measures still depend on vocabulary and available peers, 
-the results leave open whether firms omit economically important risks.
+Using passages of a common target length weakens the correlation with log section length and reverses its sign ($r=+0.424$). At 30 days the block-based gap has no statistically significant association with volatility in either model. A missing word may simply mean that the firm described the same risk differently. Appendix~\ref{sec:app_robust} reports the estimates.

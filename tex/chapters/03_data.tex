@@ -88,16 +88,14 @@ fiscal calendar, so 10-K filings from the same fiscal year are released at
 different points in calendar time (Table~\ref{tab:timing} in
 Appendix~\ref{app:variables}). In the estimation sample, 72.6\% of
 firm-years end in December, while 145 of the 512 firms have fiscal year-ends
-between January and November. The median lag between fiscal-period end and
+between January and November. A December year-end aligns the accounting periods, but each firm can file on a different date and face different market conditions after filing. The median lag between fiscal-period end and
 filing is 53 days (10th to 90th percentile: 38 to 59 days), which places most
 filings in February. This concentration reflects the sample's focus on large
 firms, which typically file annual reports relatively soon after fiscal
 year-end. Despite this clustering, filing dates for a given fiscal year are
 dispersed over more than a full calendar year. To ensure comparability across
 firms, all timing variables are anchored to each firm's own filing date.
-Post-filing volatility windows, pre-filing volatility windows, and the
-lagged-volatility control are all defined relative to the firm's filing day
-rather than a common calendar date (Section~\ref{sec:outcome}). Accounting
+I use the filing date to set the windows for both pre-filing and post-filing volatility (Section~\ref{sec:outcome}). Accounting
 variables and textual measures are likewise taken from the filing that opens
 the measurement window. Fiscal years are assigned using the actual
 reporting-period end rather than the fiscal-year-end month currently reported
@@ -108,46 +106,10 @@ the previous filing corresponds to the same fiscal year one year earlier,
 preventing changes in fiscal-year ends from creating lags of unequal length.
 Finally, because fiscal-year fixed effects cannot fully absorb calendar-time
 shocks when filings from the same fiscal year are spread across many months,
-the robustness checks replace fiscal-year fixed effects with filing-month fixed
-effects and restrict the sample to December year-end firms
+I repeat the regression with an effect for each calendar year and month of filing
 (Section~\ref{sec:robustness_h12}).
 
-\paragraph{Tag choices.} One accounting concept can be reported under several
-US-GAAP elements, so the elements must be mapped explicitly
-\parencite{chychyla2015}. Two kinds of alternatives are handled differently.
-\begin{itemize}
-  \item \emph{Equivalent tags} measure the same quantity and are used
-    interchangeably. Net income is measured on a consolidated basis:
-    \texttt{ProfitLoss} (including non-controlling interests, NCI) where a
-    firm reports it, and \texttt{NetIncomeLoss} otherwise, as a proxy where the consolidated tag is unavailable. This makes ROA consistent
-    with total assets, which also include NCI.
-  \item \emph{Approximately equivalent tags.} The two operating-cash-flow
-    tags (total and continuing operations) differ when a firm has cash flows
-    from discontinued operations, so they are not strictly equivalent. The
-    panel uses the total-operations tag where it exists and the
-    continuing-operations tag otherwise, without locking, and accepts the
-    difference as measurement error in one control variable. The size of
-    this error is reported below.
-  \item \emph{Non-equivalent tags}, such as stockholders' equity with or
-    without NCI, or income from continuing operations versus net income, are
-    \emph{locked} per firm: each firm keeps the tag it reports in most years,
-    and values under other tags are set to missing. The choice uses the
-    firm's whole history, a mild look-ahead in which tag is used, not in the
-    values.
-\end{itemize}
-
-Table~\ref{tab:tag_provenance} in Appendix~\ref{app:variables} reports the
-tag choices, the values lost to locking (637 of 7{,}900 equity values, 38
-net-income values, no cash-flow values) and the differences between paired
-tags in firm-years that report both. Where both net-income tags are present
-(3{,}838 firm-years), the median absolute difference is 0.043\% of total
-assets, but the 99th percentile is 3.56\% and the maximum 37.4\%; in 303
-firm-years (7.9\%) the difference exceeds 1\% of total assets, which we call
-material. These discrepancies show why the fallback can introduce measurement error in ROA. For the two
-operating-cash-flow tags (417 firm-years) the difference exceeds 1\% of
-assets in 50 firm-years (12.0\%), with a median of 0.035\%. The cash-flow
-differences are therefore material in a non-trivial share of the overlapping
-firm-years, which is why the two tags are not called equivalent above. Operating cash flow over assets is one of nine controls.
+\paragraph{Accounting tags.} Firms sometimes use different XBRL tags for the same line in their accounts \parencite{chychyla2015}. I use consolidated net income where available and the parent company's net income as a fallback. For operating cash flow, I use the total where available and cash flow from continuing operations otherwise. These substitutions can affect the financial ratios. For items such as equity, I use the definition a firm reports most often across its history and leave other observations missing. Appendix~\ref{sec:tag_provenance} compares the tags and reports how often the choice matters.
 
 \paragraph{Missing balance-sheet values.} If total liabilities are missing,
 they are computed as total assets minus stockholders' equity (2{,}171
@@ -305,21 +267,7 @@ against the original EDGAR filings, without seeing the LLM ratings: 50 were
 drawn at random within the same strata, and one additional section was
 flagged by an LLM.
 
-Under the first audit, 187 of 200 sections (93.5\%, Wilson 95\% interval
-89.2--96.2\%) were acceptable on all five criteria (Pass or Minor), and 179
-(89.5\%) were rated Pass on all five. The 13 sections with a Fail include
-five with no extracted text. By stratum, five fall in 2010--2012, three in
-2013--2015, two each in 2016--2018 and 2019--2021, and one in 2022--2024.
-Under the second audit, 190 sections (95.0\%, 91.0--97.3\%) were acceptable.
-Both audits reject the same eight sections (Table~\ref{tab:ai_validation} in
-Appendix~\ref{app:ai-usage}). In the manual check, all 51 sections were the
-correct section. Four had a boundary error: two started inside Item~1, one
-ran a few lines into the financial statements, and one ran through Item~8.
-Three of those errors were among the 50 random sections, implying an error
-rate of 6.0\% (Wilson 95\% interval 2.1--16.2\%). The manual verdict on the
-three criteria matches the first audit on all 51 sections and the second on
-50. Errors are more common in early filings, whose structure is less
-standardised.
+The two models rated 187 and 190 of the 200 sections acceptable, respectively. Both flagged the same eight sections. In the manual check, all 51 extracts came from the correct section. Three of the 50 randomly selected extracts had a boundary error (6\%). The separately flagged extract also had a boundary error. Of the four affected extracts, two started in Item~1 and two extended into later material. Appendix~\ref{app:ai-usage} gives the audit results.
 
 The exhibit fallback addresses filings that incorporate part of the annual report by reference \parencite[General Instruction G(2)]{sec_form10k_2014}. Its contribution to overall coverage was not recorded. Overall, the parser uses document structure to reduce section-identification
 errors while retaining the risk that headings with atypical formatting may be

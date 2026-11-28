@@ -24,10 +24,7 @@ litigious words (0.0165).
 
 Figure~\ref{fig:vol_time} shows the median 30-day post-filing volatility by
 fiscal year, together with the inter-quartile range. Volatility is highest
-for fiscal year 2019. Those 10-Ks were filed in early 2020, just before and
-during the market turmoil of spring 2020. The fiscal-year fixed effects
-remove such common shocks as long as they affect all filings of the same
-fiscal year.
+for fiscal year 2019. Many of those 10-Ks were filed in early 2020. Some post-filing windows therefore included the market turmoil of spring 2020. Fiscal-year effects account for the average difference across fiscal years, while firms filing in different months can still face different market conditions.
 
 \begin{figure}[htbp]
 \centering
@@ -46,6 +43,14 @@ consistent with volatility persisting across the filing date.
 
 \input{tables/correlation_matrix}
 
+\subsection*{Delta Air Lines during COVID-19}
+Delta's annual report filed on 13 February 2020 shows how the accounts and the risk section can describe different moments (Table~\ref{tab:delta_case}). In fiscal 2019, operating cash flow was 13.1\% of assets. By the filing date, Delta had suspended flights to China. Item~1A described the suspension and warned that a wider outbreak could reduce demand for air travel \parencite{delta_fy2019}. Investors already knew about the suspension from Delta's announcement on 31 January \parencite{delta_china}. Further news followed during the volatility window. On 10 March, Delta announced capacity cuts and measures to preserve cash \parencite{delta_march}. From the close on 18 February to the close on 19 March, Delta shares lost 63.1\%. The annualised volatility of their 22 daily returns was 144.7\%, compared with 79.3\% for the market benchmark. These figures reflect a month that included both company news and large market movements.
+
+\input{tables/delta_case}
+
+A year later, Delta described how travel restrictions and falling demand had affected its entire network \parencite{delta_fy2020}. Operating cash flow had turned negative. Item~1A grew from 5{,}851 to 8{,}133 words, yet volatility after the filing fell to 34.8\%. The number of dictionary risk words also rose, from 252 to 322. Their share fell from 4.31\% to 3.96\% because the rest of the section grew faster. In this case, reading the warning identifies the business risk that a word count alone cannot show. \textcite{davis2020covid} likewise use the content of earlier risk sections to study how firms' stock returns differed during the pandemic.
+
+
 % ─────────────────────────────────────────────────────────────────────────────
 \section{Length and risk-word density (H1 and H2)}
 \label{sec:joint_results}
@@ -62,9 +67,7 @@ together with higher post-filing volatility: $\hat\beta^{\text{len}} =
 +0.053$ ($t = +4.51$). The coefficient is similar in columns 2 and 5, and it
 stays significant under a wild cluster bootstrap by year ($p = 0.001$;
 Table~\ref{tab:inference}). \textbf{H1 is supported} in the industry
-fixed-effects design. However, Section~\ref{sec:robustness_firmfe} shows that
-the corresponding firm fixed-effects coefficient is not statistically
-significant.
+fixed-effects design. Does the same firm also have more volatile returns in years when it writes a longer risk section? In that comparison the joint-model length estimate falls to $+0.008$ and is imprecise (Table~\ref{tab:inference}). Firms with longer sections tend to have higher volatility, but the data give little evidence of a similar year-to-year association within a firm.
 
 \paragraph{H2.} When length is held fixed, the composite RiskDensity has a
 negative coefficient ($\hat\beta^{\text{dens}} = -1.845$, $t = -1.70$,
@@ -77,12 +80,10 @@ different from zero at the 5\% level. So \textbf{H2 is not supported at the
 composite coefficient is negative and significant at the 5\% level
 ($t = -3.33$ at 365 days; Table~\ref{tab:main_365d}).
 
-\paragraph{Sub-lists.} In column 5, uncertainty density is not related to
+\paragraph{Sub-lists.} In column 5, the estimate for uncertainty density gives little evidence of an association with
 volatility ($\hat\beta^{\text{unc}} = -0.545$, $t = -0.31$), while litigious
 density has a negative coefficient ($\hat\beta^{\text{lit}} = -3.018$,
-$t = -2.90$; wild bootstrap $p = 0.005$). The Wald test cannot reject that
-the two coefficients are equal ($p = 0.179$), so we cannot say that the two
-sub-lists really behave differently. A negative litigious coefficient alone 
+$t = -2.90$; wild bootstrap $p = 0.005$). A direct test gives $p=0.179$ for the difference between the two coefficients. At 30 days the evidence is too weak to conclude that legal words and uncertainty words have different associations with volatility. A negative litigious coefficient alone
 cannot establish that legal vocabulary measures boilerplate. The dictionary 
 counts the same word in a routine warning and in a description of a specific lawsuit.
 
@@ -105,7 +106,7 @@ variance: the within-$R^2$ only rises from 0.363 with controls alone to 0.368
 columns with the 365-day window on the same firm-years. Length is still
 positive ($+0.084$, $t = +8.64$ in column 5), LitDensity is still negative
 ($-4.709$, $t = -5.38$), and UncDensity is not significant. At this horizon
-the Wald test does reject that the two sub-list coefficients are equal
+the two coefficients differ significantly
 ($p < 0.001$).
 
 \input{tables/main_365d}
@@ -116,15 +117,4 @@ the Wald test does reject that the two sub-list coefficients are equal
 \label{sec:silence_results}
 % ────────────────────────────────────────────────────────────────────────────
 
-Table~\ref{tab:silence_main} shows the H3 specification at six horizons and
-with both fixed-effect structures, for the full-text and block-based measures.
-
-\input{tables/silence_main}
-
-At the 30-day horizon the omission coefficient is $+0.081$ ($t = +0.37$)
-with industry fixed effects and $+0.475$ ($t = +0.70$) with firm fixed
-effects. All ten full-text tests fall short of the 5\% threshold even 
-before adjustment, and all ten adjusted $p$-values equal one. For the block-based gap, 
-the 30-day statistics are $+1.60$ and $+0.58$. The 10-day industry estimate reaches the 
-unadjusted threshold ($t=1.97$), but its adjusted $p$-value is 0.491. Under the stated 
-decision rule, \textbf{H3 is not supported}.
+At 30 days, the full-text omission coefficient is $+0.081$ with industry fixed effects ($t=0.37$) and $+0.475$ with firm fixed effects ($t=0.70$). Using blocks of text gives $t=1.60$ and $t=0.58$, respectively. None of the four estimates reaches the 5\% threshold, even before adjustment for multiple tests. \textbf{H3 is not supported.} Table~\ref{tab:silence_main} in the appendix reports all horizons.

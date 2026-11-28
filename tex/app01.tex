@@ -19,22 +19,16 @@ sources and timing of all variables are documented in the file
 \section{XBRL tags}
 \label{sec:tag_provenance}
 
+Consolidated net income includes income attributable to non-controlling interests (NCI). The parent-only figure excludes it. The operating cash flow tags differ when discontinued operations have cash flows. For equity and for competing income measures such as continuing-operations income, the panel keeps the tag a firm reports most often. This uses later filings to choose a definition, while each value still comes from the filing for the year concerned.
+
+Table~\ref{tab:tag_provenance} measures the size of these differences when a firm reports both figures. The net-income tags differ by more than 1\% of total assets in 303 of 3{,}838 firm-years. The two operating cash flow tags differ by that much in 50 of 417 firm-years.
+
 \input{tables/tag_provenance}
 
 \section{Filing-frequency pilot tests}
 \label{sec:freq_diagnostics}
 
-The following tables come from the pilot tests described in
-Section~\ref{sec:annual_vs_quarterly}. They cover 30 firms (financial data)
-and 15 firms (text) and are illustrations, not estimates for the panel.
-
-\input{tables/q4_reliability}
-\input{tables/text_availability}
-\input{tables/xbrl_coverage}
-
-\input{tables/annual_vs_quarterly}
-
-\input{tables/text_per_company}
+The pilot covered 30 non-financial firms for the accounting comparison and 15 firms for the text comparison. Standalone fourth-quarter net income was available for 43\% of the firm-years checked. In the text pilot, all 44 annual filings had a substantive risk section, compared with 52\% of the 90 quarterly filings. The other quarterly filings gave only standard wording or a reference to the annual report. These figures describe the pilot samples.
 
 \section{Parser implementation notes}
 \label{sec:parser_impl}
@@ -85,17 +79,20 @@ applied to the referenced exhibit. In that case, numbered item headers are
 replaced by title-based patterns such as ``Risk Factors'' or ``Management's
 Discussion and Analysis'', because exhibits do not contain item numbers.
 
+\paragraph{TF--IDF settings for the omission gap.}\label{par:tfidf_settings}
+For each fiscal year, I fit the \texttt{scikit-learn} vectoriser on at least 50 earlier filings. It converts text to lower case, removes the library's English stop words and uses single tokens of at least two word characters (letters, digits or underscores). A token must appear in at least five training documents and in at most 95\% of them. The vectoriser uses raw word counts and smoothed inverse document frequencies, then scales each document vector to unit length.
+
 \section{Additional robustness tables}
 \label{sec:app_robust}
 
 \input{tables/robustness_365d}
 
-\input{tables/h3_cells}
+\paragraph{H3 decision rule.} H3 predicts a positive omission coefficient. At the primary 30-day horizon, positive evidence requires a positive full-text estimate with Holm-adjusted $p<0.05$ and a positive block-based estimate with unadjusted $p<0.05$. The adjustment covers five horizons (5, 10, 30, 90 and 180 days) under two fixed-effect structures \parencite{holm1979}. Negative evidence uses the same thresholds with opposite signs. Positive evidence under both structures supports H3, and positive evidence under one with no negative evidence under the other gives partial support. Negative evidence alone contradicts H3. All other outcomes leave H3 unsupported.
+
+\input{tables/silence_main}
+
+The 10-day block-based estimate with industry effects reaches the 5\% threshold before adjustment ($t=1.97$), but its adjusted $p$-value is 0.491. The main test uses the 30-day window.
 
 \input{tables/silence_robust}
 
-\paragraph{Peer comparisons.} When firms are reassigned to industry groups at random within each year, the observed 30-day statistic ($t=0.70$) is unexceptional among 1{,}000 reassignments (two-sided $p=0.466$). One exploratory check using last year's gap gives $t=1.97$ with firm effects. It addresses an earlier disclosure and falls outside the decision rule for H3.
-
-\paragraph{Persistence.} A unit root describes a process in which shocks persist indefinitely. Table~\ref{tab:stationarity} checks whether the short firm histories are consistent with that possibility. The Harris--Tzavalis check uses firms observed every year from 2012 to 2024 and assumes a common persistence coefficient. The Im--Pesaran--Shin check allows firms to differ. Both start from the hypothesis that all firms have a unit root. For the second test, rejection means that at least some firms depart from that hypothesis. The table documents the sample-specific simulations. Neither test rejects for the omission gap at 5\%, and the tests disagree for leverage. With so few years, persistence remains a limitation when interpreting the regressions.
-
-\input{tables/stationarity}
+An exploratory regression using the previous year's omission gap gives $t=1.97$ with firm effects. It asks about an earlier disclosure and falls outside the H3 decision rule.

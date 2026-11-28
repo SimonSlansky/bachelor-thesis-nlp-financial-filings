@@ -20,7 +20,7 @@ DATA = ROOT / "data"
 TEX = ROOT / "tex" / "tables"
 
 LAB = {
-    "log_vol": r"$\ln\sigma^{[30]}_{i,t+1}$", "vol": r"$\sigma^{[30]}_{i,t+1}$",
+    "log_vol": r"$\ln\sigma^{[30]}_{i,t,\mathrm{post}}$", "vol": r"$\sigma^{[30]}_{i,t,\mathrm{post}}$",
     "pre_log_vol": r"$\ln\sigma^{\mathrm{pre}}_{i,t}$", "log_mcap": r"$\ln(\text{Market cap})$",
     "leverage": "Leverage", "roa": "ROA", "asset_growth": "Asset growth",
     "bm": "Book-to-market", "ret_pre_12m": "Past 12-month log return",
@@ -87,7 +87,7 @@ def summary():
                  ("mean", "std", "1%", "25%", "50%", "75%", "99%")) + r" \\")
     L += [r"\midrule", rf"Observations & \multicolumn{{7}}{{l}}{{{n_(s.loc['log_vol','count'])}}} \\",
           r"\bottomrule", r"\end{tabular}"]
-    L += note(r"$\sigma^{[30]}_{i,t+1}$: annualised standard deviation of daily log returns in the "
+    L += note(r"$\sigma^{[30]}_{i,t,\mathrm{post}}$: annualised standard deviation of daily log returns in the "
               r"30-calendar-day window starting two trading days after the 10-K filing day. "
               r"$\sigma^{\mathrm{pre}}$: the same over the 60 trading days before filing. "
               r"Financial ratios, book-to-market and the past return are winsorised at the 1st/99th "
@@ -95,6 +95,31 @@ def summary():
               rf"The maximum RiskDensity is {s.loc['risk_1a','max']:.4f}.")
     L += [r"\end{table}"]
     write("summary_statistics", L)
+
+
+def delta_case():
+    panel = pd.read_csv(DATA / "annual_panel_text.csv", parse_dates=["filing_date"])
+    filings = panel.loc[panel.ticker.eq("DAL")].set_index("fiscal_year", verify_integrity=True)
+    lines = [r"\begin{table}[htbp]", r"\centering",
+             r"\caption{Delta Air Lines before and during the pandemic}",
+             r"\label{tab:delta_case}", r"\small", r"\setlength{\tabcolsep}{4pt}",
+             r"\begin{tabular}{@{}lrrrrrrr@{}}", r"\toprule",
+             r" & Fiscal & Item 1A & \multicolumn{2}{c}{Risk words} & Cash flow / & \multicolumn{2}{c}{Volatility (\%)} \\",
+             r"Date filed & year & words & Count & Share (\%) & assets (\%) & Delta & SPY \\",
+             r"\midrule"]
+    for year in (2018, 2019, 2020):
+        row = filings.loc[year]
+        cells = [row.filing_date.strftime("%d %b %Y"), str(year), n_(row.words_1a),
+                 n_(row.n_unc_1a + row.n_lit_1a), f"{100 * row.risk_1a:.2f}",
+                 f"{100 * row.ocf_to_assets:.1f}", f"{100 * row.vol_30d:.1f}",
+                 f"{100 * row.mkt_vol_30d:.1f}"]
+        lines.append(" & ".join(cells) + r" \\")
+    lines += [r"\bottomrule", r"\end{tabular}"]
+    lines += note(r"Risk words are matches to the uncertainty and litigious word lists. Cash flow is operating "
+                  r"cash flow for the fiscal year. The last two columns show annualised volatility over the "
+                  r"same 30-calendar-day window after each filing. SPY tracks the S\&P~500. Figures are "
+                  r"calculated from the thesis panel.")
+    write("delta_case", lines + [r"\end{table}"])
 
 
 def correlation():
@@ -132,15 +157,16 @@ def main_table(h):
         L += [f"{LAB[v]} & " + " & ".join(cs) + r" \\", " & " + " & ".join(ts) + r" \\[2pt]"]
     first = m[m["var"] == "pre_log_vol"].set_index("column")
     w = m[m["var"] == "wald_unc_eq_lit"].iloc[0]
+    equality_p = r"$<0.001$" if w.p < .001 else f"{w.p:.3f}"
     L += [r"\midrule", "Industry and year FE & " + " & ".join(["Yes"] * 5) + r" \\",
           "Observations & " + " & ".join(n_(first.loc[c, "n"]) for c in cols) + r" \\",
           "Firms & " + " & ".join(str(int(first.loc[c, "firms"])) for c in cols) + r" \\",
           r"Within $R^2$ & " + " & ".join(f"{first.loc[c, 'r2_within']:.3f}" for c in cols) + r" \\",
           r"$\Delta$ within $R^2$ vs (1) & " + " & ".join(
               f"{first.loc[c, 'incr_r2_within']:.4f}" for c in cols) + r" \\",
-          r"Wald $\beta^{\text{unc}}=\beta^{\text{lit}}$, $p$ & & & & & " + f"{w.p:.3f}" + r" \\",
+          r"Equal dictionary coefficients, $p$ & & & & & " + equality_p + r" \\",
           r"\bottomrule", r"\end{tabular}"]
-    L += note(rf"Dependent variable $\ln\sigma^{{[{h[:-1]}]}}_{{i,t+1}}$. All columns use the same "
+    L += note(rf"Dependent variable $\ln\sigma^{{[{h[:-1]}]}}_{{i,t,\mathrm{{post}}}}$. All columns use the same "
               r"sample and the common control vector. " + FE_NOTE + r"Within $R^2$: share of the "
               r"variance left after the fixed effects that the regressors explain. " + SIG)
     L += [r"\end{table}"]
@@ -167,7 +193,7 @@ def horizons():
     L += [r"\midrule", "Observations & " + " & ".join(n_(r.n) for r in rr) + r" \\",
           r"Within $R^2$ (col.\ 5) & " + " & ".join(f"{r.r2_within:.3f}" for r in rr) + r" \\",
           r"\bottomrule", r"\end{tabular}"]
-    L += note(r"Each column re-estimates the specification with $\ln\sigma^{[h]}_{i,t+1}$ as the "
+    L += note(r"Each column re-estimates the specification with $\ln\sigma^{[h]}_{i,t,\mathrm{post}}$ as the "
               r"dependent variable; common controls, industry and year FE. " + FE_NOTE + SIG)
     L += [r"\end{table}"]
     write("horizons", L)
@@ -175,95 +201,56 @@ def horizons():
 
 def firm_fe():
     m = pd.read_csv(RES / "firm_fe.csv")
-    spec = [("(5)_no_ldv_ind+year", "Industry + year"), ("(5)_no_ldv_firm+year", "Firm + year"),
-            ("(5)_with_ldv_firm+year", "Firm + year, lagged DV")]
+    spec = [("(5)_no_ldv_ind+year", "Industry + year"), ("(5)_no_ldv_firm+year", "Firm + year")]
     L = [r"\begin{table}[htbp]", r"\centering", r"\caption{Industry versus firm fixed effects (30-day window)}",
-         r"\label{tab:firm_fe}", r"\small", r"\resizebox{\linewidth}{!}{\begin{tabular}{lccc}", r"\toprule",
+         r"\label{tab:firm_fe}", r"\small", r"\begin{tabular}{lcc}", r"\toprule",
          " & " + " & ".join(f"({i + 1}) {s}" for i, (_, s) in enumerate(spec)) + r" \\", r"\midrule"]
-    for v in ["log_words_1a", "unc_1a", "lit_1a", "pre_log_vol", "lagged_log_vol"]:
+    for v in ["log_words_1a", "unc_1a", "lit_1a", "pre_log_vol"]:
         rr = [m[(m.column == c) & (m["var"] == v)] for c, _ in spec]
         L += [f"{LAB[v]} & " + " & ".join(cell(r.coef.iloc[0], r.p.iloc[0]) if len(r) else "" for r in rr) + r" \\",
               " & " + " & ".join(tcell(r.t.iloc[0]) if len(r) else "" for r in rr) + r" \\[2pt]"]
     rr = [m[(m.column == c.replace("(5)", "(4)")) & (m["var"] == "risk_1a")].iloc[0] for c, _ in spec]
-    L += [r"\midrule", r"RiskDensity in column-(4) specification & " +
+    L += [r"\midrule", r"RiskDensity (combined dictionary model) & " +
           " & ".join(cell(r.coef, r.p) for r in rr) + r" \\", " & " + " & ".join(tcell(r.t) for r in rr) + r" \\"]
     rr = [m[(m.column == c) & (m["var"] == "pre_log_vol")].iloc[0] for c, _ in spec]
     L += [r"\midrule", "Observations & " + " & ".join(n_(r.n) for r in rr) + r" \\",
           "Firms & " + " & ".join(str(int(r.firms)) for r in rr) + r" \\",
           r"Within $R^2$ & " + " & ".join(f"{r.r2_within:.3f}" for r in rr) + r" \\",
-          r"\bottomrule", r"\end{tabular}}"]
-    L += note(r"All columns include the common control vector and use the same sample. Column (3) adds "
-              r"the lagged dependent variable, which is subject to Nickell bias under firm fixed effects. "
+          r"\bottomrule", r"\end{tabular}"]
+    L += note(r"Both columns use the same filings and controls. "
               r"Standard errors clustered two-way by firm and fiscal year. " + SIG)
     L += [r"\end{table}"]
     write("firm_fe", L)
 
 
-ROB = [("baseline", "Baseline (Table~\\ref{tab:main_30d}, col.\\ 5)"),
-       ("mktvol", "+ market volatility in window"),
-       ("excl_ea_windows", "Windows with an earnings release dropped"),
-       ("vol_excl_ea_days", "Volatility without earnings-release days"),
-       ("idio_vol", "Idiosyncratic volatility as DV"),
-       ("fm_year_fe", "Filing-month $\\times$ year FE"),
-       ("cal_ym_fe", "Calendar year-month of filing FE (instead of fiscal year)"),
-       ("dec_fye_only", "Firms with a December fiscal-year end only"),
-       ("sic3_fe", "SIC3 + year FE"), ("ff48_fe", "FF48 + year FE"),
-       ("sic2_snapshot_fe", "Today's SIC2 + year FE"),
-       ("excl_sic49_80", "Excluding utilities (49) and health services (80)"),
-       ("drop_shares_fallback", "Excluding weighted-average share counts"),
-       ("drop_imputed", "Excluding imputed balance-sheet values"),
-       ("balanced_2012_2024", "Balanced panel, FY 2012--2024"),
-       ("min_years_3", "Firms with $\\geq 3$ years"), ("min_years_5", "Firms with $\\geq 5$ years"),
-       ("min_years_7", "Firms with $\\geq 7$ years"),
-       ("plus_lagged_dv", "+ lagged dependent variable"),
-       ("cluster_firm", "SE clustered by firm only"), ("cluster_year", "SE clustered by year only")]
-
-
 def robustness(h):
-    m = pd.read_csv(RES / f"robustness_{h}.csv")
+    m = pd.read_csv(RES / f"robustness_{h}.csv").set_index(["column", "var"])
+    rows = [
+        ("baseline", "Baseline"),
+        ("cal_ym_fe", "Calendar year-month effects"),
+        ("drop_imputed", "Excluding imputed balance-sheet values"),
+        ("counts", "Word counts, all eligible filings"),
+        ("counts_common_sample", "Word counts, baseline filings"),
+    ]
     L = [r"\begin{table}[htbp]", r"\centering",
          rf"\caption{{Robustness of the H1/H2 decomposition ({h[:-1]}-day window)}}",
-         rf"\label{{tab:robust_{h}}}", r"\footnotesize", r"\setlength{\tabcolsep}{4pt}",
-         r"\begin{tabular}{lcccr}", r"\toprule",
-         r" & $\ln(\text{Words}^{1A})$ & UncDensity & LitDensity & $N$ \\", r"\midrule"]
-    for k, lab in ROB:
-        r = m[m.column == k].set_index("var")
-        if r.empty:
-            continue
-        L.append(f"{lab} & " + " & ".join(
-            f"{cell(r.loc[v, 'coef'], r.loc[v, 'p'])} {tcell(r.loc[v, 't'])}" for v in
-            ["log_words_1a", "unc_1a", "lit_1a"]) + f" & {n_(r['n'].iloc[0])}" + r" \\")
-    r = m[m.column == "counts"].set_index("var")
-    if len(r):
-        L.append(r"Counts: $\ln(\text{Words})$, $\ln(1+n^{\text{unc}})$, $\ln(1+n^{\text{lit}})$ & " +
-                 " & ".join(f"{cell(r.loc[v, 'coef'], r.loc[v, 'p'])} {tcell(r.loc[v, 't'])}"
-                            for v in ["log_words_1a", "log_n_unc_1a", "log_n_lit_1a"]) +
-                 f" & {n_(r['n'].iloc[0])}" + r" \\")
-    for k, lab, suf in [("text_lag1", "Text of year $t-1$ instead of $t$", "_lag1")]:
-        r = m[m.column == k].set_index("var")
-        if len(r):
-            L.append(f"{lab} & " + " & ".join(
-                f"{cell(r.loc[v + suf, 'coef'], r.loc[v + suf, 'p'])} {tcell(r.loc[v + suf, 't'])}"
-                for v in ["log_words_1a", "unc_1a", "lit_1a"]) + f" & {n_(r['n'].iloc[0])}" + r" \\")
-    r = m[m.column == "text_lag1_plus_change"].set_index("var")
-    if len(r):
-        for pre, lab in (("", "Level $t-1$"), ("d_", "Change $t-1\\to t$")):
-            vs = [f"{v}_lag1" if pre == "" else f"d_{v}" for v in ["log_words_1a", "unc_1a", "lit_1a"]]
-            L.append(f"Level + change: {lab} & " + " & ".join(
-                f"{cell(r.loc[v, 'coef'], r.loc[v, 'p'])} {tcell(r.loc[v, 't'])}" for v in vs) +
-                f" & {n_(r['n'].iloc[0])}" + r" \\")
-    r = m[m.column == "post2019_interaction"].set_index("var")
-    if len(r):
-        for suf, lab in (("", "FY $\\leq$ 2019 (main effect)"), ("_x_post", "$\\times$ FY $\\geq$ 2020")):
-            L.append(f"Post-2019 interaction: {lab} & " + " & ".join(
-                f"{cell(r.loc[v + suf, 'coef'], r.loc[v + suf, 'p'])} {tcell(r.loc[v + suf, 't'])}"
-                for v in ["log_words_1a", "unc_1a", "lit_1a"]) + f" & {n_(r['n'].iloc[0])}" + r" \\")
-    L += [r"\bottomrule", r"\end{tabular}"]
-    L += note(r"Each row is a separate regression of the column-(5) specification with the change "
-              r"described; common controls, industry (historical SIC2) and year FE and two-way clustered "
-              r"standard errors unless stated. " + SIG)
-    L += [r"\end{table}"]
-    write(f"robustness_{h}", L)
+         rf"\label{{tab:robust_{h}}}", r"\small", r"\setlength{\tabcolsep}{4pt}",
+         r"\resizebox{\linewidth}{!}{\begin{tabular}{lcccr}", r"\toprule",
+         r" & Log length & Uncertainty words & Legal words & $N$ \\", r"\midrule"]
+    for key, label in rows:
+        fit = m.loc[key]
+        variables = ["log_words_1a", "unc_1a", "lit_1a"]
+        if key in ("counts", "counts_common_sample"):
+            variables = ["log_words_1a", "log_n_unc_1a", "log_n_lit_1a"]
+        cells = [f"{cell(fit.loc[v, 'coef'], fit.loc[v, 'p'])} {tcell(fit.loc[v, 't'])}"
+                 for v in variables]
+        L.append(" & ".join([label, *cells, n_(fit.loc["log_words_1a", "n"])]) + r" \\")
+    L += [r"\bottomrule", r"\end{tabular}}"]
+    L += note(r"The first three rows use dictionary shares. The last two use $\ln(1+n)$, "
+              r"where $n$ is the number of words from each list. All models include the same financial "
+              r"controls and industry effects. Row 2 replaces fiscal-year effects with calendar "
+              r"year-month effects. Parentheses show $t$-statistics clustered by firm and fiscal year. " + SIG)
+    write(f"robustness_{h}", L + [r"\end{table}"])
 
 
 def inference():
@@ -283,7 +270,7 @@ def inference():
                  f"{x.p_wild_year:.3f}" + r" \\")
     L += [r"\bottomrule", r"\end{tabular}"]
     L += note(rf"Wild cluster bootstrap by fiscal year ({int(b.clusters.iloc[0])} clusters), "
-              rf"{int(b.B.iloc[0]):,} draws, Webb six-point weights, null imposed, fixed effects "
+              rf"{int(b.B.iloc[0]):,} draws, Webb six-point weights \parencite{{webb2023}}, null imposed, fixed effects "
               r"partialled out; (4)/(5) = column of Table~\ref{tab:main_30d}. Firm: one-way "
               r"firm-clustered $p$ (industry FE, column 5).")
     L += [r"\end{table}"]
@@ -347,25 +334,17 @@ def silence_main():
                   r"$N$ & " + " & ".join(n_(r.n) for r in rr) + r" \\[3pt]"]
     v = json.loads((RES / "h3_verdict.json").read_text())
     L += [r"\bottomrule", r"\end{tabular}"]
-    L += note(r"Each cell is a separate regression of $\ln\sigma^{[h]}_{i,t+1}$ on the omission measure, "
+    L += note(r"Each cell is a separate regression of $\ln\sigma^{[h]}_{i,t,\mathrm{post}}$ on the omission measure, "
               r"$\ln(\text{Words}^{1A})$, RiskDensity and the common controls. Holm $p$: Holm-adjusted "
               r"over the ten tests of each measure at $h\in\{5,10,30,90,180\}$ under both FE structures "
               r"(365 days is outside the family). Two-way clustered $t$-statistics. "
-              rf"Verdict under the decision rule of Section~\ref{{sec:h3}}: {v['verdict']}. " + SIG)
+              rf"Verdict under the decision rule of Appendix~\ref{{sec:app_robust}}: {v['verdict']}. " + SIG)
     L += [r"\end{table}"]
     write("silence_main", L)
 
 
-H3ROB = [("baseline", "Baseline"), ("fixed_length", "Block-based omission"),
-         ("length_resid", "Residual on $\\ln(\\text{Words}^{1A})$ within cell"),
-         ("decile_rank", "Decile rank within cell (cells $\\geq 10$)"),
-         ("tail_deciles", "Top-decile dummy (bottom-decile dummy included)"),
-         ("peers_ge20", "Cells with $\\geq 20$ peers"),
-         ("extra_length", "+ $\\ln(\\text{Words}^{\\text{MD\\&A}})$ and $\\ln(\\text{Words}^{1A})^2$"),
-         ("prior_year", "Omission of year $t-1$"),
-         ("pooled_vocab", "Pooled vocabulary over all years"),
-         ("sic_today", "Peers by today's SIC2"),
-         ("plus_lagged_dv", "+ lagged dependent variable")]
+H3ROB = [("baseline", "Full text"), ("fixed_length", "Block-based omission"),
+         ("peers_ge20", r"At least 20 peers")]
 
 
 def silence_robust():
@@ -382,7 +361,7 @@ def silence_robust():
             cells += [f"{cell(r.coef, r.p)} {tcell(r.t)}", n_(r.n)]
         L.append(f"{lab} & " + " & ".join(cells) + r" \\")
     L += [r"\bottomrule", r"\end{tabular}}"]
-    L += note(r"The pooled-vocabulary variant uses texts from all years and is retrospective. H3 specification with one change per row; coefficient on the (modified) omission "
+    L += note(r"H3 specification with one change per row; coefficient on the (modified) omission "
               r"measure. Two-way clustered $t$-statistics. " + SIG)
     L += [r"\end{table}"]
     write("silence_robust", L)
@@ -420,7 +399,7 @@ def silence_diag():
 
 def stationarity():
     s = pd.read_csv(RES / "stationarity.csv")
-    lab = dict(LAB, log_vol=r"$\ln\sigma^{[30]}_{i,t+1}$")
+    lab = dict(LAB, log_vol=r"$\ln\sigma^{[30]}_{i,t,\mathrm{post}}$")
     L = [r"\begin{table}[htbp]", r"\centering", r"\caption{Panel unit-root tests}",
          r"\label{tab:stationarity}", r"\footnotesize", r"\begin{tabular}{lrrrrrr}", r"\toprule",
          r" & \multicolumn{3}{c}{Harris--Tzavalis (balanced, 2012--2024)} & \multicolumn{3}{c}{Im--Pesaran--Shin (1 lag)} \\",
@@ -563,7 +542,7 @@ def h3_cells():
 
 
 def main():
-    for f in (summary, correlation, lambda: main_table("30d"), lambda: main_table("365d"),
+    for f in (summary, delta_case, correlation, lambda: main_table("30d"), lambda: main_table("365d"),
               horizons, firm_fe, lambda: robustness("30d"), lambda: robustness("365d"),
               inference, effect_sizes, variance_decomp, silence_main, silence_robust,
               silence_diag, stationarity, attrition, tag_tables, text_coverage, h3_cells,

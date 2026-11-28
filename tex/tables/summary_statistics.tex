@@ -7,8 +7,8 @@
 \toprule
  & Mean & SD & P1 & P25 & Median & P75 & P99 \\
 \midrule
-$\sigma^{[30]}_{i,t+1}$ & 0.317 & 0.269 & 0.089 & 0.176 & 0.243 & 0.346 & 1.465 \\
-$\ln\sigma^{[30]}_{i,t+1}$ & -1.347 & 0.579 & -2.423 & -1.736 & -1.416 & -1.063 & 0.382 \\
+$\sigma^{[30]}_{i,t,\mathrm{post}}$ & 0.317 & 0.269 & 0.089 & 0.176 & 0.243 & 0.346 & 1.465 \\
+$\ln\sigma^{[30]}_{i,t,\mathrm{post}}$ & -1.347 & 0.579 & -2.423 & -1.736 & -1.416 & -1.063 & 0.382 \\
 $\ln\sigma^{\mathrm{pre}}_{i,t}$ & -1.294 & 0.433 & -2.181 & -1.597 & -1.335 & -1.042 & -0.103 \\
 $\ln(\text{Market cap})$ & 23.591 & 1.436 & 20.252 & 22.737 & 23.548 & 24.451 & 26.983 \\
 Leverage & 0.612 & 0.219 & 0.128 & 0.472 & 0.610 & 0.737 & 1.298 \\
@@ -29,6 +29,6 @@ Observations & \multicolumn{7}{l}{5,782} \\
 \end{tabular}
 \par\smallskip
 \begin{minipage}{\linewidth}\footnotesize
-\emph{Notes.} $\sigma^{[30]}_{i,t+1}$: annualised standard deviation of daily log returns in the 30-calendar-day window starting two trading days after the 10-K filing day. $\sigma^{\mathrm{pre}}$: the same over the 60 trading days before filing. Financial ratios, book-to-market and the past return are winsorised at the 1st/99th percentiles of this sample; the text variables are not winsorised. The maximum RiskDensity is 0.0772.
+\emph{Notes.} $\sigma^{[30]}_{i,t,\mathrm{post}}$: annualised standard deviation of daily log returns in the 30-calendar-day window starting two trading days after the 10-K filing day. $\sigma^{\mathrm{pre}}$: the same over the 60 trading days before filing. Financial ratios, book-to-market and the past return are winsorised at the 1st/99th percentiles of this sample; the text variables are not winsorised. The maximum RiskDensity is 0.0772.
 \end{minipage}
 \end{table}
